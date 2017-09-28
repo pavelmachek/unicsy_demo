@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python2
 # -*- python -*-
 # Not to be ran as root.
 
@@ -12,7 +12,6 @@ import os
 import rotatable
 import hardware
 import gobject
-import watchdog
 import re
 import time
 import math
@@ -23,7 +22,6 @@ import math
 class Power(rotatable.SubWindow):
     def __init__(m):
         rotatable.SubWindow.__init__(m)
-        m.monitors = watchdog.AllMonitors()
         m.battery = hardware.Battery()
         m.time_label = None
 
@@ -143,21 +141,6 @@ class Power(rotatable.SubWindow):
         m.monitor_interior(table)
         return table
 
-    def tick_alerts(m):
-        m.monitors.update_alerts()
-        m.battery_monitor.set_text( "battery\n"+m.monitors.worst_from(m.monitors.alerts_on["battery"]).key )
-        m.phone_monitor.set_text( "phone\n"+m.monitors.worst_from(m.monitors.alerts_on["phone"]).key )
-        a = m.monitors.worst_alert()
-        s = a.short
-        s = re.sub(" ", "\n", s)
-        if a.priority >= 9:
-            m.worst_monitor.set_text("")
-        elif a.priority >= 5:
-            m.worst_monitor.set_text(s)
-        else:
-            m.worst_monitor.set_text(m.big(s))
-            m.worst_monitor.set_use_markup(True)
-
     def tick_battery(m):
         b = m.battery
         try:
@@ -197,10 +180,11 @@ class Power(rotatable.SubWindow):
 
     def tick_status_text(m):
         s = ''
-        #s += ''.join(os.popen("/my/ofono/test/list-operators | grep Name").readlines())
-        s += ''.join(os.popen("uname -r").readlines())
+        s += '' + ''.join(os.popen("date").readlines())
+        s += 'kernel ' + ''.join(os.popen("uname -r").readlines())
         s += ''.join(os.popen("/sbin/ifconfig | grep -1 wlan0 | sed 's/Link.*//' | sed 's/Bcast.*//'").readlines())
-        s += ''.join(os.popen("calendar -f ~/bin/calendar").readlines())
+        s += 'debian ' + ''.join(os.popen("cat /etc/debian_version").readlines())
+        s += 'alpine ' + ''.join(os.popen("cat /etc/alpine-release").readlines())
 
         m.status_text.set_text(s)
 
@@ -244,7 +228,6 @@ class Power(rotatable.SubWindow):
 
     def tick(m):
         print("Tick tock")
-        m.tick_alerts()
         m.tick_battery()
         m.tick_status_text()
         m.tick_sensors()
