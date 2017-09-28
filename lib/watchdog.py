@@ -21,7 +21,11 @@ class Watchdog:
         # very wrong with the clock.
         if time.time() < os.stat(m.mypath).st_mtime - 5:
             return None
-        return open(m.mypath, "r").readlines()
+        try:
+            p = open(m.mypath, "r")
+        except:
+            return None
+        return p.readlines()
 
 class LocationWatchdog(Watchdog):
     def __init__(m):
