@@ -184,7 +184,7 @@ class Power(rotatable.SubWindow):
         s += 'kernel ' + ''.join(os.popen("uname -r").readlines())
         s += ''.join(os.popen("/sbin/ifconfig | grep -1 usb0 | sed 's/Link.*//' | sed 's/Bcast.*//'").readlines())
         s += ''.join(os.popen("/sbin/ifconfig | grep -1 wlan0 | sed 's/Link.*//' | sed 's/Bcast.*//'").readlines())
-        s += 'debian ' + ''.join(os.popen("cat /etc/debian_version").readlines())
+        #s += 'debian ' + ''.join(os.popen("cat /etc/debian_version").readlines())
         s += 'alpine ' + ''.join(os.popen("cat /etc/alpine-release").readlines())
 
         m.status_text.set_text(s)
