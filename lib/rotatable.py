@@ -42,14 +42,54 @@ class TouchWidgets:
         e.modify_font(pango.FontDescription("sans "+str(size)))
         return e
 
-class Rotatable(TouchWidgets):
+class TouchWindow(TouchWidgets):
     def __init__(m):
-        TouchWidgets.__init__(m)
+        m.main_window = 0
+        m.window = None
+
+    def show(m):
+        if m.window:
+            m.window.show_all()
+            return
+        m.basic_window()
+
+    def hide(m):
+        print("Hiding window")
+        if m.main_window:
+            gtk.main_quit()
+        m.window.hide()
+        return True
+
+    def basic_main_window(m):
+        m.basic_window()
+        m.main_window = 1
+
+class Panel(TouchWindow):
+    def interior(m):
+        table = gtk.Label("hello world")
+        return table
+    
+    def basic_window(m):
+        window = gtk.Window(gtk.WINDOW_TOPLEVEL)
+        window.move(52, 0)
+        window.stick() # Put it on all desktops.
+        window.set_default_size(700, 52)
+        window.set_keep_above(True)
+        window.set_decorated(False)
+        window.set_border_width(0)
+        m.window = window
+        table = m.interior()
+
+        window.add(table)
+        window.show_all()
+        m.window.connect("delete-event", lambda _, _1: m.hide())
+
+class Rotatable(TouchWindow):
+    def __init__(m):
+        TouchWindow.__init__(m)
         m.vertical = 0
         if os.getenv("VERTICAL"):
             m.vertical = 1
-        m.main_window = 0
-        m.window = None
 
     def aux_interior(m):
         table = gtk.Table(4,4,True)
@@ -83,23 +123,6 @@ class Rotatable(TouchWidgets):
         window.add(table)
         window.show_all()
         m.window.connect("delete-event", lambda _, _1: m.hide())
-
-    def show(m):
-        if m.window:
-            m.window.show_all()
-            return
-        m.basic_window()
-
-    def hide(m):
-        print("Hiding window")
-        if m.main_window:
-            gtk.main_quit()
-        m.window.hide()
-        return True
-
-    def basic_main_window(m):
-        m.basic_window()
-        m.main_window = 1
 
 class TestWindow(Rotatable):
     sx = 5
