@@ -1,0 +1,393 @@
+#!/usr/bin/python2
+# -*- python -*-
+# Not to be ran as root.
+
+from __future__ import print_function
+
+import sys
+sys.path += [ "/usr/share/unicsy/lib" ]
+import mygtk
+mygtk.setup()
+
+import dbus
+import dbus.mainloop.glib
+
+import gtk
+import gobject
+
+import contacts
+import event_log
+import datetime
+import win_sms
+from ofono import *
+import notify
+import rotatable
+import power
+import os
+import pango
+
+import win_message
+import win_call
+
+class CallContacts(contacts.Contacts):
+    def dial(m):
+        print("Should dial ", m.number)
+        m.hide()
+        mw.have_number(m.number)
+
+class ViewEvents(win_sms.ViewEvents):
+    def dial(m):
+        print("Should dial ", m.number)
+        m.hide()
+        mw.have_number(m.number)
+
+class MessageWindow(win_message.MessageWindow):
+    def close(m):
+        m.window.destroy()
+        mw.message_closed(m)
+
+class LowLevelWindow(rotatable.SubWindow):
+    def __init__(m):
+        rotatable.SubWindow.__init__(m)
+        m.log_buffer = gtk.TextBuffer()
+        m.operator_details = gtk.Label("(operator details)")
+
+    def interior(m):
+        table = gtk.Table(6,6,True)
+
+        button = gtk.Button("airplane")
+        button.connect("clicked", lambda _: mw.offline_modem())
+        table.attach(button, 0,1,0,1)
+
+        button = gtk.Button("online")
+        button.connect("clicked", lambda _: mw.online_modem())
+        table.attach(button, 1,2,0,1)
+
+        button = gtk.Button("Hangup")
+        button.connect("clicked", lambda _: mw.hangup_all())
+        table.attach(button, 2,3,0,1)
+
+        view = gtk.TextView()
+        view.set_buffer(m.log_buffer)
+        scrolled = gtk.ScrolledWindow()
+        scrolled.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+        scrolled.add(view)
+        table.attach(scrolled, 0,4,1,6)
+
+        table.attach(m.operator_details, 4,6,1,5)
+
+        _, button = m.font_button(m.big("inet"))
+        button.connect("clicked", lambda _: mw.connect_internet())
+        table.attach(button, 4,5,5,6)
+
+        w, button = m.font_button(m.big("Close"))
+        button.connect("clicked", lambda _: m.hide())
+        table.attach(button, 5,6,5,6)
+        table.show_all()
+        return table
+
+class ActionsWindow(rotatable.SubWindow):
+    def action_send_sms(m):
+        number = m.phone_number.get_text()
+        message = m.message_text.get_text(m.message_text.get_start_iter(), m.message_text.get_end_iter(), False)
+        print("Should send sms", number, message)
+        mw.send_sms(number, message)
+        m.hide()
+
+    def action_call(m):
+        number = m.phone_number.get_text()
+        print("Should call", number)
+        elog.add_call("out", number)
+        mw.dial_number(number)
+        m.hide()
+
+    def action_ussd(m):
+        number = m.phone_number.get_text()
+        print("Should call", number)
+        elog.add_call("ussd", number)
+        mw.send_ussd(number)
+        m.hide()
+        
+    def interior(m):
+        table = gtk.Table(6,6,True)
+
+        w = m.font_label(m.big("Phone number"))
+        table.attach(w, 0,6,0,1)
+
+        w = m.font_entry()
+        w.set_max_length(32)
+        w.set_text("+420800123456")
+        m.phone_number = w
+        table.attach(w, 0,6,1,2)
+
+        w = m.font_label(m.big("Message text"))
+        table.attach(w, 0,6,2,3)
+
+        if False:
+            w = m.font_entry()
+            w.set_max_length(160)
+            w.set_text("Hello from ofone.")
+            m.message_text = w
+        else:
+            scrolledwindow = gtk.ScrolledWindow()
+            if mygtk.is3:
+                scrolledwindow.set_hexpand(True)
+                scrolledwindow.set_vexpand(True)
+
+            textview = gtk.TextView()
+            textview.modify_font(pango.FontDescription("sans 22"))
+            m.textbuffer = textview.get_buffer()
+            m.textbuffer.set_text("xxxxxxx xxxxxxx xxxxxxx xxxxxxx xxxxxxx xxxxxxx xxxxxxx xxxxxxx xxxxxxx xxxxxxx xxxxxxx xxxxxxx xxxxxxx xxxxxxx xxxxxxx xxxxxxx xxxxxxx xxxxxxx xxxxxxx xxxxxxx.")
+            m.message_text = m.textbuffer
+
+            if mygtk.is3:
+                textview.set_wrap_mode(gtk.WrapMode.WORD)
+            scrolledwindow.add(textview)
+
+            w = scrolledwindow
+        table.attach(w, 0,6,3,5)
+
+        _, button = m.font_button(m.big("Close"))
+        button.connect("clicked", lambda _: m.hide())
+        table.attach(button, 2,3,5,6)
+        
+        _, button = m.font_button(m.big("Send"))
+        button.connect("clicked", lambda _: m.action_send_sms())
+        table.attach(button, 3,4,5,6)
+
+        _, button = m.font_button(m.big("USSD"))
+        button.connect("clicked", lambda _: m.action_ussd())
+        table.attach(button, 4,5,5,6)
+
+        _, button = m.font_button(m.big("Call"))
+        button.connect("clicked", lambda _: m.action_call())
+        table.attach(button, 5,6,5,6)
+        return table
+
+class CallWindow(win_call.CallWindow):
+    def call_started(m, name, number):
+        win_call.CallWindow.call_started(m, name, number)
+        if mw.next_is_outgoing + 2 > time.time():
+            mw.next_is_outgoing = 0
+            m.call_detail.set_label("outgoing call")
+            notify.call_starts()
+        else:
+            notify.call_incoming(number)
+            m.call_detail.set_label("incoming call")
+            
+    def call_ended(m, name):
+        elog.add_missed_call(m.call_number)
+        notify.end_incoming("unknown")
+        notify.call_ends()
+        mw.message("Lost call from "+m.call_number)
+        win_call.CallWindow.call_ended(m, name)
+
+    def interior(m):
+        table = win_call.CallWindow.interior(m)
+        button = gtk.Button("Quiet")
+        button.connect("clicked", lambda _: notify.end_incoming("quiet"))
+        table.attach(button, 3,4,5,6)
+
+        button = gtk.Button("Answer")
+        button.connect("clicked", lambda _: mw.answer_call())
+        table.attach(button, 4,5,5,6)
+
+        button = gtk.Button("Hangup")
+        button.connect("clicked", lambda _: mw.hangup_all())
+        table.attach(button, 5,6,5,6)
+        return table
+        
+class PowerWindow(power.Power):
+    pass
+
+        
+class MainWindows(ModemCtrl):
+    def log(m, text):
+        print(text)
+        now = datetime.datetime.now().strftime("%H:%M:%S")
+        m.lowlevel.log_buffer.insert_at_cursor(now + ": "+ text + "\n")
+
+    def format_cellid(m):
+        if "MobileCountryCode" in m.registration and \
+           "MobileNetworkCode" in m.registration and \
+           "LocationAreaCode" in m.registration and \
+           "CellId" in m.registration:
+            cell = ( int(m.registration[ "MobileCountryCode" ]), \
+                     int(m.registration[ "MobileNetworkCode" ]), \
+                     int(m.registration[ "LocationAreaCode" ]), \
+                     int(m.registration[ "CellId" ]) )
+            s = "%d %d %d %d" % cell
+        else:
+            s = "???"
+        return s
+
+    def network_details(m, signal_strength, summary, details):
+        m.lowlevel.operator_details.set_label(details)
+        s = m.lowlevel.big(summary) + "\n"
+        s += "(%s)" % m.format_cellid()
+        m.main.operator_button.set_label(s)
+        ss = "%d %%" % signal_strength
+        m.main.signal_button.set_label(m.lowlevel.big(ss))
+        m.main.signal_bar.set_fraction(signal_strength / 100.)
+
+    def call(m, widget):
+        # FIXME: remove?
+        #m.actions_phone_number.set_text(w)
+        print("Should bring up call dialog")
+
+    def have_number(m, number):
+        m.actions.show()
+        m.actions.phone_number.set_text(number)
+
+    def incoming_message(m, msg, args):
+        event = args
+        event['type'] = 'sms'
+        event['message'] = msg
+        elog.add_message(event)
+        notify.sms(event)
+        m.message("SMS from "+event['Sender']+" :"+msg)
+
+    def answer_call(m):
+        notify.end_incoming("unknown")
+        notify.call_starts()
+        m.answer_all()
+
+    def update_events(m):
+        m.events.update(elog.events)
+
+    def tick(m):
+        gobject.timeout_add(20000, lambda: m.tick())
+        print("Tick tock")
+        m.update_watchdog()
+
+    def call_started(m, name, number):
+        m.call_window.call_started(name, number)
+
+    def call_ended(m, name):
+        m.call_window.call_ended(name)
+
+    def call_changed(m, name, property, value):
+        m.call_window.call_changed(name, property, value)
+
+    def update_watchdog(m):
+        s = "ok"
+
+        if m.network == "":
+            s = "no signal"
+        
+        if m.message_windows != []:
+            s = "events"
+            print("Have message windows")
+
+        ops = m.list_operators()
+        if len(ops) == 0:
+            m.network == ""
+            s = "crashed baseband"
+            print("Baseband crashed")
+            
+    def __init__(m):
+        ModemCtrl.__init__(m)
+        m.modem_init()
+
+        m.main = MainWindow()
+        m.main.basic_main_window()        
+        m.main.show()
+        m.lowlevel = LowLevelWindow()
+        m.contacts = CallContacts()
+        m.actions = ActionsWindow()
+        m.call_window = CallWindow()
+        m.power = PowerWindow()
+        m.events = ViewEvents(m.contacts.db)
+        m.update_events()
+        
+        m.message_windows = []
+
+        m.startup()
+        m.tick()
+
+    def message(m, s):
+        msg2 = MessageWindow(s)
+        m.message_windows += [ msg2 ]
+
+    def message_closed(m, msg2):
+        m.message_windows.remove(msg2)
+        print("Message closed, list now : ", m.message_windows)
+
+class MainWindow(power.Power):
+    def aux_interior(m):
+        table = gtk.Table(15,4,True)
+        m.battery_interior(table)
+        m.monitor_interior(table)
+        return table
+
+    def main_interior(m):
+        table = gtk.Table(12,12,True)
+
+        w = gtk.ProgressBar()
+        m.signal_bar = w
+        table.attach(w, 0,12,0,1)
+        
+        w, b = m.font_button("(operator name)")
+        m.operator_button = w
+        b.connect("clicked", lambda _: os.system("./win_pos.py &"))
+        table.attach(b, 4,12,1,3)
+        
+        w, b = m.font_button("(signal)")
+        m.signal_button = w
+        b.connect("clicked", lambda _: mw.lowlevel.show())
+        table.attach(b, 0,4,1,3)
+
+        w, button = m.font_button(m.big("actions"))
+        button.connect("clicked", lambda _: mw.actions.show())
+        table.attach(button, 0,4,3,6)
+
+        m.time_label, button = m.font_button(m.big("(time)")+"\n"+m.small("date"))
+        button.connect("clicked", lambda _: os.system("./win_time.py &"))
+        table.attach(button, 4,8,3,6)
+        
+        w, button = m.font_button(m.big("contacts"))
+        button.connect("clicked", lambda _: mw.contacts.show())
+        table.attach(button, 8,12,3,6)
+        
+        w, button = m.font_button(m.big("power"))
+        button.connect("clicked", lambda _: mw.power.show())
+        table.attach(button, 0,4,6,9)
+
+        w, button = m.font_button(m.big("web"))
+        button.connect("clicked", lambda _: os.system("midori /my/tui/ofone/home.html &"))
+        table.attach(button, 4,8,6,9)
+
+        w, button = m.font_button(m.big("sms"))
+        button.connect("clicked", lambda _: mw.events.show())
+        table.attach(button, 8,12,6,9)
+
+        w, button = m.font_button(m.big("apps"))
+        button.connect("clicked", lambda _: os.system("./win_apps.py &"))
+        table.attach(button, 8,12,9,12)
+        
+        return table
+
+    def tick(m):
+        print("Tick tock")
+        m.tick_alerts()
+        m.tick_battery()
+        m.tick_status_text()
+        m.tick_time()
+
+        gobject.timeout_add(3000, lambda: m.tick())
+
+
+class EventLog(event_log.EventMbox):
+    def updated(m):
+        mw.update_events()
+        
+
+global mw
+global elog
+global notify
+
+notify = notify.NotifyInterface()
+elog = EventLog()
+mw = MainWindows()
+
+gtk.main()
