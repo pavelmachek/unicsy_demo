@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Unicsy Demo
+Comment=TestIcon=xfce4-power-manager-settings
+Exec=/usr/share/unicsy/startup/x_startup.py
+Terminal=true
+Type=Application
+NotShowIn=GNOME;KDE;Unity;
+StartupNotify=false
