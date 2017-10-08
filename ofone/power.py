@@ -12,13 +12,19 @@ import os
 import rotatable
 import hardware
 import gobject
+import watchdog
 import re
 import time
 import math
 
+# iw dev wlan0 set power_save on
+# iw dev wlan0 get power_save
+
 class Power(rotatable.SubWindow):
     def __init__(m):
         rotatable.SubWindow.__init__(m)
+        m.monitors = watchdog.AllMonitors()
+        m.battery = hardware.Battery()
         m.time_label = None
 
     def big_button(m, big, small):
@@ -39,7 +45,7 @@ class Power(rotatable.SubWindow):
             l.set(1)
 
     def fast_charge(m, button, name):
-        pass
+        m.battery.fast_charge()
 
     def monitor_interior(m, table):
         m.battery_monitor = w = gtk.Label("battery")
@@ -138,10 +144,56 @@ class Power(rotatable.SubWindow):
         return table
 
     def tick_alerts(m):
-        pass
+        m.monitors.update_alerts()
+        m.battery_monitor.set_text( "battery\n"+m.monitors.worst_from(m.monitors.alerts_on["battery"]).key )
+        m.phone_monitor.set_text( "phone\n"+m.monitors.worst_from(m.monitors.alerts_on["phone"]).key )
+        a = m.monitors.worst_alert()
+        s = a.short
+        s = re.sub(" ", "\n", s)
+        if a.priority >= 9:
+            m.worst_monitor.set_text("")
+        elif a.priority >= 5:
+            m.worst_monitor.set_text(s)
+        else:
+            m.worst_monitor.set_text(m.big(s))
+            m.worst_monitor.set_use_markup(True)
 
     def tick_battery(m):
-        pass
+        b = m.battery
+        try:
+            b.run()
+        except:
+            b.volt3 = 6.66
+            b.perc3 = -666
+            b.perc2 = -666
+            b.current = -100
+            b.status = "Not charging"
+
+        if b.perc2:
+            p = b.perc2
+            s = ' (hw, %d %%, %2.2fV)' % (b.perc3, b.volt3)
+        else:
+            p = b.perc3
+            s = ' est %2.2fV' % b.volt3            
+
+        s = ('Battery %d%%' % p) + s
+
+        m.battery_text.set_text(s)
+        m.battery_bar.set_fraction(p / 100.)
+
+        if b.current > 0:
+            m.current_text.set_text("Charging at %d mA, limits %d / %d mA" % (b.current, b.max_battery_current, b.charger_limit))
+            if mygtk.is3:
+                m.current_bar.set_inverted(False)
+            m.current_bar.set_fraction(b.current / 650.)
+        else:
+            s = "Discharging at %d mA" % -b.current
+            if b.status != "Not charging":
+                s += ", status " + b.status
+            m.current_text.set_text(s)
+            if mygtk.is3:
+                m.current_bar.set_inverted(True)
+            m.current_bar.set_fraction(-b.current / 650.)
 
     def tick_status_text(m):
         s = ''

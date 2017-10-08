@@ -4,37 +4,54 @@
 import sys
 sys.path += [ "../maemo" ]
 
+import subprocess
 import time
 import os
+import signal
 
-def mediaPlay(foo):
-    pass
+class MediaPlayer:
+    player = 0
+    audio = "/my/tui/ofone/audio/"
 
-def mediaPlayPause():
-    pass
+    def playback_finished(self):
+        if not self.player:
+            return 1
+        if self.player.poll() is None:
+            return 0
+        return 1
 
-class NotifyInterface:
+    def mediaPlay(self, file):
+        if not self.playback_finished():
+            self.player.send_signal(signal.SIGTERM)
+        self.player = subprocess.Popen([ 'mplayer', file ], stdin=subprocess.PIPE)
+
+    def mediaPlayPause(self):
+        if self.player:
+            self.player.send_signal(signal.SIGSTOP)
+
+class NotifyInterface(MediaPlayer):
     def sms(m, event):
         print("Incoming SMS")
-        mediaPlay("audio/message.mp3")
+        m.mediaPlay(m.audio+"message.mp3")
 
     def call_incoming(m, number):
         print("Incoming call")
-        #droid.mediaPlay("/my2/04 Stopa 4.wma")
-        mediaPlay("audio/ringtone.mp3")
+        #droid.m.mediaPlay("/my2/04 Stopa 4.wma")
+        m.mediaPlay(m.audio+"ringtone.mp3")
 
     def end_incoming(m, reason):
         print("Incoming call no longer")
-        mediaPlayPause()
+        m.mediaPlayPause()
 
     def call_starts(m):
-        os.system("sudo alsactl restore -f audio/alsa.playback.call")
+        os.system("sudo alsactl restore -f %s/alsa.playback.call" % m.audio)
 
     def call_ends(m):
-        os.system("sudo alsactl restore -f audio/alsa.playback.loud")
+        os.system("sudo alsactl restore -f %s/alsa.playback.loud" % m.audio)
 
-def selftest():
-    mediaPlay("/my2/04 Stopa 4.wma")
-    time.sleep(20)
-    mediaPlayPause()
+if __name__ == "__main__":
+    m = MediaPlayer()
+    m.mediaPlay(m.audio+"ringtone.mp3")
+    time.sleep(5)
+    m.mediaPlayPause()
 

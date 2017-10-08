@@ -21,6 +21,7 @@ import datetime
 import win_sms
 from ofono import *
 import notify
+import watchdog
 import rotatable
 import power
 import os
@@ -284,6 +285,8 @@ class MainWindows(ModemCtrl):
             m.network == ""
             s = "crashed baseband"
             print("Baseband crashed")
+
+        m.wd.write(s, m.format_cellid()+"\n")
             
     def __init__(m):
         ModemCtrl.__init__(m)
@@ -303,6 +306,7 @@ class MainWindows(ModemCtrl):
         m.message_windows = []
 
         m.startup()
+        m.wd = watchdog.Watchdog("phone")
         m.tick()
 
     def message(m, s):
