@@ -227,6 +227,7 @@ class MainWindows(ModemCtrl):
         s = m.lowlevel.big(summary) + "\n"
         s += "(%s)" % m.format_cellid()
         m.main.operator_button.set_label(s)
+        m.signal_strength = signal_strength
         ss = "%d %%" % signal_strength
         m.main.signal_button.set_label(m.lowlevel.big(ss))
         m.main.signal_bar.set_fraction(signal_strength / 100.)
@@ -286,7 +287,7 @@ class MainWindows(ModemCtrl):
             s = "crashed baseband"
             print("Baseband crashed")
 
-        m.wd.write(s, m.format_cellid()+"\n")
+        m.wd.write(s, m.format_cellid()+"\n"+m.network+"\n"+("%d"%m.signal_strength))
             
     def __init__(m):
         ModemCtrl.__init__(m)
