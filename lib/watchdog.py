@@ -109,6 +109,27 @@ class StartupWatchdog(Watchdog):
 
     def progress(m, percent, phase):
         m.write(str(percent), phase)
+
+class PhoneWatchdog(Watchdog):
+    def __init__(m):
+        Watchdog.__init__(m, "phone")
+        m.reset()
+
+    def reset(m):
+        m.status = "watchdog"
+        m.network = ""
+        m.signal = 0
+
+    def update(m):
+        r = m.read()
+        if not r:
+            m.reset()
+            return
+        s = map(lambda x: x[:-1], r)
+        print(s)
+        m.status = s[0]
+        m.network = s[2]
+        m.signal = int(s[3])
         
 class Alert:
     def __init__(m, priority, pattern, base, key, color = [0., 1., 1.]):
