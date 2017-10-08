@@ -100,8 +100,8 @@ xbindkeys -f /my/xbindkeysrc
         # FIXME: some daemons should run as root
         sy("mate-terminal " +
            build_script('1_tefone',  '/my/tui/ofone/tefone') +
-           build_script('2_battery', p+'monitors/batmond') +
-           build_script('3_monitor', p+'monitors/mond') +
+           build_script('2_battery', p+'monitor/batmond') +
+           build_script('3_monitor', p+'monitor/mond') +
            build_script('4_keys',    p+'hacks/keyd') +
            build_script('5_ofone',   p+'ofone/ofone') +
            build_script('6_cmtspeech', '/my/libcmtspeechdata/run') +
