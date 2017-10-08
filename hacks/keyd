@@ -1,0 +1,184 @@
+#!/usr/bin/python3
+# -*- python -*-
+# Needs "pip3 install evdev"
+
+from __future__ import print_function
+
+import sys
+sys.path += [ "/usr/share/unicsy/lib" ]
+
+import os
+from evdev import InputDevice, list_devices, ecodes
+import time
+import lock
+import watchdog
+import hardware
+import select
+
+# event6:
+#  Event type 1 (EV_KEY)
+#    Event code 152 (KEY_SCREENLOCK)
+#    Event code 212 (KEY_CAMERA)
+#    Event code 528 (?)                ... KEY_CAMERA_FOCUS
+#  Event type 5 (EV_SW)
+#    Event code 9 (SW_CAMERA_LENS_COVER)
+#    Event code 10 (SW_KEYPAD_SLIDE)
+#    Event code 11 (SW_FRONT_PROXIMITY)
+
+#sudo evtest /dev/input/event0
+#  Event type 1 (EV_KEY)
+#    Event code 116 (KEY_POWER)
+
+#sudo evtest /dev/input/event5
+# Event type 5 (EV_SW)
+#    Event code 2 (SW_HEADPHONE_INSERT)
+#    Event code 4 (SW_MICROPHONE_INSERT)
+#    Event code 8 (SW_VIDEOOUT_INSERT)
+
+#sudo evtest /dev/input/event1
+# F7/F8 vol+/-
+# echo proximity | festival --tts
+
+ecodes.KEY_CAMERA_FOCUS=528
+
+class InputHandler:
+    def __init__(m):
+        m.wd = watchdog.Watchdog("key")
+        m.lock_control = lock.LockControl()
+        m.devs = map(InputDevice, ('/dev/input/event6', '/dev/input/event5',
+                                   '/dev/input/event1', '/dev/input/event0'))
+        m.devs = {dev.fd: dev for dev in m.devs}
+        print(m.devs)
+
+        print(ecodes.KEY_A, ecodes.ecodes['KEY_A'])
+        print(ecodes.SW_KEYPAD_SLIDE, ecodes.EV_SW)
+
+        m.my_keys = [ ecodes.KEY_SCREENLOCK, ecodes.KEY_CAMERA_FOCUS, ecodes.KEY_CAMERA,
+                      ecodes.KEY_F7, ecodes.KEY_F8, ecodes.KEY_POWER ]
+        m.key_times = {}
+        for k in m.my_keys:
+            m.key_times[k] = 0
+
+    def probe_devices(m):
+        devices = [InputDevice(fn) for fn in list_devices()]
+        for dev in devices:
+            print(dev.fn, dev.name, dev.phys)
+            
+    def screen_off(m):
+        m.lock_control.screen_off()
+
+    def screen_on(m):
+        m.lock_control.screen_on()
+
+    def handle_keypad_slide(m, is_open):
+        if is_open == 0:
+            m.wd.write("closed", "") 
+            m.screen_off()
+            #os.system("echo mem > /sys/power/state")
+        else:
+            m.wd.write("open", "") 
+            m.screen_on()
+
+    def handle_front_proximity(m, something_is_near):
+        if something_is_near:
+            m.screen_off()
+
+    def handle_cover(m, is_open):
+        if is_open == 0:
+            print("camera open")
+            if hardware.hw.light_sensor.get_illuminance() < 50:
+                hardware.hw.camera.set_light(1)
+            else:
+                os.system("/my/tui/camera/lux.py &")
+        else:
+            print("camera closed")
+            hardware.hw.camera.set_light(0)
+
+    def handle_release(m, key, t):
+        print("Key released, ", key, t)
+        if key == ecodes.KEY_SCREENLOCK:
+            if t < 1.5:
+                print("Should de activate screensaver")
+                m.screen_on()
+                return
+            if t > 5.0:
+                print("Should shut the system down")
+                os.system("sudo /sbin/shutdown -h now")
+                return
+            os.system("echo More than 5 seconds for system shutdown. | festival --tts &")
+            return
+        if key == ecodes.KEY_F7 or key == ecodes.KEY_F8:
+            if t < 0.3:
+                v = -10
+                if key == ecodes.KEY_F7:
+                    v = 10
+                hardware.hw.audio.volume_change(v)
+
+    def in_call(m):
+        return False
+
+    def handle_headphones(m, inserted):
+        print("Headphones: ", inserted)
+        if inserted:
+            hardware.hw.audio.mixer_headphones()
+            os.system("mpg123 -Z /data/mp3.local/*/* /data/mp3.local/*/*/* &")
+        else:
+            if m.in_call():
+                hardware.hw.audio.mixer_call()
+            else:
+                hardware.hw.audio.mixer_ringing()                
+            os.system("killall mpg123")
+
+    def handle_key(m, event):
+        if event.value == 1:
+            m.key_times[event.code] = time.time()
+            if event.code == ecodes.KEY_CAMERA_FOCUS:
+                m.screen_off()
+                return
+            if event.code == ecodes.KEY_POWER:
+                print("mixer: ringing")
+                hardware.hw.audio.mixer_ringing()
+                return
+        if event.value == 0:
+            if event.code == ecodes.KEY_POWER:
+                print("mixer: call")
+                hardware.hw.audio.mixer_call()
+                return
+            m.handle_release(event.code, time.time()-m.key_times[event.code])
+
+    def handle_switch(m, event):
+        if event.code == ecodes.SW_KEYPAD_SLIDE:
+            m.handle_keypad_slide(event.value)
+        elif event.code == ecodes.SW_FRONT_PROXIMITY:
+            m.handle_front_proximity(event.value)
+        elif event.code == ecodes.SW_CAMERA_LENS_COVER:
+            m.handle_cover(event.value)
+        elif event.code == ecodes.SW_HEADPHONE_INSERT:
+            m.handle_headphones(event.value)
+        elif event.code == ecodes.SW_MICROPHONE_INSERT:
+            pass
+        else:
+            print("Unknown switch ", event.code)
+
+    def handle_event(m, event):
+        if event.type == ecodes.EV_SW:
+            m.handle_switch(event)
+
+        if event.type == ecodes.EV_KEY:
+            if not event.code in m.my_keys:
+                print("Key ", event.code, " not in listed keys")
+                return
+            m.handle_key(event)
+
+    def run(m):
+        # Thanks to https://python-evdev.readthedocs.io/en/latest/tutorial.html#reading-events-from-multiple-devices-using-select
+        while True:
+            r, w, x = select.select(m.devs, [], [])
+            for fd in r:
+                for event in m.devs[fd].read():
+                    m.handle_event(event)
+
+ih = InputHandler()
+ih.run()
+#print(ecodes.KEY[30])
+#print(ecodes.bytype[ecodes.EV_KEY][30])

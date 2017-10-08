@@ -1,0 +1,66 @@
+#!/usr/bin/python3
+# -*- python -*-
+
+from __future__ import print_function
+
+import sys
+sys.path += [ "/usr/share/unicsy/lib" ]
+
+import os
+import time
+import watchdog
+import notint
+import sys
+import hardware
+
+class LEDMonitors(watchdog.AllMonitors):
+    def __init__(m):
+        super().__init__()
+        m.led = notint.LedN900()
+        m.led.scale = 0.01
+        m.sleep_test = False
+
+	#led = notint.GtkColorDisplay()
+        m.notint = notint.StringTest(m.led)
+        m.la = hardware.LightAdjustment()
+
+    def run_pattern(m):
+        a = m.worst_alert()
+        for i in range(5):
+            print(a.pattern)
+            m.notint.prepare(a.pattern)
+            m.notint.run()
+            time.sleep(4)
+
+    def run_light(m):
+        a = m.worst_alert()
+        m.notint.d.change_color(a.color)
+        time.sleep(5)
+
+    def run(m):
+        m.update_alerts()
+
+        is_active = m.screen_wd.is_active()
+        is_open = m.key_wd.is_open()
+        m.la.run(m.sleep_test, is_active, is_open)
+        m.led.scale = m.la.now.led_scale
+        print("alerts:", m.alerts, "scale", m.led.scale, "active/open", is_active, is_open)
+        #m.run_light()
+        m.run_pattern()
+
+class SysMonitors(LEDMonitors):
+    def __init__(m):
+        super().__init__()
+        m.key_wd = watchdog.KeyWatchdog()
+        m.screen_wd = watchdog.ScreenWatchdog()
+
+    def run(m):
+        super().run()
+
+if __name__ == "__main__":
+    mons = SysMonitors()
+    if len(sys.argv) > 1:
+        if sys.argv[1] == '-s':
+            mons.sleep_test = True
+    while True:
+        mons.run()

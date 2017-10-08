@@ -96,14 +96,16 @@ xbindkeys -f /my/xbindkeysrc
 
         wd.progress(40, "daemons")
         os.chdir('/my/tui/ofone')
+        p = "/usr/share/unicsy/"
+        # FIXME: some daemons should run as root
         sy("mate-terminal " +
            build_script('1_tefone',  '/my/tui/ofone/tefone') +
-           build_script('2_battery', '/my/tui/ofone/batmond') +
-           build_script('3_monitor', '/my/tui/ofone/mond') +
-           build_script('4_keys',    '/my/tui/ofone/keyd') +
-           build_script('5_ofone',   '/my/tui/ofone/ofone') +
+           build_script('2_battery', p+'monitors/batmond') +
+           build_script('3_monitor', p+'monitors/mond') +
+           build_script('4_keys',    p+'hacks/keyd') +
+           build_script('5_ofone',   p+'ofone/ofone') +
            build_script('6_cmtspeech', '/my/libcmtspeechdata/run') +
-           build_script('7_lockd',   '/my/tui/ofone/lockd.py') +
+           build_script('7_lockd',   p+'hacks/lockd.py') +
            build_script('8_gps3',    '/my/tui/ofone/gps_run') +
            build_script('9_wifi',    '/my/tui/ofone/wifid.py') +
            build_command('term1', 'bash') +
