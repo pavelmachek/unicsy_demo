@@ -1,0 +1,36 @@
+#!/usr/bin/python3
+# -*- python -*-
+
+from __future__ import print_function
+
+import sys
+sys.path += [ "/usr/share/unicsy/lib" ]
+
+import os
+import time
+import hardware
+import watchdog
+
+#os.system("setterm -blank 1")
+
+wd = watchdog.Watchdog("battery")
+bat = hardware.Battery()
+while 1:
+    bat.run()
+    s = bat.summary()
+# Battery 3.14V 3.23V 3.33V 0% 0% 35% 632/1797 mAh Not charging -454/650/100 mA
+# Battery 3.16V 3.19V 3.34V 0% 0% 6% 111/1797 mAh Not charging -423/650/100 mA
+# Battery 2.94V 3.04V 3.13V 0% 0% 5% 97/1797 mAh Not charging -454/650/100 mA
+# Battery 2.88V 2.98V 3.09V 0% 0% 5% 96/1797 mAh Not charging -481/650/100 mA
+# Battery 2.88V 2.96V 3.08V 0% 0% 5% 93/1797 mAh Not charging -476/650/100 mA
+# Battery 2.82V 2.90V 3.04V 0% 0% 5% 91/1797 mAh Not charging -511/650/100 mA
+    if bat.volt < 3.20:
+        os.system("sudo /sbin/shutdown -h now")
+        s = "critical"
+    # When transitioning from charger to battery discharge, ampermeter
+    # lags behind, and produces < 3.55V for a while
+    if bat.volt3 < 3.40:
+        os.system("sudo /sbin/shutdown -h now")
+        s = "critical"
+    wd.write(s, "%d%%" % bat.perc)
+    time.sleep(30)
