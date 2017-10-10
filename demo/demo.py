@@ -210,8 +210,8 @@ class Power(rotatable.SubWindow):
         i = illum.get_ired_raw()
         m.illum_label.set_text("Light %d ired %d" %
                                (v, i) )
-        m.illum_ired.set_fraction(xlog(i)/20)
-        m.illum_visible.set_fraction(xlog(v)/20)
+        m.illum_ired.set_fraction(xlog(i)/13)
+        m.illum_visible.set_fraction(xlog(v)/12)
 
         accel = hardware.hw.accelerometer
         x, y, z = accel.position()
