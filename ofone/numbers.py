@@ -39,10 +39,13 @@ class ContactsDb:
         
     def load_org(m):
         m.contacts = []
+        fn = os.environ['HOME']+"/contacts.org"
+        if not os.path.exists(fn):
+            return
         if sys.version_info[0] == 2:
-            f = open(os.environ['HOME']+"/contacts.org")
+            f = open(fn)
         else:
-            f = open(os.environ['HOME']+"/contacts.org", encoding='UTF-8')
+            f = open(fn, encoding='UTF-8')
         last_name = ""
         for l in f.readlines():
             l = l[:-1]

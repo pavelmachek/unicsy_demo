@@ -29,8 +29,13 @@ xbindkeys -f /my/xbindkeysrc
 """)
 
         wd = m.wd
+        debian = 1
 
-        os.chdir('/my/tui/ofone') # FIXME
+        try:
+            os.chdir('/my/tui/ofone')
+        except:
+            debian = 0
+            print("Not on debian")
         sy('../vfone/win_lock startup &')
         wd.progress(1, "sound")
         sy('sudo ./ztime')
@@ -72,21 +77,21 @@ xbindkeys -f /my/xbindkeysrc
         time.sleep(2)
 
         wd.progress(20, "screensaver")
-        os.chdir('/my/ofono/test')
         sy('xscreensaver &')
 
-        wd.progress(30, "modem enable")
-        sy('./enable-modem')
-        time.sleep(1)
-        wd.progress(40, "modem online")
-        sy('./online-modem')
-        time.sleep(1)
-        #sy('./list-operators')
-        #time.sleep(5)
-        #sy('./list-operators')
-        #time.sleep(5)
-        #sy('./list-operators')
-        #time.sleep(5)
+        try:
+            os.chdir('/my/ofono/test')
+        except:
+            print("ofono unavailable")
+            debian = 0
+
+        if debian:
+            wd.progress(30, "modem enable")
+            sy('./enable-modem')
+            time.sleep(1)
+            wd.progress(40, "modem online")
+            sy('./online-modem')
+            time.sleep(1)
 
         def build_command(name, cmd):
             return  " --tab -t %s -e '%s'" % (name, cmd)
@@ -95,7 +100,6 @@ xbindkeys -f /my/xbindkeysrc
             return build_command(name, 'bash -c "%s; xmessage %s failed; sleep 1h"' % (cmd, cmd))
 
         wd.progress(40, "daemons")
-        os.chdir('/my/tui/ofone')
         p = "/usr/share/unicsy/"
         # FIXME: some daemons should run as root
         sy("mate-terminal " +
