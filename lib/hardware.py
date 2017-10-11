@@ -450,13 +450,26 @@ class Hardware:
         for o in m.all:
             o.startup()
 
+    def detect(m):
+        m.code_name = "unknown"
+        m.real_name = "Unknown Linux"
+        l = open('/proc/cpuinfo').readlines()
+        for l1 in l:
+            if l1[:8] == "Hardware":
+                s = l1.split(":")
+                s = s[1]
+                s = s[1:-1]
+                print("Have hardware", s)
+                if s == "Nokia RX-51 board":
+                    m.code_name = "nokia-rx51"
+                    m.real_name = "Nokia N900"
+
 hw = Hardware()
 
-if __name__ == "__main__":
-    b = Audio()
-    b.mixer_call()
-    b.run_microphone()
-
-if __name__ == "__main__":
+if __name__ == "__no_main__":
     b = Battery()
     b.run()
+
+if __name__ == "__main__":
+    hw.detect()
+    print(hw.code_name, hw.real_name)
