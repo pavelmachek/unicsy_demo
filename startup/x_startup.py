@@ -94,7 +94,7 @@ xbindkeys -f /my/xbindkeysrc
             time.sleep(1)
 
         def build_command(name, cmd):
-            return  " --tab -t %s -e '%s'" % (name, cmd)
+            return  " --tab -T %s -e '%s'" % (name, cmd)
 
         def build_script(name, cmd):
             return build_command(name, 'bash -c "%s; xmessage %s failed; sleep 1h"' % (cmd, cmd))
@@ -102,19 +102,23 @@ xbindkeys -f /my/xbindkeysrc
         wd.progress(40, "daemons")
         p = "/usr/share/unicsy/"
         # FIXME: some daemons should run as root
-        sy("mate-terminal " +
-           build_script('1_tefone',  '/my/tui/ofone/tefone') +
-           build_script('2_battery', p+'monitor/batmond') +
-           build_script('3_monitor', p+'monitor/mond') +
-           build_script('4_keys',    p+'hacks/keyd') +
-           build_script('5_ofone',   p+'ofone/ofone') +
-           build_script('6_cmtspeech', '/my/libcmtspeechdata/run') +
-           build_script('7_lockd',   p+'hacks/lockd.py') +
-           build_script('8_gps3',    '/my/tui/ofone/gps_run') +
-           build_script('9_wifi',    '/my/tui/ofone/wifid.py') +
-           build_command('term1', 'bash') +
-           build_command('term2', 'bash') +
-           build_command('term3', 'bash'))
+        cmd = "xfce4-terminal "
+
+        cmd += build_script('1_tefone',  '/my/tui/ofone/tefone')
+        cmd += build_script('2_battery', p+'monitor/batmond')
+        cmd += build_script('3_monitor', p+'monitor/mond')
+        cmd += build_script('4_keys',    p+'hacks/keyd')
+        cmd += build_script('5_ofone',   p+'ofone/ofone')
+        cmd += build_script('6_cmtspeech', '/my/libcmtspeechdata/run')
+        cmd += build_script('7_lockd',   p+'hacks/lockd.py')
+        cmd += build_script('8_gps3',    '/my/tui/ofone/gps_run')
+        cmd += build_script('9_wifi',    '/my/tui/ofone/wifid.py')
+
+        cmd += build_command('term1', 'bash')
+        cmd += build_command('term2', 'bash')
+        cmd += build_command('term3', 'bash')
+
+        sy(cmd)
 
         # Allow win_lock to live for a while.
         time.sleep(120)
