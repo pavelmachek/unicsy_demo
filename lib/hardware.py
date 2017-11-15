@@ -476,7 +476,7 @@ class Hardware:
                     m.real_name = "Nokia N900"
                 if s == "Generic OMAP36xx (Flattened Device Tree)":
                     if os.path.exists('/sys/devices/platform/68000000.ocp/48058000.ssi-controller/ssi0/port0/n950-modem'):
-                        m.code_name = "nokia-xxx"
+                        m.code_name = "nokia-rm680"
                         m.real_name = "Nokia N950"
 
 hw = Hardware()
