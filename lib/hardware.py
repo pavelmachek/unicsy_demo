@@ -501,6 +501,9 @@ class Hardware:
                     if os.path.exists('/sys/devices/platform/68000000.ocp/48058000.ssi-controller/ssi0/port0/n950-modem'):
                         m.code_name = "nokia-rm680"
                         m.real_name = "Nokia N950"
+                    if os.path.exists('/sys/devices/platform/68000000.ocp/48058000.ssi-controller/ssi0/port0/n9-modem'):
+                        m.code_name = "nokia-rm696"
+                        m.real_name = "Nokia N9"
 
 hw = Hardware()
 
