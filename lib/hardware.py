@@ -29,6 +29,9 @@ class Test:
     def startup(m):
         pass
 
+    def probe(m):
+        pass
+
 class Battery(Test):
     hotkey = "b"
     name = "Battery"
@@ -222,10 +225,16 @@ class LightSensor(Test):
     path = "/sys/bus/i2c/drivers/tsl2563/2-0029/iio:device1/"
 
     def get_illuminance(m):
-        return int(m.read(m.path + "in_illuminance0_input"))
+        try:
+            return int(m.read(m.path + "in_illuminance0_input"))
+        except:
+            return -1
 
     def get_ired_raw(m):
-        return int(m.read(m.path + "in_intensity_both_raw"))
+        try:
+            return int(m.read(m.path + "in_intensity_both_raw"))
+        except:
+            return -1
 
     def run(m):
         i = 0
@@ -445,6 +454,8 @@ class Hardware:
         m.accelerometer = Accelerometer()
         m.all = [ m.battery, m.backlight, m.light_sensor, m.vibrations, 
                   m.audio, m.camera, m.temperature, m.led, m.accelerometer ]
+        for o in m.all:
+            o.probe()
 
     def startup(m):
         for o in m.all:
@@ -463,6 +474,10 @@ class Hardware:
                 if s == "Nokia RX-51 board":
                     m.code_name = "nokia-rx51"
                     m.real_name = "Nokia N900"
+                if s == "Generic OMAP36xx (Flattened Device Tree)":
+                    if os.path.exists('/sys/devices/platform/68000000.ocp/48058000.ssi-controller/ssi0/port0/n950-modem'):
+                        m.code_name = "nokia-xxx"
+                        m.real_name = "Nokia N950"
 
 hw = Hardware()
 
