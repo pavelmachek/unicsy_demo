@@ -505,8 +505,7 @@ class Hardware:
 hw = Hardware()
 
 if __name__ == "__main__":
-    b = Battery()
-    b.probe()
+    b = hw.battery
     b.run()
 
 if __name__ == "__main__":
