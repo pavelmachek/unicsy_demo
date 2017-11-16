@@ -228,8 +228,13 @@ class AccelLED(LEDs):
 class Backlight(Test):
     hotkey = "c"
     name = "baCklight"
-    path = "/sys/class/backlight/acx565akm/brightness"
     scale = 0.1
+
+    def probe(m):
+        m.path = "/sys/class/backlight/"
+        p = os.listdir(m.path)
+        m.path += p[0]
+        m.path += "/brightness"
 
     def set(m, i):
         m.write(m.path, str(i))

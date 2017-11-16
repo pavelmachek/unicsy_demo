@@ -36,7 +36,7 @@ class Power(rotatable.SubWindow):
             l.kbd_backlight(0)
 
     def back_light(m, button, name):
-        l = hardware.Backlight()
+        l = hardware.hw.backlight
         if button.get_active():
             l.set(255)
         else:
