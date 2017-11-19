@@ -22,7 +22,7 @@ import math
 class Power(rotatable.SubWindow):
     def __init__(m):
         rotatable.SubWindow.__init__(m)
-        m.battery = hardware.Battery()
+        m.battery = hardware.hw.battery
         m.time_label = None
 
     def big_button(m, big, small):

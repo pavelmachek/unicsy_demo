@@ -21,18 +21,40 @@ class Test:
         return m.write(s, v)
 
     def read(m, s):
+        if not os.path.exists(s):
+            return None
         f = open(s, "r")
         r = f.read()
         f.close()
         return r
 
+    def read_int(m, s):
+        v = m.read(s)
+        if v is None:
+            return -1
+        return int(v)
+
     def startup(m):
         pass
+
+    def probe(m):
+        pass
+
+    def probe_paths(m, b, l):
+        for p in l:
+            if os.path.exists(b+p):
+                return b+p
 
 class Battery(Test):
     hotkey = "b"
     name = "Battery"
-    path = "/sys/class/power_supply"
+
+    def probe(m):
+        m.battery = m.probe_paths("/sys/class/power_supply/",
+                                  [ 'bq27200-0', 'bq27521-0' ])
+        m.charger = m.probe_paths("/sys/class/power_supply/",
+                                  [ 'bq24150a-0', 'bq24153-0' ])
+                                  
 
     def percent(m, v):
         u = 0.0387-(1.4523*(3.7835-v))
@@ -41,23 +63,18 @@ class Battery(Test):
         return (0.1966+math.sqrt(u))*100
 
     def run(m):
-        try:
-            # On new kernels
-            volt = int(m.read(m.path+"/rx51-battery/voltage_now"))
-        except:
-            # On 4.1
-            volt = int(m.read(m.path+"/n900-battery/voltage_now"))
+        volt = int(m.read(m.battery+"/voltage_now"))
         volt /= 1000000.
         perc = m.percent(volt)
         
-        status = m.read(m.path+"/bq24150a-0/status")[:-1]
-        current = int(m.read(m.path+"/bq24150a-0/charge_current"))
-        limit = int(m.read(m.path+"/bq24150a-0/current_limit"))
+        status = m.read(m.charger+"/status")[:-1]
+        current = int(m.read(m.charger+"/charge_current"))
+        limit = int(m.read(m.charger+"/current_limit"))
 
         try:
-            charge_now = int(m.read(m.path+"/bq27200-0/charge_now")) / 1000
-            charge_full = int(m.read(m.path+"/bq27200-0/charge_full")) / 1000
-            #perc2 = int(m.read(m.path+"/bq27200-0/capacity"))
+            charge_now = int(m.read(m.battery+"/charge_now")) / 1000
+            charge_full = int(m.read(m.battery+"/charge_full")) / 1000
+            #perc2 = int(m.read(m.battery+"/capacity"))
             # Buggy in v4.4
             perc2 = int((charge_now * 100.) / charge_full)
         except:
@@ -65,9 +82,9 @@ class Battery(Test):
             charge_now = 0
             charge_full = 0
             perc2 = 0
-        charge_design = int(m.read(m.path+"/bq27200-0/charge_full_design")) / 1000
-        volt2 = int(m.read(m.path+"/bq27200-0/voltage_now")) / 1000000.
-        current2 = int(m.read(m.path+"/bq27200-0/current_now")) / 1000.
+        charge_design = m.read_int(m.battery+"/charge_full_design") / 1000
+        volt2 = m.read_int(m.battery+"/voltage_now") / 1000000.
+        current2 = m.read_int(m.battery+"/current_now") / 1000.
 
         # http://www.buchmann.ca/Chap9-page3.asp
         # 0.49 ohm is between "poor" and "fail".
@@ -107,7 +124,7 @@ class Battery(Test):
         return "ok"
 
     def fast_charge(m, limit=1800):
-        sy("echo %d > /sys/class/power_supply/bq24150a-0/current_limit" % limit)
+        sy("echo %d > %s/current_limit" % (limit, m.charger))
         print("Fast charge on, %d mA" % limit)
 
     def startup(m):
@@ -126,13 +143,22 @@ class LEDs(Test):
     path = "/sys/class/leds/lp5523:"
     scale = 0.1
 
+    def __init__(m):
+        m.white_path = ''
+
+    def probe(m):
+        if os.path.exists(m.path+"status-led"):
+            m.white = "status-led"
+
     def set_bright(m, s, v):
         f = open(m.path + s + "/brightness", "w")
         f.write(str(int(v*m.scale)))
         f.close()
         
     def set(m, val):
-        (r, g, b) = val 
+        (r, g, b) = val
+        if m.white:
+            m.set_bright(m.white, (r+g+b)/3)
         m.set_bright("r", r)
         m.set_bright("g", g)
         m.set_bright("b", b)
@@ -222,10 +248,16 @@ class LightSensor(Test):
     path = "/sys/bus/i2c/drivers/tsl2563/2-0029/iio:device1/"
 
     def get_illuminance(m):
-        return int(m.read(m.path + "in_illuminance0_input"))
+        try:
+            return int(m.read(m.path + "in_illuminance0_input"))
+        except:
+            return -1
 
     def get_ired_raw(m):
-        return int(m.read(m.path + "in_intensity_both_raw"))
+        try:
+            return int(m.read(m.path + "in_intensity_both_raw"))
+        except:
+            return -1
 
     def run(m):
         i = 0
@@ -445,6 +477,8 @@ class Hardware:
         m.accelerometer = Accelerometer()
         m.all = [ m.battery, m.backlight, m.light_sensor, m.vibrations, 
                   m.audio, m.camera, m.temperature, m.led, m.accelerometer ]
+        for o in m.all:
+            o.probe()
 
     def startup(m):
         for o in m.all:
@@ -463,11 +497,18 @@ class Hardware:
                 if s == "Nokia RX-51 board":
                     m.code_name = "nokia-rx51"
                     m.real_name = "Nokia N900"
+                if s == "Generic OMAP36xx (Flattened Device Tree)":
+                    if os.path.exists('/sys/devices/platform/68000000.ocp/48058000.ssi-controller/ssi0/port0/n950-modem'):
+                        m.code_name = "nokia-rm680"
+                        m.real_name = "Nokia N950"
+                    if os.path.exists('/sys/devices/platform/68000000.ocp/48058000.ssi-controller/ssi0/port0/n9-modem'):
+                        m.code_name = "nokia-rm696"
+                        m.real_name = "Nokia N9"
 
 hw = Hardware()
 
-if __name__ == "__no_main__":
-    b = Battery()
+if __name__ == "__main__":
+    b = hw.battery
     b.run()
 
 if __name__ == "__main__":
