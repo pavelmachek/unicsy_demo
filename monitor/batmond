@@ -24,12 +24,15 @@ while 1:
 # Battery 2.88V 2.98V 3.09V 0% 0% 5% 96/1797 mAh Not charging -481/650/100 mA
 # Battery 2.88V 2.96V 3.08V 0% 0% 5% 93/1797 mAh Not charging -476/650/100 mA
 # Battery 2.82V 2.90V 3.04V 0% 0% 5% 91/1797 mAh Not charging -511/650/100 mA
-    if bat.volt < 3.20:
+
+    # Shutdown at 2.95V / 3.15V was too late -- system could not boot up next time.
+    # Shutdown at 3.20V / 3.40V seems to be too early -- system shuts down with > 60% battery.
+    if bat.volt < 3.16:
         os.system("sudo /sbin/shutdown -h now")
         s = "critical"
     # When transitioning from charger to battery discharge, ampermeter
     # lags behind, and produces < 3.55V for a while
-    if bat.volt3 < 3.40:
+    if bat.volt3 < 3.30:
         os.system("sudo /sbin/shutdown -h now")
         s = "critical"
     wd.write(s, "%d%%" % bat.perc)
