@@ -155,7 +155,7 @@ class Power(rotatable.SubWindow):
         elif a.priority >= 5:
             m.worst_monitor.set_text(s)
         else:
-            m.worst_monitor.set_text(m.big(s))
+            m.worst_monitor.set_text(s)
             m.worst_monitor.set_use_markup(True)
 
     def tick_battery(m):
