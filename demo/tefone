@@ -1,0 +1,163 @@
+#!/usr/bin/python3
+# -*- python -*-
+# Test N900 phone
+
+import sys
+sys.path += [ "/usr/share/unicsy/lib" ]
+
+import dbus
+import dbus.mainloop.glib
+import os
+import time
+from hardware import *
+
+class _Getch:
+    """Gets a single character from standard input.  Does not echo to the
+screen."""
+    def __init__(self):
+        self.impl = _GetchUnix()
+
+    def __call__(self): return self.impl()
+
+
+class _GetchUnix:
+    def __init__(self):
+        import tty, sys
+
+    def __call__(self):
+        import sys, tty, termios
+        fd = sys.stdin.fileno()
+        old_settings = termios.tcgetattr(fd)
+        try:
+            tty.setraw(sys.stdin.fileno())
+            ch = sys.stdin.read(1)
+        finally:
+            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+        return ch
+
+getch = _Getch()
+
+class Suspend(Test):
+    hotkey = "s"
+    name = "Suspend"
+
+    def run(m):
+        os.system("echo mem > /sys/power/state")
+
+class GPS(Test):
+    hotkey = "g"
+    name = "GPS"
+
+    def run(m):
+        os.system("echo ofono must be running and modem connected for this.")        
+        os.system("sudo ./gps3 -d")
+
+class Bluetooth(Test):
+    hotkey = "e"
+    name = "bluEtooth"
+
+    def run(m):
+        #os.system("sudo insmod /my/modules/nokia_h4p.ko")
+        os.system("sudo /my/bluez-5.26/tools/btmgmt public-addr 01:02:03:04:05:06")
+        os.system("sudo hciconfig hci0 up")
+        os.system("sudo hcitool inq")
+        os.system("sudo hciconfig hci0 down")
+
+class WIFI(Test):
+    hotkey = "w"
+    name = "WIFI"
+
+    def run(m):
+        sy("ping -c 5 10.0.0.6")
+
+class Autosleep(Test):
+    hotkey = "u"
+    name = "aUtosleep"
+
+    def handle_uart(m, path, on):
+        if not os.path.exists(path):
+            print("Skipping", path);
+            return
+        m.write_root(path+"device/power/autosuspend_delay_ms", "3000")
+        m.write_root(path+"power/wakeup", "enabled")
+        m.write_root(path+"power/control", "auto")
+
+    def sleep_on(m, on):
+        for i in [ 0, 1, 2, 3 ]:
+            m.handle_uart( "/sys/class/tty/ttyO%d/" % i, on )
+
+    def run(m):
+        sy("sudo mount /dev/zero -t debugfs /sys/kernel/debug/")
+        m.sleep_on(True)
+
+        sy("killall mond")
+        sy("./mond -s &")
+        time.sleep(1)
+        sy("killall mond")
+
+        twl_test = "/sys/devices/platform/68000000.ocp/48070000.i2c/i2c-1/1-0048/48070000.i2c:twl@48:twl4030-usb/test"
+        debug_brightness = "/sys/class/leds/debug::sleep/brightness"
+
+        enable_access(debug_brightness)
+        enable_access(twl_test)
+
+        sy("echo 0xdead > " + twl_test)
+
+        sy("echo 255 > " + debug_brightness)
+        sy("sudo iw dev wlan0 set power_save on")
+        m.verify()
+
+    def verify(m):
+        sy("sudo cat /sys/kernel/debug/pm_debug/count")
+
+class AutosleepVerify(Autosleep):
+    hotkey = "U"
+    name = "aUtosleep_verify"
+
+    def run(m):
+        m.verify()
+
+
+class UI:
+    def __init__(m):
+        m.tests = ( Vibrations(), LEDs(), Backlight(), Battery(), 
+                    ChargeBattery(), Audio(), Suspend(), GPS(), 
+                    Bluetooth(), LightSensor(), Camera(), Temperature(),
+                    WIFI(), Accelerometer(), Autosleep(), AutosleepVerify(),
+                    AccelLED())
+
+    def status(m):
+        print("Hello, world")
+    
+    def run(m):
+        print("Ready, press ? for help.")    
+        while True:
+            c = getch()
+            for t in m.tests:
+                if t.hotkey == c:
+                    print("Running", t.name)
+                    t.run()
+                    print("Done", t.name)
+                    c = None
+                    break
+            if c == None:
+                continue
+            if c == "\r":
+                m.status()                
+                continue
+            if c == "s":
+                m.status()
+                continue
+            if c == "q":
+                break
+            if c == "?":
+                print("Quit Status ?help")
+                for t in m.tests:
+                    print(t.name)
+                continue
+            print("Got unknown character "+c)
+
+ui = UI()
+ui.run()
+
+
