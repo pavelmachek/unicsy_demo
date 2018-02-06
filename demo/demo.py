@@ -134,6 +134,20 @@ class Power(rotatable.SubWindow):
         _, w = m.big_button('Fast', 'charge')
         w.connect("clicked", m.fast_charge, "")
         table.attach(w, 2,3, 0,3)
+
+
+        _, w = m.big_button('Audio', 'play')
+        w.connect("clicked", lambda _: os.system("aplay /usr/share/sounds/alsa/Front_Center.wav"))
+        table.attach(w, 0,1, 12,15)
+        
+        _, w = m.big_button('Vibra', 'tions')
+        w.connect("clicked", lambda _: hardware.hw.vibrations.on(.30))
+        table.attach(w, 1,2, 12,15)
+        
+        _, w = m.big_button('Tefone', 'tests')
+        w.connect("clicked", lambda _: os.system("mate-terminal -e /usr/share/unicsy/demo/tefone"))
+        table.attach(w, 2,3, 12,15)
+        
     
     def aux_interior(m):
         table = gtk.Table(15,4,True)

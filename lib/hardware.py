@@ -59,8 +59,8 @@ class Battery(Test):
     def percent(m, v):
         u = 0.0387-(1.4523*(3.7835-v))
         if u < 0:
-            return 0
-        return (0.1966+math.sqrt(u))*100
+            return max(  ((v - 3.3) / (3.756 - 3.300)) * 19.66, 0) 
+        return 19.66+100*math.sqrt(u)
 
     def run(m):
         volt = int(m.read(m.battery+"/voltage_now"))
