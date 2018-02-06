@@ -144,7 +144,7 @@ class LEDs(Test):
     scale = 0.1
 
     def __init__(m):
-        m.white_path = ''
+        m.white = ''
 
     def probe(m):
         if os.path.exists(m.path+"status-led"):
