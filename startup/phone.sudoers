@@ -1,1 +1,1 @@
-%wheel	ALL= NOPASSWD: /sbin/shutdown /usr/sbin/iw /sbin/ifconfig /sbin/route /sbin/reboot /usr/sbin/alsactl /usr/share/unicsy/ofone/ofone /usr/share/unicsy/startup/root_startup /usr/bin/amixer
+%wheel	ALL= NOPASSWD: /sbin/shutdown /sbin/poweroff /usr/sbin/iw /sbin/ifconfig /sbin/route /sbin/reboot /usr/sbin/alsactl /usr/share/unicsy/ofone/ofone /usr/share/unicsy/startup/root_startup /usr/bin/amixer
