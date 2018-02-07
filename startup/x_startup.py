@@ -114,12 +114,15 @@ xbindkeys -f /my/xbindkeysrc
         cmd += build_script('1_tefone',  '/my/tui/ofone/tefone')
         cmd += build_script('2_battery', p+'monitor/batmond')
         cmd += build_script('3_monitor', p+'monitor/mond')
-        cmd += build_script('4_keys',    p+'hacks/keyd')
+        if debian:
+            cmd += build_script('4_keys',    p+'hacks/keyd')
         cmd += build_script('5_ofone',   p+'ofone/ofone')
-        cmd += build_script('6_cmtspeech', '/my/libcmtspeechdata/run')
-        cmd += build_script('7_lockd',   p+'hacks/lockd.py')
-        cmd += build_script('8_gps3',    '/my/tui/ofone/gps_run')
-        cmd += build_script('9_wifi',    '/my/tui/ofone/wifid.py')
+        if debian:
+            cmd += build_script('6_cmtspeech', '/my/libcmtspeechdata/run')
+            cmd += build_script('7_lockd',   p+'hacks/lockd.py')
+            cmd += build_script('8_gps3',    '/my/tui/ofone/gps_run')
+            cmd += build_script('9_wifi',    '/my/tui/ofone/wifid.py')
+        cmd += build_script('0_panel', p+'desktop/panel.py')
 
 #        cmd += build_command('term1', 'bash')
 #        cmd += build_command('term2', 'bash')
