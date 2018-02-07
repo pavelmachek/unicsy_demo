@@ -48,7 +48,7 @@ xbindkeys -f /my/xbindkeysrc
         wd.progress(10, "hardware")
         p = "/usr/share/unicsy/"
 
-        sy("sudo "+p+"root_startup")
+        sy("sudo "+p+"startup/root_startup")
         
         # Enable autosleep
         # instructions are at

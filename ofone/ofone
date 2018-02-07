@@ -281,11 +281,13 @@ class MainWindows(ModemCtrl):
             s = "events"
             print("Have message windows")
 
-        ops = m.list_operators()
-        if len(ops) == 0:
-            m.network == ""
-            s = "crashed baseband"
-            print("Baseband crashed")
+        # Good idea on Debian, but list never works on pmOS.
+        if False:
+            ops = m.list_operators()
+            if len(ops) == 0:
+                m.network == ""
+                s = "crashed baseband"
+                print("Baseband crashed")
 
         m.wd.write(s, m.format_cellid()+"\n"+m.network+"\n"+("%d"%m.signal_strength)+"\n")
             
