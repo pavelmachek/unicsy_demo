@@ -1,0 +1,1 @@
+%wheel	ALL= NOPASSWD: /sbin/shutdown /usr/sbin/iw /sbin/ifconfig /sbin/route /sbin/reboot /usr/sbin/alsactl /usr/share/unicsy/ofone/ofone /usr/bin/amixer
