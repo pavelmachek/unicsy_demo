@@ -19,6 +19,8 @@ class Watchdog:
     def read(m):
         if not m.enabled:
             return None
+        if not os.path.isfile(m.mypath):
+            return None
         if time.time() - os.stat(m.mypath).st_mtime > m.timeout:
             return None
         # If mtime is newer than current time, there's probably something

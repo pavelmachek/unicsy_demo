@@ -141,14 +141,14 @@ class PhonePanel(rotatable.Panel):
 
     def tick_phone(m):
         m.wd.update()
-        if m.wd.status != "ok":
+        if False and m.wd.status != "ok":
             m.signal_text.set_text(m.wd.status)
             m.signal_bar.set_text("no signal")
             m.signal_bar.set_fraction(0)
             return
         
         m.signal_text.set_text(m.wd.network)
-        m.signal_bar.set_text("")
+        m.signal_bar.set_text(m.wd.status)
         m.signal_bar.set_fraction(m.wd.signal / 100.)
 
     def tick(m):

@@ -220,6 +220,7 @@ class ModemCtrl:
 
     def startup(m):
         m.online_modem()
+        time.sleep(15)
         reg = dbus.Interface(
                 m.bus.get_object('org.ofono', m.path), 'org.ofono.NetworkRegistration')
         m.netreg = reg
