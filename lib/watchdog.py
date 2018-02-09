@@ -6,7 +6,8 @@ class FakePos:
 
 class Watchdog:
     def __init__(m, key):
-        m.mydir = os.getenv("HOME") + "/herd/wd/"
+        #m.mydir = os.getenv("HOME") + "/herd/wd/"
+        m.mydir = "/usr/share/unicsy/wd/"
         m.enabled = os.path.isdir(m.mydir)
         m.key = key
         m.mypath = m.mydir+m.key
