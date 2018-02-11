@@ -351,14 +351,17 @@ class Audio(Test):
     hotkey = "a"
     name = "Audio"
 
+    def say(m, s):
+        sy("echo '%s' | bash -c 'time festival --tts'" % s)
+
     def run(m):
         print("Running festival")
         m.mixer_ringing()
-        sy("echo 'Come shall then well bload? Then well bload shell when blaight!' | bash -c 'time festival --tts'")
+        m.say('Come shall then well bload? Then well bload shell when blaight!')
         m.mixer_call()
-        sy("echo 'This is phone call test. Does it work?' | bash -c 'time festival --tts'")
+        m.say('This is phone call test. Does it work?')
         m.mixer_headphones()
-        sy("echo 'Headphones. I hope you have them connected.' | bash -c 'time festival --tts'")
+        m.say('Headphones. I hope you have them connected.')
         m.mixer_ringing()
 
         # amixer set PCM 100
