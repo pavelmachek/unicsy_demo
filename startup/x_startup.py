@@ -97,7 +97,7 @@ xbindkeys -f /my/xbindkeysrc
         if not debian:
             pmos_sudo = "sudo "
 
-        cmd += build_script('1_tefone',  '/my/tui/ofone/tefone')
+        cmd += build_script('1_tefone',  p+'demo/tefone')
         cmd += build_script('2_battery', p+'monitor/batmond')
         cmd += build_script('3_monitor', p+'monitor/mond')
         if debian:
