@@ -82,7 +82,7 @@ xbindkeys -f /my/xbindkeysrc
                 return  " --tab -T %s -e '%s'" % (name, cmd)
 
         def build_script(name, cmd):
-            return build_command(name, 'bash -c "%s; xmessage %s failed; sleep 1h"' % (cmd, cmd))
+            return build_command(name, 'sh -c "%s; xmessage %s failed; sleep 1h"' % (cmd, cmd))
 
         wd.progress(40, "daemons")
         

@@ -280,8 +280,8 @@ class LightSettings:
 
 class LightAdjustment:
     def __init__(m):
-        m.lightSensor = LightSensor()
-        m.backlight = Backlight()
+        m.lightSensor = hw.light_sensor
+        m.backlight = hw.backlight
         m.keyboard = LEDs()
         m.very_dark = LightSettings(6, 180, "very dark", 0.01)
         m.dark_in_dark_room = LightSettings(8, 180, "dark in dark room", 0.05)
@@ -352,7 +352,7 @@ class Audio(Test):
     name = "Audio"
 
     def say(m, s):
-        sy("echo '%s' | bash -c 'time festival --tts'" % s)
+        sy("echo '%s' | sh -c 'time festival --tts'" % s)
 
     def run(m):
         print("Running festival")
