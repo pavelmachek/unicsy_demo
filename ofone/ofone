@@ -368,6 +368,14 @@ class MainWindow(power.Power):
         button.connect("clicked", lambda _: mw.events.show())
         table.attach(button, 8,12,6,9)
 
+        w, button = m.font_button(m.big("$"))
+        button.connect("clicked", lambda _: os.system("mate-terminal &"))
+        table.attach(button, 0,4,9,12)
+
+        w, button = m.font_button(m.big("map"))
+        button.connect("clicked", lambda _: os.system("foxtrotgps &"))
+        table.attach(button, 4,8,9,12)
+
         w, button = m.font_button(m.big("apps"))
         button.connect("clicked", lambda _: os.system("./win_apps.py &"))
         table.attach(button, 8,12,9,12)
