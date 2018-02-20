@@ -26,6 +26,7 @@ import rotatable
 import power
 import os
 import pango
+import software
 
 import win_message
 import win_call
@@ -373,7 +374,8 @@ class MainWindow(power.Power):
         table.attach(button, 0,4,9,12)
 
         w, button = m.font_button(m.big("map"))
-        button.connect("clicked", lambda _: os.system("foxtrotgps &"))
+        #button.connect("clicked", lambda _: software.sw.run_map())
+        button.connect("clicked", lambda _: os.system("/usr/share/unicsy/lib/software.py"))
         table.attach(button, 4,8,9,12)
 
         w, button = m.font_button(m.big("apps"))

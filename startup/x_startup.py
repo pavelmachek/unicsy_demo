@@ -9,6 +9,7 @@ import time
 import os
 import hardware
 import watchdog
+import software
 
 def sy(s):
     os.system(s)
@@ -75,14 +76,8 @@ xbindkeys -f /my/xbindkeysrc
             sy('./online-modem')
             time.sleep(1)
 
-        def build_command(name, cmd):
-            if m.mate:
-                return  " --tab -t %s -e '%s'" % (name, cmd)
-            else:
-                return  " --tab -T %s -e '%s'" % (name, cmd)
-
         def build_script(name, cmd):
-            return build_command(name, 'sh -c "%s; xmessage %s failed; sleep 1h"' % (cmd, cmd))
+            return " --tab " + software.sw.build_script(name, cmd)
 
         wd.progress(40, "daemons")
         

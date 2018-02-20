@@ -199,7 +199,7 @@ class Power(rotatable.SubWindow):
         s = ''
         #s += ''.join(os.popen("/my/ofono/test/list-operators | grep Name").readlines())
         s += ''.join(os.popen("uname -r").readlines())
-        s += ''.join(os.popen("/sbin/ifconfig | grep -1 wlan0 | sed 's/Link.*//' | sed 's/Bcast.*//'").readlines())
+        #s += ''.join(os.popen("/sbin/ifconfig | grep -1 wlan0 | sed 's/Link.*//' | sed 's/Bcast.*//'").readlines())
         s += ''.join(os.popen("calendar -f ~/bin/calendar").readlines())
 
         m.status_text.set_text(s)
