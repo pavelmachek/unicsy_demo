@@ -125,6 +125,8 @@ class UI:
                     Bluetooth(), LightSensor(), Camera(), Temperature(),
                     WIFI(), Accelerometer(), Autosleep(), AutosleepVerify(),
                     AccelLED())
+        for t in m.tests:
+            t.probe()
 
     def status(m):
         print("Hello, world")

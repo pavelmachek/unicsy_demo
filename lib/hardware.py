@@ -54,7 +54,6 @@ class Battery(Test):
                                   [ 'bq27200-0', 'bq27521-0' ])
         m.charger = m.probe_paths("/sys/class/power_supply/",
                                   [ 'bq24150a-0', 'bq24153-0' ])
-                                  
 
     def percent(m, v):
         u = 0.0387-(1.4523*(3.7835-v))

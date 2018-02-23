@@ -27,9 +27,6 @@ class Power(rotatable.SubWindow):
         m.battery = hardware.hw.battery
         m.time_label = None
 
-    def big_button(m, big, small):
-        return m.font_button(m.big(big) + '\n' + m.small(small))
-
     def keyboard_light(m, button, name):
         l = hardware.LEDs()
         if button.get_active():
@@ -150,6 +147,19 @@ class Power(rotatable.SubWindow):
         _, w = m.big_button('Fast', 'charge')
         w.connect("clicked", m.fast_charge, "")
         table.attach(w, 2,3, 0,3)
+
+
+        _, w = m.big_button('Audio', 'play')
+        w.connect("clicked", lambda _: os.system("aplay /usr/share/sounds/alsa/Front_Center.wav"))
+        table.attach(w, 0,1, 12,15)
+        
+        _, w = m.big_button('Vibra', 'tions')
+        w.connect("clicked", lambda _: hardware.hw.vibrations.on(.30))
+        table.attach(w, 1,2, 12,15)
+        
+        _, w = m.big_button('Tefone', 'tests')
+        w.connect("clicked", lambda _: os.system("mate-terminal -e /usr/share/unicsy/demo/tefone"))
+        table.attach(w, 2,3, 12,15)
     
     def aux_interior(m):
         table = gtk.Table(15,4,True)
@@ -211,10 +221,16 @@ class Power(rotatable.SubWindow):
 
     def tick_status_text(m):
         s = ''
+        s += '' + ''.join(os.popen("date").readlines())
+        s += 'kernel ' + ''.join(os.popen("uname -r").readlines())
         #s += ''.join(os.popen("/my/ofono/test/list-operators | grep Name").readlines())
         s += ''.join(os.popen("uname -r").readlines())
         #s += ''.join(os.popen("/sbin/ifconfig | grep -1 wlan0 | sed 's/Link.*//' | sed 's/Bcast.*//'").readlines())
-        s += ''.join(os.popen("calendar -f ~/bin/calendar").readlines())
+        #s += ''.join(os.popen("calendar -f ~/bin/calendar").readlines())
+        #s += ''.join(os.popen("/sbin/ifconfig | grep -1 usb0 | sed 's/Link.*//' | sed 's/Bcast.*//'").readlines())
+        #s += ''.join(os.popen("/sbin/ifconfig | grep -1 wlan0 | sed 's/Link.*//' | sed 's/Bcast.*//'").readlines())
+        #s += 'debian ' + ''.join(os.popen("cat /etc/debian_version").readlines())
+        s += 'alpine ' + ''.join(os.popen("cat /etc/alpine-release").readlines())
 
         m.status_text.set_text(s)
 
