@@ -1,9 +1,9 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python2
 # -*- python -*-
 # Not to be ran as root.
 
 import sys
-sys.path += [ "../maemo" ]
+sys.path += [ "/usr/share/unicsy/lib" ]
 import mygtk
 mygtk.setup()
 
@@ -74,6 +74,20 @@ class Power(rotatable.SubWindow):
         table.attach(w, 2,4, 7,8)
         m.illum_visible = w = gtk.ProgressBar()
         table.attach(w, 0,4, 8,9)
+
+        w = gtk.Label("Charger")
+        table.attach(w, 0,1, 9,10)
+        w = gtk.Label("Battery")
+        table.attach(w, 0,1, 10,11)
+        w = gtk.Label("CPU")
+        table.attach(w, 0,1, 11,12)
+
+        m.charger_temp_bar = w = gtk.ProgressBar()
+        table.attach(w, 1,4, 9,10)
+        m.battery_temp_bar = w = gtk.ProgressBar()
+        table.attach(w, 1,4, 10,11)
+        m.cpu_temp_bar = w = gtk.ProgressBar()
+        table.attach(w, 1,4, 11,12)
 
     def main_interior(m):
         table = gtk.Table(15,4,True)
@@ -214,6 +228,10 @@ class Power(rotatable.SubWindow):
             m.time_label.set_text(t)
             m.time_label.set_use_markup(True)
 
+    def update_temperature(m, bar, temp):
+        bar.set_text("%.1f C" % temp)
+        bar.set_fraction(temp / 30.)
+
     def tick_sensors(m):
         def xlog(v):
             if v < 0.1:
@@ -235,6 +253,11 @@ class Power(rotatable.SubWindow):
         m.accel_1.set_fraction(abs(x)/1.3)
         m.accel_2.set_fraction(abs(y)/1.3)
         m.accel_3.set_fraction(abs(z)/1.3)
+
+        temp = hardware.hw.temperature
+        m.update_temperature(m.charger_temp_bar, temp.read_charger_temp())
+        m.update_temperature(m.battery_temp_bar, temp.read_battery_temp())
+        m.update_temperature(m.cpu_temp_bar, temp.read_cpu_temp0())
 
     def tick_rgb(m):
         if m.led_checkbox.get_active():
