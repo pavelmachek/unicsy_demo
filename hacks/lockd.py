@@ -73,12 +73,29 @@ class TtyLocker(Locker):
 
     def run(m):
         if os.fork():
-            l.run_loop()
+            m.run_loop()
         else:
-            l.run_unlock()
+            m.run_unlock()
 
+class XLocker(Locker):
+    def __init__(m):
+        Locker.__init__(m)
+
+    def screen_off(m):
+        Locker.screen_off(m)
+        os.system('xinput set-prop "TSC2005 touchscreen" "Device Enabled" 0')
+
+    def screen_on(m, complete = True):
+        Locker.screen_on(m)
+        os.system('xinput set-prop "TSC2005 touchscreen" "Device Enabled" 1')
+        if complete:
+            os.system("xscreensaver-command -deactivate")
+
+    def run(m):
+        m.run_loop()
 
 if __name__ == "__main__":
-    l = TtyLocker()
+    #l = TtyLocker()
+    l = XLocker()
     l.run()
     #l.screen_off()
