@@ -377,7 +377,7 @@ class Audio(Test):
         sy("sudo amixer set PCM " + s)
 
     def set_mixer(m, name):
-        sy("sudo alsactl restore -f audio/alsa.playback." + name)
+        sy("sudo alsactl restore -f /usr/share/unicsy/audio/nokia-n900/alsa.playback." + name)
 
     def mixer_call(m):
         m.set_mixer("call")
