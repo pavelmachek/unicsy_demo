@@ -54,7 +54,6 @@ class Battery(Test):
                                   [ 'bq27200-0', 'bq27521-0' ])
         m.charger = m.probe_paths("/sys/class/power_supply/",
                                   [ 'bq24150a-0', 'bq24153-0' ])
-                                  
 
     def percent(m, v):
         u = 0.0387-(1.4523*(3.7835-v))
@@ -280,8 +279,8 @@ class LightSettings:
 
 class LightAdjustment:
     def __init__(m):
-        m.lightSensor = LightSensor()
-        m.backlight = Backlight()
+        m.lightSensor = hw.light_sensor
+        m.backlight = hw.backlight
         m.keyboard = LEDs()
         m.very_dark = LightSettings(6, 180, "very dark", 0.01)
         m.dark_in_dark_room = LightSettings(8, 180, "dark in dark room", 0.05)
@@ -351,14 +350,17 @@ class Audio(Test):
     hotkey = "a"
     name = "Audio"
 
+    def say(m, s):
+        sy("echo '%s' | sh -c 'time festival --tts'" % s)
+
     def run(m):
         print("Running festival")
         m.mixer_ringing()
-        sy("echo 'Come shall then well bload? Then well bload shell when blaight!' | bash -c 'time festival --tts'")
+        m.say('Come shall then well bload? Then well bload shell when blaight!')
         m.mixer_call()
-        sy("echo 'This is phone call test. Does it work?' | bash -c 'time festival --tts'")
+        m.say('This is phone call test. Does it work?')
         m.mixer_headphones()
-        sy("echo 'Headphones. I hope you have them connected.' | bash -c 'time festival --tts'")
+        m.say('Headphones. I hope you have them connected.')
         m.mixer_ringing()
 
         # amixer set PCM 100
@@ -375,7 +377,7 @@ class Audio(Test):
         sy("sudo amixer set PCM " + s)
 
     def set_mixer(m, name):
-        sy("sudo alsactl restore -f audio/alsa.playback." + name)
+        sy("sudo alsactl restore -f /usr/share/unicsy/audio/nokia-n900/alsa.playback." + name)
 
     def mixer_call(m):
         m.set_mixer("call")

@@ -42,6 +42,9 @@ class TouchWidgets:
         e.modify_font(pango.FontDescription("sans "+str(size)))
         return e
 
+    def big_button(m, big, small):
+        return m.font_button(m.big(big) + '\n' + m.small(small))
+
 class TouchWindow(TouchWidgets):
     def __init__(m):
         m.main_window = 0

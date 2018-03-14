@@ -9,6 +9,7 @@ import time
 import os
 import hardware
 import watchdog
+import software
 
 def sy(s):
     os.system(s)
@@ -75,14 +76,8 @@ xbindkeys -f /my/xbindkeysrc
             sy('./online-modem')
             time.sleep(1)
 
-        def build_command(name, cmd):
-            if m.mate:
-                return  " --tab -t %s -e '%s'" % (name, cmd)
-            else:
-                return  " --tab -T %s -e '%s'" % (name, cmd)
-
         def build_script(name, cmd):
-            return build_command(name, 'bash -c "%s; xmessage %s failed; sleep 1h"' % (cmd, cmd))
+            return " --tab " + software.sw.build_script(name, cmd)
 
         wd.progress(40, "daemons")
         
@@ -97,7 +92,7 @@ xbindkeys -f /my/xbindkeysrc
         if not debian:
             pmos_sudo = "sudo "
 
-        cmd += build_script('1_tefone',  '/my/tui/ofone/tefone')
+        cmd += build_script('1_tefone',  p+'demo/tefone')
         cmd += build_script('2_battery', p+'monitor/batmond')
         cmd += build_script('3_monitor', p+'monitor/mond')
         if debian:

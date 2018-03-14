@@ -1,9 +1,9 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python2
 # -*- python -*-
 # Not to be ran as root.
 
 import sys
-sys.path += [ "../maemo" ]
+sys.path += [ "/usr/share/unicsy/lib" ]
 import mygtk
 mygtk.setup()
 
@@ -26,9 +26,6 @@ class Power(rotatable.SubWindow):
         m.monitors = watchdog.AllMonitors()
         m.battery = hardware.hw.battery
         m.time_label = None
-
-    def big_button(m, big, small):
-        return m.font_button(m.big(big) + '\n' + m.small(small))
 
     def keyboard_light(m, button, name):
         l = hardware.LEDs()
@@ -74,6 +71,20 @@ class Power(rotatable.SubWindow):
         table.attach(w, 2,4, 7,8)
         m.illum_visible = w = gtk.ProgressBar()
         table.attach(w, 0,4, 8,9)
+
+        w = gtk.Label("Charger")
+        table.attach(w, 0,1, 9,10)
+        w = gtk.Label("Battery")
+        table.attach(w, 0,1, 10,11)
+        w = gtk.Label("CPU")
+        table.attach(w, 0,1, 11,12)
+
+        m.charger_temp_bar = w = gtk.ProgressBar()
+        table.attach(w, 1,4, 9,10)
+        m.battery_temp_bar = w = gtk.ProgressBar()
+        table.attach(w, 1,4, 10,11)
+        m.cpu_temp_bar = w = gtk.ProgressBar()
+        table.attach(w, 1,4, 11,12)
 
     def main_interior(m):
         table = gtk.Table(15,4,True)
@@ -136,6 +147,19 @@ class Power(rotatable.SubWindow):
         _, w = m.big_button('Fast', 'charge')
         w.connect("clicked", m.fast_charge, "")
         table.attach(w, 2,3, 0,3)
+
+
+        _, w = m.big_button('Audio', 'play')
+        w.connect("clicked", lambda _: os.system("aplay /usr/share/sounds/alsa/Front_Center.wav"))
+        table.attach(w, 0,1, 12,15)
+        
+        _, w = m.big_button('Vibra', 'tions')
+        w.connect("clicked", lambda _: hardware.hw.vibrations.on(.30))
+        table.attach(w, 1,2, 12,15)
+        
+        _, w = m.big_button('Tefone', 'tests')
+        w.connect("clicked", lambda _: os.system("mate-terminal -e /usr/share/unicsy/demo/tefone"))
+        table.attach(w, 2,3, 12,15)
     
     def aux_interior(m):
         table = gtk.Table(15,4,True)
@@ -197,10 +221,16 @@ class Power(rotatable.SubWindow):
 
     def tick_status_text(m):
         s = ''
+        s += '' + ''.join(os.popen("date").readlines())
+        s += 'kernel ' + ''.join(os.popen("uname -r").readlines())
         #s += ''.join(os.popen("/my/ofono/test/list-operators | grep Name").readlines())
         s += ''.join(os.popen("uname -r").readlines())
-        s += ''.join(os.popen("/sbin/ifconfig | grep -1 wlan0 | sed 's/Link.*//' | sed 's/Bcast.*//'").readlines())
-        s += ''.join(os.popen("calendar -f ~/bin/calendar").readlines())
+        #s += ''.join(os.popen("/sbin/ifconfig | grep -1 wlan0 | sed 's/Link.*//' | sed 's/Bcast.*//'").readlines())
+        #s += ''.join(os.popen("calendar -f ~/bin/calendar").readlines())
+        #s += ''.join(os.popen("/sbin/ifconfig | grep -1 usb0 | sed 's/Link.*//' | sed 's/Bcast.*//'").readlines())
+        #s += ''.join(os.popen("/sbin/ifconfig | grep -1 wlan0 | sed 's/Link.*//' | sed 's/Bcast.*//'").readlines())
+        #s += 'debian ' + ''.join(os.popen("cat /etc/debian_version").readlines())
+        s += 'alpine ' + ''.join(os.popen("cat /etc/alpine-release").readlines())
 
         m.status_text.set_text(s)
 
@@ -213,6 +243,13 @@ class Power(rotatable.SubWindow):
             t += "%d.%d.%d" % (dt.tm_mday, dt.tm_mon, dt.tm_year)
             m.time_label.set_text(t)
             m.time_label.set_use_markup(True)
+
+    def update_temperature(m, bar, temp):
+        bar.set_text("%.1f C" % temp)
+        f = temp / 30.
+        if f < 0: f = 0
+        if f > 1: f = 1
+        bar.set_fraction(f)
 
     def tick_sensors(m):
         def xlog(v):
@@ -235,6 +272,11 @@ class Power(rotatable.SubWindow):
         m.accel_1.set_fraction(abs(x)/1.3)
         m.accel_2.set_fraction(abs(y)/1.3)
         m.accel_3.set_fraction(abs(z)/1.3)
+
+        temp = hardware.hw.temperature
+        m.update_temperature(m.charger_temp_bar, temp.read_charger_temp())
+        m.update_temperature(m.battery_temp_bar, temp.read_battery_temp())
+        m.update_temperature(m.cpu_temp_bar, temp.read_cpu_temp0())
 
     def tick_rgb(m):
         if m.led_checkbox.get_active():

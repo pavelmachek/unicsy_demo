@@ -26,6 +26,7 @@ import rotatable
 import power
 import os
 import pango
+import software
 
 import win_message
 import win_call
@@ -374,6 +375,15 @@ class MainWindow(power.Power):
         w, button = m.font_button(m.big("sms"))
         button.connect("clicked", lambda _: mw.events.show())
         table.attach(button, 8,12,6,9)
+
+        w, button = m.font_button(m.big("$"))
+        button.connect("clicked", lambda _: os.system("mate-terminal &"))
+        table.attach(button, 0,4,9,12)
+
+        w, button = m.font_button(m.big("map"))
+        #button.connect("clicked", lambda _: software.sw.run_map())
+        button.connect("clicked", lambda _: os.system("/usr/share/unicsy/lib/software.py"))
+        table.attach(button, 4,8,9,12)
 
         w, button = m.font_button(m.big("apps"))
         button.connect("clicked", lambda _: os.system("./win_apps.py &"))
