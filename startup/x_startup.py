@@ -102,7 +102,7 @@ xbindkeys -f /my/xbindkeysrc
         cmd += build_script('3_monitor', p+'monitor/mond')
         if debian:
             cmd += build_script('4_keys',    p+'hacks/keyd')
-        cmd += build_script('5_ofone',   pmos_sudo+p+'ofone/ofone')
+        cmd += build_script('5_ofone',   pmos_sudo+p+'ofone/ofone --primary')
         if debian:
             cmd += build_script('6_cmtspeech', '/my/libcmtspeechdata/run')
             cmd += build_script('7_lockd',   p+'hacks/lockd.py')
