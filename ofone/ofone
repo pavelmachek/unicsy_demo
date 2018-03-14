@@ -166,10 +166,9 @@ class ActionsWindow(rotatable.SubWindow):
         return table
 
 class CallWindow(win_call.CallWindow):
-    def call_started(m, name, number):
-        win_call.CallWindow.call_started(m, name, number)
-        if mw.next_is_outgoing + 2 > time.time():
-            mw.next_is_outgoing = 0
+    def call_started(m, name, number, state):
+        win_call.CallWindow.call_started(m, name, number, state)
+        if state != "incoming":
             m.call_detail.set_label("outgoing call")
             notify.call_starts()
         else:
@@ -262,14 +261,17 @@ class MainWindows(ModemCtrl):
         print("Tick tock")
         m.update_watchdog()
 
-    def call_started(m, name, number):
-        m.call_window.call_started(name, number)
+    def call_started(m, name, number, state):
+        if m.primary:
+            m.call_window.call_started(name, number, state)
 
     def call_ended(m, name):
-        m.call_window.call_ended(name)
+        if m.primary:
+            m.call_window.call_ended(name)
 
     def call_changed(m, name, property, value):
-        m.call_window.call_changed(name, property, value)
+        if m.primary:
+            m.call_window.call_changed(name, property, value)
 
     def update_watchdog(m):
         s = "ok"
@@ -289,7 +291,8 @@ class MainWindows(ModemCtrl):
                 s = "crashed baseband"
                 print("Baseband crashed")
 
-        m.wd.write(s, m.format_cellid()+"\n"+m.network+"\n"+("%d"%m.signal_strength)+"\n")
+        if m.primary:
+            m.wd.write(s, m.format_cellid()+"\n"+m.network+"\n"+("%d"%m.signal_strength)+"\n")
             
     def __init__(m):
         ModemCtrl.__init__(m)
@@ -309,8 +312,12 @@ class MainWindows(ModemCtrl):
         m.message_windows = []
 
         m.startup()
-        m.wd = watchdog.Watchdog("phone")
+        m.primary = False
         m.tick()
+
+    def make_primary(m):
+        m.primary = True
+        m.wd = watchdog.Watchdog("phone")
 
     def message(m, s):
         msg2 = MessageWindow(s)
@@ -396,5 +403,8 @@ global notify
 notify = notify.NotifyInterface()
 elog = EventLog()
 mw = MainWindows()
-
+if len(sys.argv) > 1:
+    if sys.argv[1] == '--primary':
+        mw.make_primary()
+        
 gtk.main()

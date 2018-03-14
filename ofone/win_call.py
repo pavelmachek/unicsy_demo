@@ -11,7 +11,7 @@ import gtk
 import rotatable
 
 class CallWindow(rotatable.SubWindow):
-    def call_started(m, name, number):
+    def call_started(m, name, number, state):
         m.call_name = name
         m.call_number = number
         m.basic_window()        

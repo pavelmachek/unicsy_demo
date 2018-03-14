@@ -87,7 +87,7 @@ def added(name, value, member, path, interface):
         iface = interface[interface.rfind(".") + 1:]
         mw.log("added {%s} [%s] %s %s" % (iface, member, name, pretty(value)))
         if iface == "VoiceCallManager" and member == "CallAdded":
-            mw.call_started(name, value['LineIdentification'])
+            mw.call_started(name, value['LineIdentification'], value['State'])
 
 def removed(name, member, path, interface):
         iface = interface[interface.rfind(".") + 1:]
@@ -197,7 +197,6 @@ class ModemCtrl:
         start_ofono()
 
         m.registration = {}
-        m.next_is_outgoing = 0
         m.bus = dbus.SystemBus()
         m.manager = dbus.Interface(m.bus.get_object('org.ofono', '/'),
                         'org.ofono.Manager')
@@ -251,7 +250,6 @@ class ModemCtrl:
         m.modem.SetProperty("Online", dbus.Boolean(0), timeout = 120)
 
     def dial_number(m, number, hide_callerid = ""):
-        m.next_is_outgoing = time.time()
         return m.vcm.Dial(number, hide_callerid)
 
     def hangup_all(m):
