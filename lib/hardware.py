@@ -136,7 +136,33 @@ class ChargeBattery(Battery):
     def run(m):
         m.fast_charge()
 
-class LEDs(Test):
+class LED(Test):
+    def set_bright(m, s, v):
+        f = open(m.path + s + "/brightness", "w")
+        f.write(str(int(v*m.scale)))
+        f.close()
+
+class Torch(LED):
+    hotkey = "o"
+    name = "Torch"
+    path = "/sys/class/leds/led-controller:"
+    scale = 1.0
+
+    def set(m, val):
+        m.set_bright("flash", val)
+
+    def set_indicator(m, val):
+        m.set_bright("indicator", val)
+
+    def run(m):
+        vals = (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50)
+        for v in vals:
+            m.set(v)
+            m.set_indicator(0)
+            time.sleep(.3)
+            m.set_indicator(255)
+
+class LEDs(LED):
     hotkey = "l"
     name = "LEDs"
     path = "/sys/class/leds/lp5523:"
@@ -149,11 +175,6 @@ class LEDs(Test):
         if os.path.exists(m.path+"status-led"):
             m.white = "status-led"
 
-    def set_bright(m, s, v):
-        f = open(m.path + s + "/brightness", "w")
-        f.write(str(int(v*m.scale)))
-        f.close()
-        
     def set(m, val):
         (r, g, b) = val
         if m.white:
