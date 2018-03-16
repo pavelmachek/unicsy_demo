@@ -23,7 +23,7 @@ class MediaPlayer:
     def mediaPlay(self, file):
         if not self.playback_finished():
             self.player.send_signal(signal.SIGTERM)
-        self.player = subprocess.Popen([ 'mplayer', file ], stdin=subprocess.PIPE)
+        self.player = subprocess.Popen([ 'mpg123', file ], stdin=subprocess.PIPE)
 
     def mediaPlayPause(self):
         if self.player:
