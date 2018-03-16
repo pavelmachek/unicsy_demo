@@ -155,12 +155,14 @@ class Torch(LED):
         m.set_bright("indicator", val)
 
     def run(m):
-        vals = (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50)
+        vals = (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 0)
         for v in vals:
             m.set(v)
+            m.set_indicator(255)
+            time.sleep(.3)
             m.set_indicator(0)
             time.sleep(.3)
-            m.set_indicator(255)
+
 
 class LEDs(LED):
     hotkey = "l"
@@ -503,8 +505,10 @@ class Hardware:
         m.temperature = Temperature()
         m.led = AccelLED()
         m.accelerometer = Accelerometer()
+        m.torch = Torch()
         m.all = [ m.battery, m.backlight, m.light_sensor, m.vibrations, 
-                  m.audio, m.camera, m.temperature, m.led, m.accelerometer ]
+                  m.audio, m.camera, m.temperature, m.led, m.accelerometer,
+                  m.torch ]
         for o in m.all:
             o.probe()
 
