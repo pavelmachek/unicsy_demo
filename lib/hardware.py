@@ -528,7 +528,7 @@ class Hardware:
                         m.real_name = "Nokia N9"
                 if s == "Generic OMAP4 (Flattened Device Tree)":
                     if os.path.exists('/sys/bus/platform/drivers/cpcap_battery/48098000.spi:pmic@0:battery'):
-                        m.code_name = "motorola-maserati"
+                        m.code_name = "motorola-xt894"
                         m.real_name = "Motorola Droid 4"
 
 hw = Hardware()
