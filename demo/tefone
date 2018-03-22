@@ -1,12 +1,12 @@
-#!/usr/bin/python3
+#!/usr/bin/python2
 # -*- python -*-
 # Test N900 phone
+
+from __future__ import print_function
 
 import sys
 sys.path += [ "/usr/share/unicsy/lib" ]
 
-import dbus
-import dbus.mainloop.glib
 import os
 import time
 from hardware import *
