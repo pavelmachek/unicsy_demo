@@ -436,11 +436,17 @@ class Temperature(Test):
 
     def read_battery_temp(m):
         temp = "/sys/devices/platform/n900-battery/power_supply/rx51-battery/temp"
-        return (int(m.read(temp)) / 10.) - 7.5
+        v = m.read(temp)
+        if v is None:
+            return -274
+        return (int(v) / 10.) - 7.5
 
     def read_charger_temp(m):
         temp = "/sys/devices/platform/68000000.ocp/48072000.i2c/i2c-2/2-0055/power_supply/bq27200-0/temp"
-        return (int(m.read(temp)) / 10.) - 7.5
+        v = m.read(temp)
+        if v is None:
+            return -274
+        return (int(v) / 10.) - 7.5
 
     # FIXME: this is probably wrong. thermal_zone0/temp seems to correspond to 
     # /sys/class/hwmon/hwmon0/temp1_input, which is bq27200-0
@@ -460,6 +466,8 @@ class Accelerometer(Test):
 
     def position(m):
         r = m.read("/sys/devices/platform/lis3lv02d/position")
+        if r is None:
+            return (0., 0., 0.)
         r = r[1:-2]
         s = r.split(",")
         return list(map(lambda x: float(int(x)/1044.), s))
