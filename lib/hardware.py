@@ -1,5 +1,8 @@
-#!/usr/bin/python3
+#!/usr/bin/python2
 # -*- python -*-
+
+from __future__ import print_function
+
 import math
 import time
 import os
@@ -51,9 +54,9 @@ class Battery(Test):
 
     def probe(m):
         m.battery = m.probe_paths("/sys/class/power_supply/",
-                                  [ 'bq27200-0', 'bq27521-0' ])
+                                  [ 'bq27200-0', 'bq27521-0', 'battery' ])
         m.charger = m.probe_paths("/sys/class/power_supply/",
-                                  [ 'bq24150a-0', 'bq24153-0' ])
+                                  [ 'bq24150a-0', 'bq24153-0', 'usb' ])
 
     def percent(m, v):
         u = 0.0387-(1.4523*(3.7835-v))
