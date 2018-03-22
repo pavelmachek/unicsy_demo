@@ -70,8 +70,12 @@ class Battery(Test):
         perc = m.percent(volt)
         
         status = m.read(m.charger+"/status")[:-1]
-        current = int(m.read(m.charger+"/charge_current"))
-        limit = int(m.read(m.charger+"/current_limit"))
+        try:
+            current = int(m.read(m.charger+"/charge_current"))
+            limit = int(m.read(m.charger+"/current_limit"))
+        except:
+            current = -1
+            limit = -1
 
         try:
             charge_now = int(m.read(m.battery+"/charge_now")) / 1000
