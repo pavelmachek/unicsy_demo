@@ -146,15 +146,26 @@ class ChargeBattery(Battery):
 class LEDs(Test):
     hotkey = "l"
     name = "LEDs"
-    path = "/sys/class/leds/lp5523:"
     scale = 0.1
 
     def __init__(m):
         m.white = ''
+        m.path = ''
+        m.short = False
 
     def probe(m):
         if os.path.exists(m.path+"status-led"):
             m.white = "status-led"
+        if os.path.exists("/sys/class/leds/lp5523:r"):
+            m.path = "/sys/class/leds/lp5523:"
+            m.short = True
+        if os.path.exists("/sys/class/leds/status-led:red"):
+            m.path = "/sys/class/leds/status-led:"
+            m.short = False
+
+    # D4 has also:
+    # /sys/class/leds/button-backlight
+    # for touchscreen buttons.
 
     def set_bright(m, s, v):
         f = open(m.path + s + "/brightness", "w")
@@ -165,9 +176,14 @@ class LEDs(Test):
         (r, g, b) = val
         if m.white:
             m.set_bright(m.white, (r+g+b)/3)
-        m.set_bright("r", r)
-        m.set_bright("g", g)
-        m.set_bright("b", b)
+        if m.short:
+            m.set_bright("r", r)
+            m.set_bright("g", g)
+            m.set_bright("b", b)
+        else:
+            m.set_bright("red", r)
+            m.set_bright("green", g)
+            m.set_bright("blue", b)
 
     def kbd_backlight(m, val):
         for i in range(1, 7):
