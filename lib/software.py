@@ -24,7 +24,10 @@ class Software:
             m.os_version = v[:-1]
             v = m.os_version.split(".")
             m.os_version_major = int(v[0])
-            m.os_version_minor = int(v[1])
+            if len(v) > 1:
+                m.os_version_minor = int(v[1])
+            else:
+                m.os_version_minor = 0
 
     def build_command(m, name, cmd):
         if m.mate:
@@ -59,4 +62,4 @@ if __name__ == "__main__":
     print(sw.os_name, sw.os_version, sw.os_version_major, sw.os_version_minor)
     #sw.run_terminal("/my/tui/lib/client.py -q", "GPS")
     #sw.run_terminal("find /")
-    sw.run_map()
+    #sw.run_map()

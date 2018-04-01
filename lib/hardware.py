@@ -1,5 +1,8 @@
-#!/usr/bin/python3
+#!/usr/bin/python2
 # -*- python -*-
+
+from __future__ import print_function
+
 import math
 import time
 import os
@@ -51,9 +54,9 @@ class Battery(Test):
 
     def probe(m):
         m.battery = m.probe_paths("/sys/class/power_supply/",
-                                  [ 'bq27200-0', 'bq27521-0' ])
+                                  [ 'bq27200-0', 'bq27521-0', 'battery' ])
         m.charger = m.probe_paths("/sys/class/power_supply/",
-                                  [ 'bq24150a-0', 'bq24153-0' ])
+                                  [ 'bq24150a-0', 'bq24153-0', 'usb' ])
 
     def percent(m, v):
         u = 0.0387-(1.4523*(3.7835-v))
@@ -67,8 +70,12 @@ class Battery(Test):
         perc = m.percent(volt)
         
         status = m.read(m.charger+"/status")[:-1]
-        current = int(m.read(m.charger+"/charge_current"))
-        limit = int(m.read(m.charger+"/current_limit"))
+        try:
+            current = int(m.read(m.charger+"/charge_current"))
+            limit = int(m.read(m.charger+"/current_limit"))
+        except:
+            current = -1
+            limit = -1
 
         try:
             charge_now = int(m.read(m.battery+"/charge_now")) / 1000
@@ -139,15 +146,26 @@ class ChargeBattery(Battery):
 class LEDs(Test):
     hotkey = "l"
     name = "LEDs"
-    path = "/sys/class/leds/lp5523:"
     scale = 0.1
 
     def __init__(m):
         m.white = ''
+        m.path = ''
+        m.short = False
 
     def probe(m):
         if os.path.exists(m.path+"status-led"):
             m.white = "status-led"
+        if os.path.exists("/sys/class/leds/lp5523:r"):
+            m.path = "/sys/class/leds/lp5523:"
+            m.short = True
+        if os.path.exists("/sys/class/leds/status-led:red"):
+            m.path = "/sys/class/leds/status-led:"
+            m.short = False
+
+    # D4 has also:
+    # /sys/class/leds/button-backlight
+    # for touchscreen buttons.
 
     def set_bright(m, s, v):
         f = open(m.path + s + "/brightness", "w")
@@ -158,9 +176,14 @@ class LEDs(Test):
         (r, g, b) = val
         if m.white:
             m.set_bright(m.white, (r+g+b)/3)
-        m.set_bright("r", r)
-        m.set_bright("g", g)
-        m.set_bright("b", b)
+        if m.short:
+            m.set_bright("r", r)
+            m.set_bright("g", g)
+            m.set_bright("b", b)
+        else:
+            m.set_bright("red", r)
+            m.set_bright("green", g)
+            m.set_bright("blue", b)
 
     def kbd_backlight(m, val):
         for i in range(1, 7):
@@ -436,11 +459,17 @@ class Temperature(Test):
 
     def read_battery_temp(m):
         temp = "/sys/devices/platform/n900-battery/power_supply/rx51-battery/temp"
-        return (int(m.read(temp)) / 10.) - 7.5
+        v = m.read(temp)
+        if v is None:
+            return -274
+        return (int(v) / 10.) - 7.5
 
     def read_charger_temp(m):
         temp = "/sys/devices/platform/68000000.ocp/48072000.i2c/i2c-2/2-0055/power_supply/bq27200-0/temp"
-        return (int(m.read(temp)) / 10.) - 7.5
+        v = m.read(temp)
+        if v is None:
+            return -274
+        return (int(v) / 10.) - 7.5
 
     # FIXME: this is probably wrong. thermal_zone0/temp seems to correspond to 
     # /sys/class/hwmon/hwmon0/temp1_input, which is bq27200-0
@@ -460,6 +489,8 @@ class Accelerometer(Test):
 
     def position(m):
         r = m.read("/sys/devices/platform/lis3lv02d/position")
+        if r is None:
+            return (0., 0., 0.)
         r = r[1:-2]
         s = r.split(",")
         return list(map(lambda x: float(int(x)/1044.), s))
@@ -511,6 +542,10 @@ class Hardware:
                     if os.path.exists('/sys/devices/platform/68000000.ocp/48058000.ssi-controller/ssi0/port0/n9-modem'):
                         m.code_name = "nokia-rm696"
                         m.real_name = "Nokia N9"
+                if s == "Generic OMAP4 (Flattened Device Tree)":
+                    if os.path.exists('/sys/bus/platform/drivers/cpcap_battery/48098000.spi:pmic@0:battery'):
+                        m.code_name = "motorola-xt894"
+                        m.real_name = "Motorola Droid 4"
 
 hw = Hardware()
 
