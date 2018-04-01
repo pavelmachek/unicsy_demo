@@ -10,31 +10,6 @@ import os
 import glib
 
 class Phone:
-    pass
-
-class PhoneSim(Phone):
-    def open(m):
-        s = socket.socket()
-        address = '127.0.0.1'
-        port = 12345  # port number is a number, not string
-        try:
-            s.connect((address, port))
-            # originally, it was
-            # except Exception, e:
-            # but this syntax is not supported anymore.
-            m.at = s.makefile("rw", 0)
-        except Exception as e:
-                print("something's wrong with %s:%d. Exception is %s" % (address, port, e))
-        #finally:
-        #       s.close()
-
-        m.expect_message = None
-        m.expect_next = ""
-        m.expect_reason = ""
-        m.line_buf = ""
-        # | glib.IO_OUT | glib.IO_PRI | glib.IO_ERR | glib.IO_HUP
-        glib.io_add_watch(m.at, glib.IO_IN, m.data_ready, m)
-
     def line_matches(m, line, match):
         l = len(match)
         return line[:l] == match
@@ -96,15 +71,9 @@ class PhoneSim(Phone):
             args['SentTime'] = s[2]
             m.expect_message = args
 
-            
-            
-# +CMT: "+420604343103",,"18/04/01,17:15:07+08"
+# +CMT: "+420604334013",,"18/04/01,17:15:07+08"
 # Testovaci aprilova zprava
 #
-
-
-
-        
     def data_ready(m, a, b, c):
         r = m.at.read(1)
         if ord(r) == 13:
@@ -137,7 +106,38 @@ class PhoneSim(Phone):
         m.expect_reason = "Command was sent"
         m.expect_next = "OK"
 
-class ModemCtrl(PhoneSim):
+    def open(m):
+        m.open_file()
+        m.expect_message = None
+        m.expect_next = ""
+        m.expect_reason = ""
+        m.line_buf = ""
+        # | glib.IO_OUT | glib.IO_PRI | glib.IO_ERR | glib.IO_HUP
+        glib.io_add_watch(m.at, glib.IO_IN, m.data_ready, m)
+        
+
+class PhoneSim(Phone):
+    def open_file(m):
+        s = socket.socket()
+        address = '127.0.0.1'
+        port = 12345  # port number is a number, not string
+        try:
+            s.connect((address, port))
+            # originally, it was
+            # except Exception, e:
+            # but this syntax is not supported anymore.
+            m.at = s.makefile("r+", 0)
+        except Exception as e:
+                print("something's wrong with %s:%d. Exception is %s" % (address, port, e))
+        #finally:
+        #       s.close()
+
+class PhoneUSB(Phone):
+    def open_file(m):
+        m.at = open("/dev/ttyUSB4", "r+", 0)
+        print("Opened", m.at)
+
+class ModemCtrl(PhoneUSB):
     def __init__(m):
         m.registration = {}
         m.signal_strength = 0

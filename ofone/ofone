@@ -9,7 +9,7 @@ sys.path += [ "/usr/share/unicsy/lib" ]
 import mygtk
 mygtk.setup()
 
-at_mode = False
+at_mode = True
 
 if not at_mode:
     import dbus
