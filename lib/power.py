@@ -203,7 +203,10 @@ class Power(rotatable.SubWindow):
         s = ('Battery %d%%' % p) + s
 
         m.battery_text.set_text(s)
-        m.battery_bar.set_fraction(p / 100.)
+        if p <= 100.:
+            m.battery_bar.set_fraction(p / 100.)
+        else:
+            m.battery_bar.set_fraction(1.)            
 
         if b.current > 0:
             m.current_text.set_text("Charging at %d mA, limits %d / %d mA" % (b.current, b.max_battery_current, b.charger_limit))
