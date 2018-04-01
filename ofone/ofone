@@ -9,8 +9,11 @@ sys.path += [ "/usr/share/unicsy/lib" ]
 import mygtk
 mygtk.setup()
 
-import dbus
-import dbus.mainloop.glib
+at_mode = False
+
+if not at_mode:
+    import dbus
+    import dbus.mainloop.glib
 
 import gtk
 import gobject
@@ -19,7 +22,10 @@ import contacts
 import event_log
 import datetime
 import win_sms
-from ofono import *
+if not at_mode:
+    from ofono import *
+else:
+    from at import *
 import notify
 import watchdog
 import rotatable
