@@ -8,7 +8,7 @@ mygtk.setup()
 import gtk
 import re
 import rotatable
-import numbers
+import contactsdb
 import os
 
 class Contacts(rotatable.SubWindow):
@@ -20,7 +20,7 @@ class Contacts(rotatable.SubWindow):
                      ".", "abc", "def",
                      "ghi", "jkl", "mno",
                      "pqrs", "tuv", "wxyz" ]
-        m.db = numbers.ContactsDb()
+        m.db = contactsdb.ContactsDb()
         m.db.load_org()
 
     def dial(m):

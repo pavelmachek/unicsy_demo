@@ -6,7 +6,7 @@ import mygtk
 mygtk.setup()
 
 import gtk
-import numbers
+import contactsdb
 import event_log
 import rotatable
 import textwrap
@@ -25,7 +25,7 @@ class Event:
         if db:
             m.contact = db.from_number(m.number)
         if not m.contact:
-            m.contact = numbers.Contact( [ "(unknown)", m.number ] )
+            m.contact = contactsdb.Contact( [ "(unknown)", m.number ] )
             m.contact.unknown = 1
         
     def fmt(m):
@@ -207,7 +207,7 @@ if 0:
 
 if __name__ == "__main__":
     elog = event_log.EventLog()
-    db = numbers.ContactsDb()
+    db = contactsdb.ContactsDb()
     db.load_org()
     win = ViewEvents(db)
     win.basic_main_window()
