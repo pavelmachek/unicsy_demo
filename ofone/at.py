@@ -12,6 +12,7 @@ import glib
 class Phone:
     def line_matches(m, line, match):
         l = len(match)
+        #print("have (",line,") match (", match, ")", l)
         return line[:l] == match
 
     def line_matches_list(m, line, match):
@@ -41,7 +42,7 @@ class Phone:
             m.expect_message = None
 
         v = m.line_matches_int(line, "+CREG: ")
-        if v != -1:
+        if v:
             if v == 0:
                 m.network = ""
             elif v == 1:
@@ -55,7 +56,7 @@ class Phone:
             return
             
         v = m.line_matches_int(line, "+CSQ: ")
-        if v != -1:
+        if v:
             m.signal_strength = v
             m.network_updated()
             return
