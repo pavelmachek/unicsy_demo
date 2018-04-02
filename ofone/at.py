@@ -22,10 +22,11 @@ class Phone:
         return map(int, line.split(","))
 
     def line_matches_int(m, line, match):
-        l = m.line_matches_list(line, match)
-        if not l:
-            return -1
-        return l[0]
+        if not m.line_matches(line, match):
+            return None
+        l = len(match)
+        line = line[l:]
+        return int( line.split(",")[0] )
 
     def line_ready(m, line):
         if m.expect_next != "":
