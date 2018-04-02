@@ -76,6 +76,7 @@ class Phone:
 #
     def data_ready(m, a, b, c):
         r = m.at.read(1)
+        print("Got character ", r)
         if ord(r) == 13:
             return True
         if ord(r) < 32:
@@ -88,6 +89,7 @@ class Phone:
             line = m.line_buf
             print("Data ready>>> ", m.line_buf)
             m.line_buf = ""
+            m.log(line)
             m.line_ready(line)
             
         return True
@@ -99,8 +101,9 @@ class Phone:
             print(r[0], end='')
 
     def command(m, s):
+        #m.log(">>> "+ s)
         print(">>> ", s)
-        m.at.write(s + "\n")
+        m.at.write(s + "\r\n")
         if m.expect_next != "":
             print("New expectation, but old one was not yet met", m.expect_next, m.expect_reason)
         m.expect_reason = "Command was sent"
@@ -147,6 +150,7 @@ class ModemCtrl(PhoneUSB):
 
     def modem_init(m):
         m.registration = {}
+        m.command("ATE0")
         m.command("AT+CVHU=0")
         m.command("AT+CMGF=1")
 
