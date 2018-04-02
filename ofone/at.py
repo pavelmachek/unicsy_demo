@@ -146,7 +146,6 @@ class ModemCtrl(PhoneUSB):
         m.signal_strength = 0
         m.network = ""
         m.open()
-        m.modem_init()
 
     def modem_init(m):
         m.registration = {}
@@ -161,7 +160,7 @@ class ModemCtrl(PhoneUSB):
         m.command("ATA")
 
     def online_modem(m):
-        m.command("AT+CFUN=4")
+        m.command("AT+CFUN=1")
 
     def offline_modem(m):
         m.command("AT+CFUN=0")
