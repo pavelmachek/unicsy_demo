@@ -61,6 +61,7 @@ class Phone:
             return
 
         if m.line_matches(line, "+CRING: VOICE"):
+            print("!!! incoming call")
             m.call_started("unknown", "unknown", "incoming")
             return
 
@@ -77,10 +78,10 @@ class Phone:
 #
     def data_ready(m, a, b, c):
         r = m.at.read(1)
-        print("Got character ", r)
+        #print("Got character ", r)
         if ord(r) == 13:
             return True
-        if ord(r) < 32:
+        if ord(r) != 10 and ord(r) < 32:
             print(".... Received strange character ", ord(r))
 
         #print("Got>>> ", r)
@@ -88,10 +89,10 @@ class Phone:
             m.line_buf += r
         else:
             line = m.line_buf
-            print("Data ready>>> ", m.line_buf)
             m.line_buf = ""
-            m.log(line)
-            m.line_ready(line)
+            if line != "":
+                m.log("<" + line + "_")
+                m.line_ready(line)
             
         return True
 
