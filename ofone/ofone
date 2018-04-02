@@ -10,6 +10,7 @@ import mygtk
 mygtk.setup()
 
 at_mode = True
+debug_mode = True
 
 if not at_mode:
     import dbus
@@ -264,6 +265,8 @@ class MainWindows(ModemCtrl):
         m.events.update(elog.events)
 
     def tick(m):
+        if debug_mode:
+            return
         gobject.timeout_add(20000, lambda: m.tick())
         print("Tick tock")
         m.update_watchdog()
@@ -398,6 +401,8 @@ class MainWindow(power.Power):
         return table
 
     def tick(m):
+        if debug_mode:
+            return
         print("Tick tock")
         m.tick_alerts()
         m.tick_battery()
