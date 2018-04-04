@@ -2,7 +2,7 @@
 # -*- python -*-
 
 import sys
-sys.path += [ "../maemo" ]
+sys.path += [ "/usr/share/unicsy/lib" ]
 
 import subprocess
 import time
@@ -10,34 +10,41 @@ import os
 import signal
 
 class MediaPlayer:
-    player = 0
-    audio = "/my/tui/ofone/audio/"
+    def __init__(m):
+        m.player = 0
+        if False:
+            m.audio = "/my/tui/ofone/audio/"
+            m.play_cmd = [ 'mplayer' ]
+        else:
+            m.audio = "/usr/share/sounds/linphone/rings/"
+            m.play_cmd = [ 'aplay', '-D', 'plughw:CARD=Audio,DEV=0' ]
 
-    def playback_finished(self):
-        if not self.player:
+    def playback_finished(m):
+        if not m.player:
             return 1
-        if self.player.poll() is None:
+        if m.player.poll() is None:
             return 0
         return 1
 
-    def mediaPlay(self, file):
-        if not self.playback_finished():
-            self.player.send_signal(signal.SIGTERM)
-        self.player = subprocess.Popen([ 'mplayer', file ], stdin=subprocess.PIPE)
+    def mediaPlay(m, file):
+        if not m.playback_finished():
+            m.player.send_signal(signal.SIGTERM)
+        m.player = subprocess.Popen(m.play_cmd + [ file ], stdin=subprocess.PIPE)
 
-    def mediaPlayPause(self):
-        if self.player:
-            self.player.send_signal(signal.SIGSTOP)
+    def mediaPlayPause(m):
+        if m.player:
+            m.player.send_signal(signal.SIGSTOP)
 
 class NotifyInterface(MediaPlayer):
     def sms(m, event):
         print("Incoming SMS")
-        m.mediaPlay(m.audio+"message.mp3")
+        #m.mediaPlay(m.audio+"message.mp3")
+        m.mediaPlay(m.audio+"orig.wav")
 
     def call_incoming(m, number):
         print("Incoming call")
-        #droid.m.mediaPlay("/my2/04 Stopa 4.wma")
-        m.mediaPlay(m.audio+"ringtone.mp3")
+        #m.mediaPlay(m.audio+"ringtone.mp3")
+        m.mediaPlay(m.audio+"orig.wav")
 
     def end_incoming(m, reason):
         print("Incoming call no longer")

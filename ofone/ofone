@@ -192,6 +192,15 @@ class CallWindow(win_call.CallWindow):
 
     def interior(m):
         table = win_call.CallWindow.interior(m)
+
+#        button = gtk.Button("Speaker")
+#        button.connect("clicked", lambda _: m.hide())
+#        table.attach(button, 1,2,5,6)
+        
+        button = gtk.Button("Close")
+        button.connect("clicked", lambda _: m.hide())
+        table.attach(button, 2,3,5,6)
+
         button = gtk.Button("Quiet")
         button.connect("clicked", lambda _: notify.end_incoming("quiet"))
         table.attach(button, 3,4,5,6)

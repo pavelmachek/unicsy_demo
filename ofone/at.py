@@ -61,7 +61,7 @@ class Phone:
             m.network_updated()
             return
 
-        if m.line_matches(line, "+CRING: VOICE"):
+        if  m.line_matches(line, "RING") or m.line_matches(line, "+CRING: VOICE"):
             print("!!! incoming call")
             m.call_started("unknown", "unknown", "incoming")
             return
