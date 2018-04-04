@@ -3,7 +3,7 @@
 # Not to be ran as root.
 
 import sys
-sys.path += [ "../maemo" ]
+sys.path += [ "/usr/share/unicsy/lib" ]
 import mygtk
 mygtk.setup()
 

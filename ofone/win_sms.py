@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import sys
-sys.path += [ "../maemo" ]
+sys.path += [ "/usr/share/unicsy/lib" ]
 import mygtk
 mygtk.setup()
 
