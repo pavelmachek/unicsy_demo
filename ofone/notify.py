@@ -8,6 +8,7 @@ import subprocess
 import time
 import os
 import signal
+import hardware
 
 class MediaPlayer:
     def __init__(m):
@@ -39,11 +40,13 @@ class NotifyInterface(MediaPlayer):
     def sms(m, event):
         print("Incoming SMS")
         #m.mediaPlay(m.audio+"message.mp3")
+        hardware.hw.audio.mixer_ringing()
         m.mediaPlay(m.audio+"orig.wav")
 
     def call_incoming(m, number):
         print("Incoming call")
         #m.mediaPlay(m.audio+"ringtone.mp3")
+        hardware.hw.audio.mixer_ringing()
         m.mediaPlay(m.audio+"orig.wav")
 
     def end_incoming(m, reason):
@@ -51,10 +54,10 @@ class NotifyInterface(MediaPlayer):
         m.mediaPlayPause()
 
     def call_starts(m):
-        os.system("sudo alsactl restore -f %s/alsa.playback.call" % m.audio)
+        hardware.hw.audio.mixer_call()
 
     def call_ends(m):
-        os.system("sudo alsactl restore -f %s/alsa.playback.loud" % m.audio)
+        hardware.hw.audio.mixer_ringing()
 
 if __name__ == "__main__":
     m = MediaPlayer()

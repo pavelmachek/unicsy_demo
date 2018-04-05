@@ -48,7 +48,7 @@ state.Audio {
 	control.4 {
 		iface MIXER
 		name 'Mic1 Capture Volume'
-		value 0
+		value 25
 		comment {
 			access 'read write'
 			type INTEGER
@@ -56,13 +56,13 @@ state.Audio {
 			range '0 - 31'
 			dbmin 0
 			dbmax 3100
-			dbvalue.0 0
+			dbvalue.0 2500
 		}
 	}
 	control.5 {
 		iface MIXER
 		name 'Mic2 Capture Volume'
-		value 0
+		value 31
 		comment {
 			access 'read write'
 			type INTEGER
@@ -70,7 +70,7 @@ state.Audio {
 			range '0 - 31'
 			dbmin 0
 			dbmax 3100
-			dbvalue.0 0
+			dbvalue.0 3100
 		}
 	}
 	control.6 {
@@ -96,7 +96,7 @@ state.Audio {
 	control.8 {
 		iface MIXER
 		name 'Right Capture Route'
-		value Off
+		value 'Mic 1'
 		comment {
 			access 'read write'
 			type ENUMERATED
@@ -111,7 +111,7 @@ state.Audio {
 	control.9 {
 		iface MIXER
 		name 'Left Capture Route'
-		value Off
+		value 'Mic 2'
 		comment {
 			access 'read write'
 			type ENUMERATED
@@ -144,7 +144,7 @@ state.Audio {
 	control.12 {
 		iface MIXER
 		name 'Voice Loopback Switch'
-		value true
+		value false
 		comment {
 			access 'read write'
 			type BOOLEAN
@@ -174,7 +174,7 @@ state.Audio {
 	control.15 {
 		iface MIXER
 		name 'Earpiece Playback Route'
-		value HiFi
+		value Off
 		comment {
 			access 'read write'
 			type ENUMERATED
@@ -216,7 +216,7 @@ state.Audio {
 	control.18 {
 		iface MIXER
 		name 'Lineout Right Playback Route'
-		value HiFi
+		value Off
 		comment {
 			access 'read write'
 			type ENUMERATED
@@ -230,7 +230,7 @@ state.Audio {
 	control.19 {
 		iface MIXER
 		name 'Lineout Left Playback Route'
-		value HiFi
+		value Off
 		comment {
 			access 'read write'
 			type ENUMERATED
@@ -244,7 +244,7 @@ state.Audio {
 	control.20 {
 		iface MIXER
 		name 'Headset Right Playback Route'
-		value HiFi
+		value Off
 		comment {
 			access 'read write'
 			type ENUMERATED
@@ -258,7 +258,7 @@ state.Audio {
 	control.21 {
 		iface MIXER
 		name 'Headset Left Playback Route'
-		value HiFi
+		value Off
 		comment {
 			access 'read write'
 			type ENUMERATED
@@ -272,7 +272,7 @@ state.Audio {
 	control.22 {
 		iface MIXER
 		name 'EMU Right Playback Route'
-		value HiFi
+		value Off
 		comment {
 			access 'read write'
 			type ENUMERATED
@@ -286,7 +286,7 @@ state.Audio {
 	control.23 {
 		iface MIXER
 		name 'EMU Left Playback Route'
-		value HiFi
+		value Off
 		comment {
 			access 'read write'
 			type ENUMERATED
@@ -295,6 +295,19 @@ state.Audio {
 			item.1 Voice
 			item.2 HiFi
 			item.3 Ext
+		}
+	}
+	control.24 {
+		iface MIXER
+		name Mode
+		value Normal
+		comment {
+			access 'read write'
+			type ENUMERATED
+			count 1
+			item.0 Normal
+			item.1 Handsfree
+			item.2 Call
 		}
 	}
 }

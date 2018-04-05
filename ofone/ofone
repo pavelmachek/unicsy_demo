@@ -34,6 +34,7 @@ import power
 import os
 import pango
 import software
+import hardware
 
 import win_message
 import win_call
@@ -193,9 +194,13 @@ class CallWindow(win_call.CallWindow):
     def interior(m):
         table = win_call.CallWindow.interior(m)
 
-#        button = gtk.Button("Speaker")
-#        button.connect("clicked", lambda _: m.hide())
-#        table.attach(button, 1,2,5,6)
+        button = gtk.Button("Normal call")
+        button.connect("clicked", lambda _: hardware.hw.audio.mixer_call())
+        table.attach(button, 0,1,5,6)
+        
+        button = gtk.Button("Loud call")
+        button.connect("clicked", lambda _: hardware.hw.audio.mixer_call_loud())
+        table.attach(button, 1,2,5,6)
         
         button = gtk.Button("Close")
         button.connect("clicked", lambda _: m.hide())
