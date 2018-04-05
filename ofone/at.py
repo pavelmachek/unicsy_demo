@@ -170,6 +170,7 @@ class ModemCtrl(PhoneUSB):
 
     def dial_number(m, number, hide_callerid = ""):
         m.command("ATD"+number+";")
+        m.call_started("unknown", "unknown", "outgoing")
 
     def hangup_all(m):
         m.command("ATH")
