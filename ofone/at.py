@@ -8,6 +8,7 @@ sys.path += [ "/usr/share/unicsy/lib" ]
 import socket
 import os
 import glib
+import time
 
 class Phone:
     def line_matches(m, line, match):
@@ -106,7 +107,7 @@ class Phone:
     def command(m, s):
         #m.log(">>> "+ s)
         print(">>> ", s)
-        m.at.write(s + "\r\n")
+        m.at.write(s + "\n")
         if m.expect_next != "":
             print("New expectation, but old one was not yet met", m.expect_next, m.expect_reason)
         m.expect_reason = "Command was sent"
@@ -155,6 +156,8 @@ class ModemCtrl(PhoneUSB):
         m.command("ATE0")
         m.command("AT+CVHU=0")
         m.command("AT+CMGF=1")
+        # Forward messages to me.
+        m.command("AT+CNMI=1,2")
 
     def startup(m):
         m.online_modem()
@@ -179,7 +182,10 @@ class ModemCtrl(PhoneUSB):
         fail()
         
     def send_sms(m, number, message):
-        fail()
+        #print("sms>>> ", 'AT+CMGS="'+number+'"\n')
+        #m.at.write()
+        #time.sleep(.1)
+        m.command('AT+CMGS="'+number+'"\n'+message+chr(0x1a))
 
     def connect_internet(m):
         fail()
