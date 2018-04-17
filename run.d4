@@ -1,5 +1,0 @@
-#!/bin/bash
-sudo insmod /my/snd-soc-cpcap.ko
-sudo chown user /dev/ttyUSB4
-stty sane < /dev/ttyUSB4
-GTK2_RC_FILES= ofone/ofone --primary

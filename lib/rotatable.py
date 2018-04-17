@@ -120,6 +120,7 @@ class Rotatable(TouchWindow):
         else:
             window.set_default_size(400, 800)
         window.set_border_width(3)
+        window.maximize()
         m.window = window
         table = m.interior()
 
