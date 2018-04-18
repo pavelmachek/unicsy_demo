@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python2
 # -*- python -*-
 
 from __future__ import print_function
@@ -15,7 +15,7 @@ import hardware
 
 class LEDMonitors(watchdog.AllMonitors):
     def __init__(m):
-        super().__init__()
+        watchdog.AllMonitors.__init__(m)
         m.led = notint.LedN900()
         m.led.scale = 0.01
         m.sleep_test = False
@@ -50,7 +50,7 @@ class LEDMonitors(watchdog.AllMonitors):
 
 class SysMonitors(LEDMonitors):
     def __init__(m):
-        super().__init__()
+        LEDMonitors.__init__(m)
         m.key_wd = watchdog.KeyWatchdog()
         m.screen_wd = watchdog.ScreenWatchdog()
 
