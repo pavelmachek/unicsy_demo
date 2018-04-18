@@ -10,7 +10,7 @@ import mygtk
 mygtk.setup()
 
 at_mode = True
-debug_mode = True
+debug_mode = False
 
 if not at_mode:
     import dbus
