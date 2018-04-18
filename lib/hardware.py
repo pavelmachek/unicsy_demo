@@ -300,16 +300,15 @@ class LightSensor(Test):
         print("light path", m.path)
     
     def get_illuminance(m):
-        try:
-            return int(m.read(m.path + "_input"))
-        except:
-            return -1
+        scale = m.read_int(m.path + "_scale")
+        val = m.read_int(m.path + "_input")
+        if scale == -1:
+            return val
+        else:
+            return int( (2000.*3.5*val)/scale )
 
     def get_ired_raw(m):
-        try:
-            return int(m.read(m.directory + "in_intensity_both_raw"))
-        except:
-            return -1
+        return m.read_int(m.directory + "in_intensity_both_raw")
 
     def run(m):
         i = 0
