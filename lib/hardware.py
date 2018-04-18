@@ -11,7 +11,8 @@ def sy(s):
     return os.system(s)
 
 def enable_access(s):
-    sy("sudo chown $USER "+s)
+    #sy("sudo chown $USER "+s)
+    sy("sudo chmod 666 "+s)
 
 class Test:
     def write(m, s, v):
@@ -170,7 +171,7 @@ class LEDs(Test):
             m.path += "lp5523:"
             m.short = True
         if os.path.exists(m.path+"status-led:red"):
-            m.path = "status-led:"
+            m.path += "status-led:"
             m.short = False
 
     def startup(m):
@@ -199,8 +200,9 @@ class LEDs(Test):
             m.set_bright("blue", b)
 
     def kbd_backlight(m, val):
-        for i in range(1, 7):
-            m.set_bright("kb%d" % i, val)
+        if m.hw.n900:
+            for i in range(1, 7):
+                m.set_bright("kb%d" % i, val)
 
     def all_off(m):
         m.set( (1, 1, 1) )
@@ -328,7 +330,7 @@ class LightAdjustment:
     def __init__(m):
         m.lightSensor = hw.light_sensor
         m.backlight = hw.backlight
-        m.keyboard = LEDs()
+        m.keyboard = hw.leds
         m.very_dark = LightSettings(6, 180, "very dark", 0.01)
         m.dark_in_dark_room = LightSettings(8, 180, "dark in dark room", 0.05)
         m.somehow_dark_room = LightSettings(10, 180, "somehow dark room", 0.05)
@@ -425,7 +427,7 @@ class Audio(Test):
 
     def set_mixer(m, name):
         #sy("sudo alsactl restore -f /usr/share/unicsy/audio/nokia-n900/alsa.playback." + name)
-        sy("sudo alsactl restore -f /usr/share/unicsy/audio/motorola-xt894/alsa.playback." + name)
+        sy("sudo alsactl restore -f /usr/share/unicsy/audio/"+m.hw.code_name+"/alsa.playback." + name)
 
     def mixer_call(m):
         m.set_mixer("call")
