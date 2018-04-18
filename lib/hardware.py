@@ -533,8 +533,9 @@ class Hardware:
         m.temperature = Temperature()
         m.led = AccelLED()
         m.accelerometer = Accelerometer()
+        m.leds = LEDs()
         m.all = [ m.battery, m.backlight, m.light_sensor, m.vibrations, 
-                  m.audio, m.camera, m.temperature, m.led, m.accelerometer ]
+                  m.audio, m.camera, m.temperature, m.led, m.accelerometer, m.leds ]
 
         m.detect()
         m.hw_probe()
