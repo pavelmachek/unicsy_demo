@@ -23,6 +23,9 @@ class Startup:
 
         wd = m.wd
         debian = True
+        hardware.hw.detect()
+        n900 = hardware.hw.real_name == "nokia-rx51"
+        d4 = hardware.hw.real_name == "motorola-xt894"
 
         try:
             os.chdir('/my/tui/ofone')
@@ -36,7 +39,8 @@ class Startup:
             sy('sudo ./ztime')
             sy('sudo alsactl restore -f audio/alsa.playback.loud')
             sy('mplayer /my/tui/ofone/audio/message.mp3 &')
-            
+
+        if debian and n900:
             os.system("""
 xinput --set-prop --type=float "TSC200X touchscreen" "Coordinate Transformation Matrix"  1.10 0.00 -0.05  0.00 1.18 -0.10  0.00 0.00 1.00
 xinput --set-prop --type=int "TSC200X touchscreen" "Evdev Axis Inversion" 0 1

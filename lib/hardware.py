@@ -11,7 +11,7 @@ def sy(s):
     return os.system(s)
 
 def enable_access(s):
-    sy("sudo chmod 666 "+s)
+    sy("sudo chown $USER "+s)
 
 class Test:
     def write(m, s, v):
@@ -96,7 +96,10 @@ class Battery(Test):
         # 0.49 ohm is between "poor" and "fail".
         # 0.15 ohm is between "excelent" and "good".
         # at 3.6V.
-        resistance = 0.43
+        if m.hw.n900:
+            resistance = 0.43 # Suitable for old N900
+        else:
+            resistance = 0.15
         volt3 = volt + (current2 / 1000. * resistance)
         perc3 = m.percent(volt3)
 
@@ -134,7 +137,13 @@ class Battery(Test):
         print("Fast charge on, %d mA" % limit)
 
     def startup(m):
-        m.fast_charge(500)
+        if m.hw.n900:
+            # Disable yellow battery light:
+            enable_access('/sys/class/power_supply/bq24150a-0/stat_pin_enable')
+            sy('echo 0 > /sys/class/power_supply/bq24150a-0/stat_pin_enable')
+            # Enable charger control from non-root
+            enable_access('/sys/class/power_supply/bq24150a-0/current_limit')
+            m.fast_charge(500)
 
 class ChargeBattery(Battery):
     hotkey = "B"
@@ -154,14 +163,18 @@ class LEDs(Test):
         m.short = False
 
     def probe(m):
+        m.path='/sys/class/leds/'
         if os.path.exists(m.path+"status-led"):
             m.white = "status-led"
-        if os.path.exists("/sys/class/leds/lp5523:r"):
-            m.path = "/sys/class/leds/lp5523:"
+        if os.path.exists(m.path+"lp5523:r"):
+            m.path += "lp5523:"
             m.short = True
-        if os.path.exists("/sys/class/leds/status-led:red"):
-            m.path = "/sys/class/leds/status-led:"
+        if os.path.exists(m.path+"status-led:red"):
+            m.path = "status-led:"
             m.short = False
+
+    def startup(m):
+        enable_access(m.path+"*/brightness")
 
     # D4 has also:
     # /sys/class/leds/button-backlight
@@ -245,7 +258,7 @@ class AccelLED(LEDs):
         LEDs.all_off(m)
 
     def startup(m):
-        sy("sudo chown pavel /sys/class/i2c-adapter/i2c-2/2-0032/*")
+        enable_access("/sys/class/i2c-adapter/i2c-2/2-0032/*")
 
 class Backlight(Test):
     hotkey = "c"
@@ -257,6 +270,9 @@ class Backlight(Test):
         p = os.listdir(m.path)
         m.path += p[0]
         m.path += "/brightness"
+
+    def startup(m):
+        enable_access(m.path)
 
     def set(m, i):
         m.write(m.path, str(i))
@@ -519,9 +535,19 @@ class Hardware:
         m.accelerometer = Accelerometer()
         m.all = [ m.battery, m.backlight, m.light_sensor, m.vibrations, 
                   m.audio, m.camera, m.temperature, m.led, m.accelerometer ]
+
+        m.detect()
+        m.hw_probe()
+        
         for o in m.all:
+            o.hw = m
             o.probe()
 
+    def hw_probe(m):
+        m.debian = os.path.exists('/my/tui/ofone')
+        m.n900 = m.real_name == "nokia-rx51"
+        m.d4 = m.real_name == "motorola-xt894"
+            
     def startup(m):
         for o in m.all:
             o.startup()
