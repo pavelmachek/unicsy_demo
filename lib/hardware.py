@@ -288,17 +288,26 @@ class Backlight(Test):
 class LightSensor(Test):
     hotkey = "i"
     name = "lIght_sensor"
-    path = "/sys/bus/i2c/drivers/tsl2563/2-0029/iio:device1/"
 
+    def probe(m):
+        m.directory = m.probe_paths( "/sys/bus/i2c/drivers",
+                                [ "/tsl2563/2-0029/iio:device1/",
+                                  "/isl29028/1-0044/iio:device2/" ] )
+        m.path = m.directory + "in_illuminance"
+        if os.path.exists( m.path + "0_input" ):
+            m.path += "0"
+
+        print("light path", m.path)
+    
     def get_illuminance(m):
         try:
-            return int(m.read(m.path + "in_illuminance0_input"))
+            return int(m.read(m.path + "_input"))
         except:
             return -1
 
     def get_ired_raw(m):
         try:
-            return int(m.read(m.path + "in_intensity_both_raw"))
+            return int(m.read(m.directory + "in_intensity_both_raw"))
         except:
             return -1
 
