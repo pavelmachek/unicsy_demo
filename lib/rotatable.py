@@ -1,7 +1,7 @@
-#!/usr/bin/env python3
+#!/usr/bin/python2
 
 import sys
-sys.path += [ "../maemo" ]
+sys.path += [ "/usr/share/unicsy/lib" ]
 import mygtk
 mygtk.setup()
 
@@ -120,6 +120,7 @@ class Rotatable(TouchWindow):
         else:
             window.set_default_size(400, 800)
         window.set_border_width(3)
+        window.maximize()
         m.window = window
         table = m.interior()
 

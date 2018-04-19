@@ -1,7 +1,7 @@
 #!/usr/bin/python2
 import time
 import sys
-sys.path += [ "../maemo", "../lib" ]
+sys.path += [ "/usr/share/unicsy/lib" ]
 import rainbow
 import socket
 

@@ -1,5 +1,8 @@
-#!/usr/bin/python3
+#!/usr/bin/python2
 # -*- python -*-
+
+from __future__ import print_function
+
 import math
 import time
 import os
@@ -8,6 +11,7 @@ def sy(s):
     return os.system(s)
 
 def enable_access(s):
+    #sy("sudo chown $USER "+s)
     sy("sudo chmod 666 "+s)
 
 class Test:
@@ -51,9 +55,9 @@ class Battery(Test):
 
     def probe(m):
         m.battery = m.probe_paths("/sys/class/power_supply/",
-                                  [ 'bq27200-0', 'bq27521-0' ])
+                                  [ 'bq27200-0', 'bq27521-0', 'battery' ])
         m.charger = m.probe_paths("/sys/class/power_supply/",
-                                  [ 'bq24150a-0', 'bq24153-0' ])
+                                  [ 'bq24150a-0', 'bq24153-0', 'usb' ])
 
     def percent(m, v):
         u = 0.0387-(1.4523*(3.7835-v))
@@ -67,8 +71,12 @@ class Battery(Test):
         perc = m.percent(volt)
         
         status = m.read(m.charger+"/status")[:-1]
-        current = int(m.read(m.charger+"/charge_current"))
-        limit = int(m.read(m.charger+"/current_limit"))
+        try:
+            current = int(m.read(m.charger+"/charge_current"))
+            limit = int(m.read(m.charger+"/current_limit"))
+        except:
+            current = -1
+            limit = -1
 
         try:
             charge_now = int(m.read(m.battery+"/charge_now")) / 1000
@@ -89,7 +97,10 @@ class Battery(Test):
         # 0.49 ohm is between "poor" and "fail".
         # 0.15 ohm is between "excelent" and "good".
         # at 3.6V.
-        resistance = 0.43
+        if m.hw.n900:
+            resistance = 0.43 # Suitable for old N900
+        else:
+            resistance = 0.15
         volt3 = volt + (current2 / 1000. * resistance)
         perc3 = m.percent(volt3)
 
@@ -127,7 +138,13 @@ class Battery(Test):
         print("Fast charge on, %d mA" % limit)
 
     def startup(m):
-        m.fast_charge(500)
+        if m.hw.n900:
+            # Disable yellow battery light:
+            enable_access('/sys/class/power_supply/bq24150a-0/stat_pin_enable')
+            sy('echo 0 > /sys/class/power_supply/bq24150a-0/stat_pin_enable')
+            # Enable charger control from non-root
+            enable_access('/sys/class/power_supply/bq24150a-0/current_limit')
+            m.fast_charge(500)
 
 class ChargeBattery(Battery):
     hotkey = "B"
@@ -167,27 +184,48 @@ class Torch(LED):
 class LEDs(LED):
     hotkey = "l"
     name = "LEDs"
-    path = "/sys/class/leds/lp5523:"
     scale = 0.1
 
     def __init__(m):
         m.white = ''
+        m.path = ''
+        m.short = False
 
     def probe(m):
+        m.path='/sys/class/leds/'
         if os.path.exists(m.path+"status-led"):
             m.white = "status-led"
+        if os.path.exists(m.path+"lp5523:r"):
+            m.path += "lp5523:"
+            m.short = True
+        if os.path.exists(m.path+"status-led:red"):
+            m.path += "status-led:"
+            m.short = False
+
+    def startup(m):
+        enable_access(m.path+"*/brightness")
+
+    # D4 has also:
+    # /sys/class/leds/button-backlight
+    # for touchscreen buttons.
 
     def set(m, val):
         (r, g, b) = val
         if m.white:
             m.set_bright(m.white, (r+g+b)/3)
-        m.set_bright("r", r)
-        m.set_bright("g", g)
-        m.set_bright("b", b)
+        if m.short:
+            m.set_bright("r", r)
+            m.set_bright("g", g)
+            m.set_bright("b", b)
+        else:
+            m.set_bright("red", r)
+            m.set_bright("green", g)
+            m.set_bright("blue", b)
 
     def kbd_backlight(m, val):
-        for i in range(1, 7):
-            m.set_bright("kb%d" % i, val)
+        if m.hw.n900:
+            for i in range(1, 7):
+                m.set_bright("kb%d" % i, val)
 
     def all_off(m):
         m.set( (1, 1, 1) )
@@ -245,7 +283,7 @@ class AccelLED(LEDs):
         LEDs.all_off(m)
 
     def startup(m):
-        sy("sudo chown pavel /sys/class/i2c-adapter/i2c-2/2-0032/*")
+        enable_access("/sys/class/i2c-adapter/i2c-2/2-0032/*")
 
 class Backlight(Test):
     hotkey = "c"
@@ -257,6 +295,9 @@ class Backlight(Test):
         p = os.listdir(m.path)
         m.path += p[0]
         m.path += "/brightness"
+
+    def startup(m):
+        enable_access(m.path)
 
     def set(m, i):
         m.write(m.path, str(i))
@@ -272,19 +313,27 @@ class Backlight(Test):
 class LightSensor(Test):
     hotkey = "i"
     name = "lIght_sensor"
-    path = "/sys/bus/i2c/drivers/tsl2563/2-0029/iio:device1/"
 
+    def probe(m):
+        m.directory = m.probe_paths( "/sys/bus/i2c/drivers",
+                                [ "/tsl2563/2-0029/iio:device1/",
+                                  "/isl29028/1-0044/iio:device2/" ] )
+        m.path = m.directory + "in_illuminance"
+        if os.path.exists( m.path + "0_input" ):
+            m.path += "0"
+
+        print("light path", m.path)
+    
     def get_illuminance(m):
-        try:
-            return int(m.read(m.path + "in_illuminance0_input"))
-        except:
-            return -1
+        scale = m.read_int(m.path + "_scale")
+        val = m.read_int(m.path + "_input")
+        if scale == -1:
+            return val
+        else:
+            return int( (2000.*3.5*val)/scale )
 
     def get_ired_raw(m):
-        try:
-            return int(m.read(m.path + "in_intensity_both_raw"))
-        except:
-            return -1
+        return m.read_int(m.directory + "in_intensity_both_raw")
 
     def run(m):
         i = 0
@@ -304,7 +353,7 @@ class LightAdjustment:
     def __init__(m):
         m.lightSensor = hw.light_sensor
         m.backlight = hw.backlight
-        m.keyboard = LEDs()
+        m.keyboard = hw.leds
         m.very_dark = LightSettings(6, 180, "very dark", 0.01)
         m.dark_in_dark_room = LightSettings(8, 180, "dark in dark room", 0.05)
         m.somehow_dark_room = LightSettings(10, 180, "somehow dark room", 0.05)
@@ -400,10 +449,14 @@ class Audio(Test):
         sy("sudo amixer set PCM " + s)
 
     def set_mixer(m, name):
-        sy("sudo alsactl restore -f /usr/share/unicsy/audio/nokia-n900/alsa.playback." + name)
+        #sy("sudo alsactl restore -f /usr/share/unicsy/audio/nokia-n900/alsa.playback." + name)
+        sy("sudo alsactl restore -f /usr/share/unicsy/audio/"+m.hw.code_name+"/alsa.playback." + name)
 
     def mixer_call(m):
         m.set_mixer("call")
+        
+    def mixer_call_loud(m):
+        m.set_mixer("call.loud")
 
     def mixer_headphones(m):
         m.set_mixer("wired.headphones")
@@ -459,11 +512,17 @@ class Temperature(Test):
 
     def read_battery_temp(m):
         temp = "/sys/devices/platform/n900-battery/power_supply/rx51-battery/temp"
-        return (int(m.read(temp)) / 10.) - 7.5
+        v = m.read(temp)
+        if v is None:
+            return -274
+        return (int(v) / 10.) - 7.5
 
     def read_charger_temp(m):
         temp = "/sys/devices/platform/68000000.ocp/48072000.i2c/i2c-2/2-0055/power_supply/bq27200-0/temp"
-        return (int(m.read(temp)) / 10.) - 7.5
+        v = m.read(temp)
+        if v is None:
+            return -274
+        return (int(v) / 10.) - 7.5
 
     # FIXME: this is probably wrong. thermal_zone0/temp seems to correspond to 
     # /sys/class/hwmon/hwmon0/temp1_input, which is bq27200-0
@@ -483,6 +542,8 @@ class Accelerometer(Test):
 
     def position(m):
         r = m.read("/sys/devices/platform/lis3lv02d/position")
+        if r is None:
+            return (0., 0., 0.)
         r = r[1:-2]
         s = r.split(",")
         return list(map(lambda x: float(int(x)/1044.), s))
@@ -505,13 +566,24 @@ class Hardware:
         m.temperature = Temperature()
         m.led = AccelLED()
         m.accelerometer = Accelerometer()
+        m.leds = LEDs()
         m.torch = Torch()
         m.all = [ m.battery, m.backlight, m.light_sensor, m.vibrations, 
                   m.audio, m.camera, m.temperature, m.led, m.accelerometer,
-                  m.torch ]
+                  m.torch, m.leds ]
+
+        m.detect()
+        m.hw_probe()
+        
         for o in m.all:
+            o.hw = m
             o.probe()
 
+    def hw_probe(m):
+        m.debian = os.path.exists('/my/tui/ofone')
+        m.n900 = m.real_name == "nokia-rx51"
+        m.d4 = m.real_name == "motorola-xt894"
+            
     def startup(m):
         for o in m.all:
             o.startup()
@@ -536,6 +608,10 @@ class Hardware:
                     if os.path.exists('/sys/devices/platform/68000000.ocp/48058000.ssi-controller/ssi0/port0/n9-modem'):
                         m.code_name = "nokia-rm696"
                         m.real_name = "Nokia N9"
+                if s == "Generic OMAP4 (Flattened Device Tree)":
+                    if os.path.exists('/sys/bus/platform/drivers/cpcap_battery/48098000.spi:pmic@0:battery'):
+                        m.code_name = "motorola-xt894"
+                        m.real_name = "Motorola Droid 4"
 
 hw = Hardware()
 

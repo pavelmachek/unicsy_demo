@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python2
 # -*- python -*-
 
 from __future__ import print_function
@@ -13,10 +13,19 @@ import notint
 import sys
 import hardware
 
+class HWLed(notint.ColorDisplay):
+    scales = (1., 1., 1.)
+
+    def change_color(m, val):
+        val = map(lambda x: int((x**2.2)*255), val)
+        (r, g, b) = val
+        (r_, g_, b_) = m.scales
+        hardware.hw.leds.set( (r*r_, g*g_, b*b_ ))
+
 class LEDMonitors(watchdog.AllMonitors):
     def __init__(m):
-        super().__init__()
-        m.led = notint.LedN900()
+        watchdog.AllMonitors.__init__(m)
+        m.led = HWLed()
         m.led.scale = 0.01
         m.sleep_test = False
 
@@ -50,12 +59,9 @@ class LEDMonitors(watchdog.AllMonitors):
 
 class SysMonitors(LEDMonitors):
     def __init__(m):
-        super().__init__()
+        LEDMonitors.__init__(m)
         m.key_wd = watchdog.KeyWatchdog()
         m.screen_wd = watchdog.ScreenWatchdog()
-
-    def run(m):
-        super().run()
 
 if __name__ == "__main__":
     mons = SysMonitors()

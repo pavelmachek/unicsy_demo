@@ -50,7 +50,7 @@ class TtyLocker(Locker):
         os.system("sudo chmod 666 "+m.l_tty)
 
     def screen_off(m):
-        print("Screensppppaver activated")
+        print("Screensaver activated")
         os.system("sudo chvt %d" % m.lock_tty)
         open(m.l_tty, "w").write("Screen locked")
         os.system("date > "+m.l_tty)

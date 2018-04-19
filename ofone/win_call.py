@@ -3,7 +3,7 @@
 # Not to be ran as root.
 
 import sys
-sys.path += [ "../maemo" ]
+sys.path += [ "/usr/share/unicsy/lib" ]
 import mygtk
 mygtk.setup()
 
@@ -14,7 +14,7 @@ class CallWindow(rotatable.SubWindow):
     def call_started(m, name, number, state):
         m.call_name = name
         m.call_number = number
-        m.basic_window()        
+        m.show()
         m.call_button.set_label(m.big("Starting call with "+number))
         
     def call_ended(m, name):

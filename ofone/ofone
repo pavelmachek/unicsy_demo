@@ -9,8 +9,12 @@ sys.path += [ "/usr/share/unicsy/lib" ]
 import mygtk
 mygtk.setup()
 
-import dbus
-import dbus.mainloop.glib
+at_mode = True
+debug_mode = False
+
+if not at_mode:
+    import dbus
+    import dbus.mainloop.glib
 
 import gtk
 import gobject
@@ -19,7 +23,10 @@ import contacts
 import event_log
 import datetime
 import win_sms
-from ofono import *
+if not at_mode:
+    from ofono import *
+else:
+    from at import *
 import notify
 import watchdog
 import rotatable
@@ -27,6 +34,7 @@ import power
 import os
 import pango
 import software
+import hardware
 
 import win_message
 import win_call
@@ -185,6 +193,19 @@ class CallWindow(win_call.CallWindow):
 
     def interior(m):
         table = win_call.CallWindow.interior(m)
+
+        button = gtk.Button("Normal call")
+        button.connect("clicked", lambda _: hardware.hw.audio.mixer_call())
+        table.attach(button, 0,1,5,6)
+        
+        button = gtk.Button("Loud call")
+        button.connect("clicked", lambda _: hardware.hw.audio.mixer_call_loud())
+        table.attach(button, 1,2,5,6)
+        
+        button = gtk.Button("Close")
+        button.connect("clicked", lambda _: m.hide())
+        table.attach(button, 2,3,5,6)
+
         button = gtk.Button("Quiet")
         button.connect("clicked", lambda _: notify.end_incoming("quiet"))
         table.attach(button, 3,4,5,6)
@@ -258,6 +279,8 @@ class MainWindows(ModemCtrl):
         m.events.update(elog.events)
 
     def tick(m):
+        if debug_mode:
+            return
         gobject.timeout_add(20000, lambda: m.tick())
         print("Tick tock")
         m.update_watchdog()
@@ -392,6 +415,8 @@ class MainWindow(power.Power):
         return table
 
     def tick(m):
+        if debug_mode:
+            return
         print("Tick tock")
         m.tick_alerts()
         m.tick_battery()
