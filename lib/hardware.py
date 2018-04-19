@@ -582,7 +582,15 @@ class GPRS(Test):
     name = "gprS"
 
     def run(m):
-        os.system("echo implement me.")        
+        if m.hw.n900:
+            print("use ofono to start GPRS")
+            
+        if m.hw.d4:
+            print("gprs?")
+            os.system("sudo qmicli -d /dev/cdc-wdm0 --wds-follow-network --wds-start-network=apn=internet.t-mobile.cz & sleep 1")
+            os.system("sudo route del default")
+            os.system("sudo ifconfig wwan0 up")
+            os.system("sudo dhclient wwan0")
         
 class Hardware:
     def __init__(m):
@@ -612,8 +620,9 @@ class Hardware:
 
     def hw_probe(m):
         m.debian = os.path.exists('/my/tui/ofone')
-        m.n900 = m.real_name == "nokia-rx51"
-        m.d4 = m.real_name == "motorola-xt894"
+        m.n900 = m.code_name == "nokia-rx51"
+        m.d4 = m.code_name == "motorola-xt894"
+        print("Have hardware: n900 d4: ", m.n900, m.d4)
             
     def startup(m):
         for o in m.all:
@@ -632,17 +641,22 @@ class Hardware:
                 if s == "Nokia RX-51 board":
                     m.code_name = "nokia-rx51"
                     m.real_name = "Nokia N900"
+                    return
                 if s == "Generic OMAP36xx (Flattened Device Tree)":
                     if os.path.exists('/sys/devices/platform/68000000.ocp/48058000.ssi-controller/ssi0/port0/n950-modem'):
                         m.code_name = "nokia-rm680"
                         m.real_name = "Nokia N950"
+                        return
                     if os.path.exists('/sys/devices/platform/68000000.ocp/48058000.ssi-controller/ssi0/port0/n9-modem'):
                         m.code_name = "nokia-rm696"
                         m.real_name = "Nokia N9"
+                        return
                 if s == "Generic OMAP4 (Flattened Device Tree)":
-                    if os.path.exists('/sys/bus/platform/drivers/cpcap_battery/48098000.spi:pmic@0:battery'):
+                    if os.path.exists('/sys/devices/platform/44000000.ocp/48098000.spi/spi_master/spi0/spi0.0/cpcap_battery.0'):
                         m.code_name = "motorola-xt894"
                         m.real_name = "Motorola Droid 4"
+                        return
+        print("Unknown hardware! You'll need to implement detection.")
 
 hw = Hardware()
 
