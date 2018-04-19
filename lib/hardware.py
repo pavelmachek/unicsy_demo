@@ -11,6 +11,7 @@ def sy(s):
     return os.system(s)
 
 def enable_access(s):
+    # This is getting _lists_ of names, so chown is not easy
     #sy("sudo chown $USER "+s)
     sy("sudo chmod 666 "+s)
 
@@ -329,8 +330,6 @@ class LightSensor(Test):
         if os.path.exists( m.path + "0_input" ):
             m.path += "0"
 
-        print("light path", m.path)
-    
     def get_illuminance(m):
         scale = m.read_int(m.path + "_scale")
         val = m.read_int(m.path + "_input")
@@ -564,15 +563,23 @@ class Accelerometer(Test):
 
 class GPS(Test):
     hotkey = "g"
-    name = "GPS"
+    name = "Gps"
 
     def run(m):
-        os.system("echo ofono must be running and modem connected for this.")        
-        os.system("sudo ./gps3 -d")
-
+        if m.hw.n900:
+            os.system("echo ofono must be running and modem connected for this.")        
+            os.system("sudo ./gps3 -d")
+        if m.hw.d4:
+            os.system("sudo /my/libqmi/src/qmicli/qmicli -d /dev/cdc-wdm1 --pds-start-gps | nc -u 127.0.0.1 5000 &")
+        os.system("/my/tui/lib/client.py")
+            
+    def startup(m):
+        if m.hw.d4:
+            os.system("sudo killall gpsd; sleep 1; /usr/sbin/gpsd udp://127.0.0.1:5000")
+        
 class GPRS(Test):
-    hotkey = "G"
-    name = "GPRS"
+    hotkey = "s"
+    name = "gprS"
 
     def run(m):
         os.system("echo implement me.")        
