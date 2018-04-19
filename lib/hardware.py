@@ -276,7 +276,14 @@ class Backlight(Test):
     def startup(m):
         enable_access(m.path)
 
+    def n900_to_d4(m, val):
+        r = math.log(val) / math.log(2)
+        r = r*20 + 50
+        return int(r)
+
     def set(m, i):
+        if m.hw.d4:
+            i = m.n900_to_d4(val)
         m.write(m.path, str(i))
 
     def run(m):
