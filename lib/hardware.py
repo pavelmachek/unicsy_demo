@@ -562,6 +562,21 @@ class Accelerometer(Test):
         print(m.position())
         sy("cat /sys/devices/platform/lis3lv02d/position")
 
+class GPS(Test):
+    hotkey = "g"
+    name = "GPS"
+
+    def run(m):
+        os.system("echo ofono must be running and modem connected for this.")        
+        os.system("sudo ./gps3 -d")
+
+class GPRS(Test):
+    hotkey = "G"
+    name = "GPRS"
+
+    def run(m):
+        os.system("echo implement me.")        
+        
 class Hardware:
     def __init__(m):
         m.battery = Battery()
@@ -575,9 +590,11 @@ class Hardware:
         m.accelerometer = Accelerometer()
         m.leds = LEDs()
         m.torch = Torch()
+        m.gps = GPS()
+        m.gprs = GPRS()
         m.all = [ m.battery, m.backlight, m.light_sensor, m.vibrations, 
                   m.audio, m.camera, m.temperature, m.led, m.accelerometer,
-                  m.torch, m.leds ]
+                  m.torch, m.leds, m.gps, m.gprs ]
 
         m.detect()
         m.hw_probe()

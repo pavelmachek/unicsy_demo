@@ -44,14 +44,6 @@ class Suspend(Test):
     def run(m):
         os.system("echo mem > /sys/power/state")
 
-class GPS(Test):
-    hotkey = "g"
-    name = "GPS"
-
-    def run(m):
-        os.system("echo ofono must be running and modem connected for this.")        
-        os.system("sudo ./gps3 -d")
-
 class Bluetooth(Test):
     hotkey = "e"
     name = "bluEtooth"
@@ -123,7 +115,7 @@ class UI:
         m.tests = hw.all
 
         local = [ LEDs(), 
-                    ChargeBattery(), Suspend(), GPS(), 
+                    ChargeBattery(), Suspend(),
                     Bluetooth(),
                     WIFI(), Autosleep(), AutosleepVerify()]
 
