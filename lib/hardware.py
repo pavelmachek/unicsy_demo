@@ -301,13 +301,15 @@ class Backlight(Test):
         enable_access(m.path)
 
     def n900_to_d4(m, val):
+        if val < 2:
+            return 0
         r = math.log(val) / math.log(2)
         r = r*20 + 50
         return int(r)
 
     def set(m, i):
         if m.hw.d4:
-            i = m.n900_to_d4(val)
+            i = m.n900_to_d4(i)
         m.write(m.path, str(i))
 
     def run(m):
