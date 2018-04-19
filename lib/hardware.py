@@ -153,7 +153,35 @@ class ChargeBattery(Battery):
     def run(m):
         m.fast_charge()
 
-class LEDs(Test):
+class LED(Test):
+    def set_bright(m, s, v):
+        f = open(m.path + s + "/brightness", "w")
+        f.write(str(int(v*m.scale)))
+        f.close()
+
+class Torch(LED):
+    hotkey = "o"
+    name = "Torch"
+    path = "/sys/class/leds/led-controller:"
+    scale = 1.0
+
+    def set(m, val):
+        m.set_bright("flash", val)
+
+    def set_indicator(m, val):
+        m.set_bright("indicator", val)
+
+    def run(m):
+        vals = (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 0)
+        for v in vals:
+            m.set(v)
+            m.set_indicator(255)
+            time.sleep(.3)
+            m.set_indicator(0)
+            time.sleep(.3)
+
+
+class LEDs(LED):
     hotkey = "l"
     name = "LEDs"
     scale = 0.1
@@ -181,11 +209,6 @@ class LEDs(Test):
     # /sys/class/leds/button-backlight
     # for touchscreen buttons.
 
-    def set_bright(m, s, v):
-        f = open(m.path + s + "/brightness", "w")
-        f.write(str(int(v*m.scale)))
-        f.close()
-        
     def set(m, val):
         (r, g, b) = val
         if m.white:
@@ -551,8 +574,10 @@ class Hardware:
         m.led = AccelLED()
         m.accelerometer = Accelerometer()
         m.leds = LEDs()
+        m.torch = Torch()
         m.all = [ m.battery, m.backlight, m.light_sensor, m.vibrations, 
-                  m.audio, m.camera, m.temperature, m.led, m.accelerometer, m.leds ]
+                  m.audio, m.camera, m.temperature, m.led, m.accelerometer,
+                  m.torch, m.leds ]
 
         m.detect()
         m.hw_probe()

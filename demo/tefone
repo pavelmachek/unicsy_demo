@@ -120,13 +120,16 @@ class AutosleepVerify(Autosleep):
 
 class UI:
     def __init__(m):
-        m.tests = ( Vibrations(), LEDs(), Backlight(), Battery(), 
-                    ChargeBattery(), Audio(), Suspend(), GPS(), 
-                    Bluetooth(), LightSensor(), Camera(), Temperature(),
-                    WIFI(), Accelerometer(), Autosleep(), AutosleepVerify(),
-                    AccelLED())
-        for t in m.tests:
+        m.tests = hw.all
+
+        local = [ LEDs(), 
+                    ChargeBattery(), Suspend(), GPS(), 
+                    Bluetooth(),
+                    WIFI(), Autosleep(), AutosleepVerify()]
+
+        for t in local:
             t.probe()
+        m.tests += local
 
     def status(m):
         print("Hello, world")
