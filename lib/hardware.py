@@ -593,7 +593,20 @@ class GPRS(Test):
             os.system("sudo route del default")
             os.system("sudo ifconfig wwan0 up")
             os.system("sudo dhclient wwan0")
-        
+
+class Touchscreen(Test):
+    hotkey = "u"
+    name = "toUchscreen"
+
+    def run(m):
+        pass
+
+    def enabled(m, on):
+        dev = "Atmel maXTouch Touchscreen"
+        if m.hw.n900:
+            dev = "TSC2005 touchscreen"
+        sy('xinput set-prop "%s" "Device Enabled" %d' % (dev , on))
+            
 class Hardware:
     def __init__(m):
         m.battery = Battery()
@@ -609,9 +622,10 @@ class Hardware:
         m.torch = Torch()
         m.gps = GPS()
         m.gprs = GPRS()
+        m.touchscreen = Touchscreen()
         m.all = [ m.battery, m.backlight, m.light_sensor, m.vibrations, 
                   m.audio, m.camera, m.temperature, m.led, m.accelerometer,
-                  m.torch, m.leds, m.gps, m.gprs ]
+                  m.torch, m.leds, m.gps, m.gprs, m.touchscreen ]
 
         m.detect()
         m.hw_probe()
