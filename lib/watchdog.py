@@ -42,6 +42,9 @@ class LocationWatchdog(Watchdog):
 
     def read_loc(m):
         l = m.read()
+        if not l:
+            m.pos = None
+            return None
         lat_lon = l[0].split(' ')
         lat_lon = lat_lon[0:2]
         m.pos.lat, m.pos.lon = tuple(map(float, lat_lon))

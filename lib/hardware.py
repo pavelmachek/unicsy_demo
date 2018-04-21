@@ -13,7 +13,8 @@ def sy(s):
 def enable_access(s):
     # This is getting _lists_ of names, so chown is not easy
     #sy("sudo chown $USER "+s)
-    sy("sudo chmod 666 "+s)
+    # 666 does not work well, as someone uses it on directories?!
+    sy("sudo chmod 777 "+s)
 
 class Test:
     def write(m, s, v):
