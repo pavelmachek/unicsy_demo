@@ -84,12 +84,13 @@ class XLocker(Locker):
 
     def screen_off(m):
         Locker.screen_off(m)
-        os.system('xinput set-prop "TSC2005 touchscreen" "Device Enabled" 0')
+        hardware.hw.touchscreen.enabled(0)
         hardware.hw.backlight.set(0)
 
     def screen_on(m, complete = True):
         Locker.screen_on(m)
         hardware.hw.backlight.set(100)
+        hardware.hw.touchscreen.enabled(1)
         os.system('xinput set-prop "TSC2005 touchscreen" "Device Enabled" 1')
         if complete:
             os.system("xscreensaver-command -deactivate")
