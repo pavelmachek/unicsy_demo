@@ -153,7 +153,6 @@ class PhonePanel(rotatable.Panel):
         m.signal_bar.set_fraction(m.wd.signal / 100.)
 
     def tick(m):
-        print("Tick tock")
         m.tick_battery()
         m.tick_time()
         m.tick_phone()

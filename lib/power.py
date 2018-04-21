@@ -288,7 +288,6 @@ class Power(rotatable.SubWindow):
             hardware.hw.led.set(val)
 
     def tick(m):
-        print("Tick tock")
         m.tick_alerts()
         m.tick_battery()
         m.tick_status_text()

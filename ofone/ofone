@@ -9,8 +9,15 @@ sys.path += [ "/usr/share/unicsy/lib" ]
 import mygtk
 mygtk.setup()
 
-at_mode = True
+at_mode = False
 debug_mode = False
+
+if len(sys.argv) > 1:
+    for a in sys.argv[1:]:
+        if a == '--at' or a == '-a':
+            at_mode = True
+        if a == '--debug' or a == '-d':
+            debug_mode = True
 
 if not at_mode:
     import dbus
@@ -282,7 +289,6 @@ class MainWindows(ModemCtrl):
         if debug_mode:
             return
         gobject.timeout_add(20000, lambda: m.tick())
-        print("Tick tock")
         m.update_watchdog()
 
     def call_started(m, name, number, state):
@@ -417,7 +423,6 @@ class MainWindow(power.Power):
     def tick(m):
         if debug_mode:
             return
-        print("Tick tock")
         m.tick_alerts()
         m.tick_battery()
         m.tick_status_text()
@@ -439,7 +444,8 @@ notify = notify.NotifyInterface()
 elog = EventLog()
 mw = MainWindows()
 if len(sys.argv) > 1:
-    if sys.argv[1] == '--primary':
-        mw.make_primary()
+    for a in sys.argv[1:]:
+        if a == '--primary' or a == '-p':
+            mw.make_primary()
         
 gtk.main()
