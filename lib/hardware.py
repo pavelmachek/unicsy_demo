@@ -11,8 +11,10 @@ def sy(s):
     return os.system(s)
 
 def enable_access(s):
+    # Chown does not work well -- we sometimes have more than one argument
     #sy("sudo chown $USER "+s)
-    sy("sudo chmod 666 "+s)
+    # 666 does not work well, as someone uses it on directories?!
+    sy("sudo chmod 777 "+s)
 
 class Test:
     def write(m, s, v):
