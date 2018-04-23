@@ -121,7 +121,7 @@ class Phone:
         m.line_buf = ""
         # | glib.IO_OUT | glib.IO_PRI | glib.IO_ERR | glib.IO_HUP
         glib.io_add_watch(m.at, glib.IO_IN, m.data_ready, m)
-        m.l = "\r\n"
+        m.l = "\r"
         
 
 class PhoneSim(Phone):
@@ -185,7 +185,7 @@ class ModemCtrl(PhoneUSB):
         fail()
         
     def send_sms(m, number, message):
-        at = 'AT+CMGS="'+number+'"'+m.l
+        at = 'AT+CMGS="'+number+'"\r'
         print("sms>>> ", at)
         m.at.write(at)
         time.sleep(.1)
