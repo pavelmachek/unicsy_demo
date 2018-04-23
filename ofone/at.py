@@ -99,7 +99,7 @@ class Phone:
         return True
 
     def run(m):
-        m.at.write("ATI\n")
+        m.at.write("ATI"+m.l)
         while True:
             r = m.at.read(1)
             print(r[0], end='')
@@ -107,7 +107,7 @@ class Phone:
     def command(m, s):
         #m.log(">>> "+ s)
         print(">>> ", s)
-        m.at.write(s + "\n")
+        m.at.write(s + m.l)
         if m.expect_next != "":
             print("New expectation, but old one was not yet met", m.expect_next, m.expect_reason)
         m.expect_reason = "Command was sent"
@@ -121,6 +121,7 @@ class Phone:
         m.line_buf = ""
         # | glib.IO_OUT | glib.IO_PRI | glib.IO_ERR | glib.IO_HUP
         glib.io_add_watch(m.at, glib.IO_IN, m.data_ready, m)
+        m.l = "\r\n"
         
 
 class PhoneSim(Phone):
@@ -153,11 +154,13 @@ class ModemCtrl(PhoneUSB):
 
     def modem_init(m):
         m.registration = {}
+        m.command(chr(0x03) + "ATE0")
         m.command("ATE0")
         m.command("AT+CVHU=0")
         m.command("AT+CMGF=1")
         # Forward messages to me.
         m.command("AT+CNMI=1,2")
+        #m.command("AT+CFUN=1")
 
     def startup(m):
         m.online_modem()
@@ -182,9 +185,11 @@ class ModemCtrl(PhoneUSB):
         fail()
         
     def send_sms(m, number, message):
-        at = 'AT+CMGS="'+number+'"\n'
+        at = 'AT+CMGS="'+number+'"'+m.l
         print("sms>>> ", at)
-        m.command(at+message+'\n'+chr(0x1a))
+        m.at.write(at)
+        time.sleep(.1)
+        m.command(message+chr(0x1a))
 
     def connect_internet(m):
         fail()
