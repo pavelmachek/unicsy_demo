@@ -100,7 +100,10 @@ xbindkeys -f /my/xbindkeysrc
         cmd += build_script('3_monitor', p+'monitor/mond')
         if debian and n900:
             cmd += build_script('4_keys',    p+'hacks/keyd')
-        cmd += build_script('5_ofone',   pmos_sudo+p+'ofone/ofone --primary')
+        o = ""
+        if d4:
+            o += " -a"
+        cmd += build_script('5_ofone',   pmos_sudo+p+'ofone/ofone --primary'+o)
         if debian:
             if n900:
                 cmd += build_script('6_cmtspeech', '/my/libcmtspeechdata/run')
