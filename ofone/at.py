@@ -182,10 +182,11 @@ class ModemCtrl(PhoneUSB):
         fail()
         
     def send_sms(m, number, message):
-        #print("sms>>> ", 'AT+CMGS="'+number+'"\n')
-        #m.at.write()
-        #time.sleep(.1)
-        m.command('AT+CMGS="'+number+'"\n'+message+chr(0x1a))
+        at = 'AT+CMGS="'+number+'"\n'
+        print("sms>>> ", at)
+        #m.at.write('AT+CMGS="'+number+'"\n')
+        #time.sleep(1)
+        m.command(at+message+'\n'+chr(0x1a))
 
     def connect_internet(m):
         fail()
