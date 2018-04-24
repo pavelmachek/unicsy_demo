@@ -54,10 +54,11 @@ while 1:
         wall("Adjusted voltage low, shutdown")
         s = "critical"
     wd.write(s, "%d%%" % bat.perc)
-    print("(", time.time(),
-          ", ", bat.volt,
-          ", ", bat.volt3,
-          ", ", bat.perc,
-          ", ", bat.perc3,
-          ", ", bat.current, ")")
+    if True:
+        print("(", time.time(),
+              ", ", bat.volt,
+              ", ", bat.volt3,
+              ", ", bat.perc,
+              ", ", bat.perc3,
+              ", ", bat.current, ")")
     time.sleep(30)
