@@ -103,7 +103,7 @@ class Battery(Test):
         if m.hw.n900:
             resistance = 0.43 # Suitable for old N900
         else:
-            resistance = 0.15
+            resistance = 0.08
         volt3 = volt + (current2 / 1000. * resistance)
         perc3 = m.percent(volt3)
 
@@ -641,7 +641,7 @@ class Hardware:
         m.debian = os.path.exists('/my/tui/ofone')
         m.n900 = m.code_name == "nokia-rx51"
         m.d4 = m.code_name == "motorola-xt894"
-        print("Have hardware: n900 d4: ", m.n900, m.d4)
+        #print("Have hardware: n900 d4: ", m.n900, m.d4)
             
     def startup(m):
         for o in m.all:
@@ -656,7 +656,7 @@ class Hardware:
                 s = l1.split(":")
                 s = s[1]
                 s = s[1:-1]
-                print("Have hardware", s)
+                #print("Have hardware", s)
                 if s == "Nokia RX-51 board":
                     m.code_name = "nokia-rx51"
                     m.real_name = "Nokia N900"
