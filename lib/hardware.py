@@ -6,6 +6,7 @@ from __future__ import print_function
 import math
 import time
 import os
+import sys
 
 def sy(s):
     return os.system(s)
@@ -110,7 +111,8 @@ class Battery(Test):
               "%d%% %d%% %d%%" % (int(perc), int(perc3), perc2), \
               "%d/%d mAh" % (charge_now, charge_full), \
               status, \
-              "%d/%d/%d mA" % (int(-current2), current, limit) )
+              "%d/%d/%d mA" % (int(-current2), current, limit),
+              file=sys.stderr )
         m.perc = perc
         m.perc2 = perc2
         m.perc3 = perc3
