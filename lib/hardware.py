@@ -69,8 +69,7 @@ class Battery(Test):
         return 19.66+100*math.sqrt(u)
 
     def run(m):
-        volt = int(m.read(m.battery+"/voltage_now"))
-        volt /= 1000000.
+        volt = m.read_int(m.battery+"/voltage_now") / 1000000.
         perc = m.percent(volt)
         
         status = m.read(m.charger+"/status")[:-1]
@@ -80,15 +79,19 @@ class Battery(Test):
 
         charge_now = m.read_int(m.battery+"/charge_now") / 1000
         charge_full = m.read_int(m.battery+"/charge_full") / 1000
+        if charge_now < 0:
+            charge_now = m.read_int(m.battery+"/charge_counter") / 1000
         #perc2 = int(m.read(m.battery+"/capacity"))
         # Buggy in v4.4
         perc2 = 0
-        if charge_now >= 0:
+        if charge_full >= 0:
             perc2 = int((charge_now * 100.) / charge_full)
 
         charge_design = m.read_int(m.battery+"/charge_full_design") / 1000
-        volt2 = m.read_int(m.battery+"/voltage_now") / 1000000.
+        # FIXME: volt2 from the other sensor on N900?
+        volt2 = volt
         current2 = m.read_int(m.battery+"/current_now") / 1000.
+        current_avg = m.read_int(m.battery+"/current_avg") / 1000.
 
         # http://www.buchmann.ca/Chap9-page3.asp
         # 0.49 ohm is between "poor" and "fail".
@@ -101,11 +104,11 @@ class Battery(Test):
         volt3 = volt + (current2 / 1000. * resistance)
         perc3 = m.percent(volt3)
 
-        print("Battery %.2fV %.2fV %.2fV" % (volt, volt2, volt3), \
-              "%d%% %d%% %d%%" % (int(perc), int(perc3), perc2), \
+        print("Battery (%.2fV) %.2fV" % (volt, volt3), \
+              "(%d%%) %d%% %d%%" % (int(perc), int(perc3), perc2), \
               "%d/%d mAh" % (charge_now, charge_full), \
               status, \
-              "%d/%d/%d mA" % (int(-current2), current, limit),
+              "%d %d %d/%d mA" % (int(-current2), int(-current_avg), current, limit),
               file=sys.stderr )
         m.perc = perc
         m.perc2 = perc2
