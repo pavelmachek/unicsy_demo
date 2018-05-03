@@ -74,24 +74,18 @@ class Battery(Test):
         perc = m.percent(volt)
         
         status = m.read(m.charger+"/status")[:-1]
-        try:
-            current = int(m.read(m.charger+"/charge_current"))
-            limit = int(m.read(m.charger+"/current_limit"))
-        except:
-            current = -1
-            limit = -1
 
-        try:
-            charge_now = int(m.read(m.battery+"/charge_now")) / 1000
-            charge_full = int(m.read(m.battery+"/charge_full")) / 1000
-            #perc2 = int(m.read(m.battery+"/capacity"))
-            # Buggy in v4.4
+        current = m.read_int(m.charger+"/charge_current")
+        limit = m.read_int(m.charger+"/current_limit")
+
+        charge_now = m.read_int(m.battery+"/charge_now") / 1000
+        charge_full = m.read_int(m.battery+"/charge_full") / 1000
+        #perc2 = int(m.read(m.battery+"/capacity"))
+        # Buggy in v4.4
+        perc2 = 0
+        if charge_now >= 0:
             perc2 = int((charge_now * 100.) / charge_full)
-        except:
-            # bq27x00-battery 2-0055: battery is not calibrated! ignoring capacity values
-            charge_now = 0
-            charge_full = 0
-            perc2 = 0
+
         charge_design = m.read_int(m.battery+"/charge_full_design") / 1000
         volt2 = m.read_int(m.battery+"/voltage_now") / 1000000.
         current2 = m.read_int(m.battery+"/current_now") / 1000.
