@@ -80,7 +80,8 @@ class Battery(Test):
         charge_now = m.read_int(m.battery+"/charge_now") / 1000
         charge_full = m.read_int(m.battery+"/charge_full") / 1000
         if charge_now < 0:
-            charge_now = m.read_int(m.battery+"/charge_counter") / 1000
+            charge_now = -m.read_int(m.battery+"/charge_counter") / 1000
+
         #perc2 = int(m.read(m.battery+"/capacity"))
         # Buggy in v4.4
         perc2 = 0
@@ -141,11 +142,14 @@ class Battery(Test):
     def startup(m):
         if m.hw.n900:
             # Disable yellow battery light:
-            enable_access('/sys/class/power_supply/bq24150a-0/stat_pin_enable')
-            sy('echo 0 > /sys/class/power_supply/bq24150a-0/stat_pin_enable')
+            m.write_root(m.charger+'/stat_pin_enable', '0')
             # Enable charger control from non-root
-            enable_access('/sys/class/power_supply/bq24150a-0/current_limit')
+            enable_access(m.charger+'/current_limit')
             m.fast_charge(500)
+        if m.hw.d4:
+            m.write_root(m.charger + "/constant_charge_current", "532000")
+            m.write_root(m.charger + "/constant_charge_voltage", "4100000")
+            m.write_root(m.charger + "/charge_control_limit", "0")
 
 class ChargeBattery(Battery):
     hotkey = "B"
