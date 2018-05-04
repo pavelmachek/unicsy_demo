@@ -293,8 +293,9 @@ class Backlight(Test):
     def probe(m):
         m.path = "/sys/class/backlight/"
         p = os.listdir(m.path)
-        m.path += p[0]
-        m.path += "/brightness"
+        if p:
+            m.path += p[0]
+            m.path += "/brightness"
 
     def startup(m):
         enable_access(m.path)
@@ -318,11 +319,12 @@ class LightSensor(Test):
         m.directory = m.probe_paths( "/sys/bus/i2c/drivers",
                                 [ "/tsl2563/2-0029/iio:device1/",
                                   "/isl29028/1-0044/iio:device2/" ] )
-        m.path = m.directory + "in_illuminance"
-        if os.path.exists( m.path + "0_input" ):
-            m.path += "0"
+        if m.directory:
+            m.path = m.directory + "in_illuminance"
+            if os.path.exists( m.path + "0_input" ):
+                m.path += "0"
 
-        print("light path", m.path)
+            print("light path", m.path)
     
     def get_illuminance(m):
         scale = m.read_int(m.path + "_scale")
