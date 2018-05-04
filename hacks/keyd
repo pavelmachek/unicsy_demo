@@ -1,6 +1,6 @@
 #!/usr/bin/python2
 # -*- python -*-
-# Needs "pip3 install evdev"
+# Needs "pip install evdev"
 #
 # On pmos, needs:
 # apk add py2-pip linux-headers gcc g++ python2-dev
