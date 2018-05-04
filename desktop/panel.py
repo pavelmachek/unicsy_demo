@@ -129,6 +129,7 @@ class PhonePanel(rotatable.Panel):
         s = ('%d%%' % p) + s
 
         m.battery_text.set_text(s)
+        if p > 100: p = 100
         m.battery_bar.set_fraction(p / 100.)
 
         if b.current > 0:
@@ -152,7 +153,6 @@ class PhonePanel(rotatable.Panel):
         m.signal_bar.set_fraction(m.wd.signal / 100.)
 
     def tick(m):
-        print("Tick tock")
         m.tick_battery()
         m.tick_time()
         m.tick_phone()

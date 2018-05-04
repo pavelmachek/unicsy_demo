@@ -18,7 +18,9 @@ class MediaPlayer:
             m.play_cmd = [ 'mplayer' ]
         else:
             m.audio = "/usr/share/sounds/linphone/rings/"
-            m.play_cmd = [ 'aplay', '-D', 'plughw:CARD=Audio,DEV=0' ]
+            m.play_cmd = [ 'aplay' ]
+            if hardware.hw.d4:
+                m.play_cmd += [ '-D', 'plughw:CARD=Audio,DEV=0' ]
 
     def playback_finished(m):
         if not m.player:

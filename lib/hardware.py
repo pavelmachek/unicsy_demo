@@ -6,13 +6,16 @@ from __future__ import print_function
 import math
 import time
 import os
+import sys
 
 def sy(s):
     return os.system(s)
 
 def enable_access(s):
+    # This is getting _lists_ of names, so chown is not easy
     #sy("sudo chown $USER "+s)
-    sy("sudo chmod 666 "+s)
+    # 666 does not work well, as someone uses it on directories?!
+    sy("sudo chmod 777 "+s)
 
 class Test:
     def write(m, s, v):
@@ -100,7 +103,7 @@ class Battery(Test):
         if m.hw.n900:
             resistance = 0.43 # Suitable for old N900
         else:
-            resistance = 0.15
+            resistance = 0.08
         volt3 = volt + (current2 / 1000. * resistance)
         perc3 = m.percent(volt3)
 
@@ -108,7 +111,8 @@ class Battery(Test):
               "%d%% %d%% %d%%" % (int(perc), int(perc3), perc2), \
               "%d/%d mAh" % (charge_now, charge_full), \
               status, \
-              "%d/%d/%d mA" % (int(-current2), current, limit) )
+              "%d/%d/%d mA" % (int(-current2), current, limit),
+              file=sys.stderr )
         m.perc = perc
         m.perc2 = perc2
         m.perc3 = perc3
@@ -300,7 +304,16 @@ class Backlight(Test):
     def startup(m):
         enable_access(m.path)
 
+    def n900_to_d4(m, val):
+        if val < 2:
+            return 0
+        r = math.log(val) / math.log(2)
+        r = r*20 + 50
+        return int(r)
+
     def set(m, i):
+        if m.hw.d4:
+            i = m.n900_to_d4(i)
         m.write(m.path, str(i))
 
     def run(m):
@@ -324,8 +337,6 @@ class LightSensor(Test):
             if os.path.exists( m.path + "0_input" ):
                 m.path += "0"
 
-            print("light path", m.path)
-    
     def get_illuminance(m):
         scale = m.read_int(m.path + "_scale")
         val = m.read_int(m.path + "_input")
@@ -557,6 +568,50 @@ class Accelerometer(Test):
         print(m.position())
         sy("cat /sys/devices/platform/lis3lv02d/position")
 
+class GPS(Test):
+    hotkey = "g"
+    name = "Gps"
+
+    def run(m):
+        if m.hw.n900:
+            os.system("echo ofono must be running and modem connected for this.")        
+            os.system("sudo ./gps3 -d")
+        if m.hw.d4:
+            os.system("sudo /my/libqmi/src/qmicli/qmicli -d /dev/cdc-wdm1 --pds-start-gps | nc -u 127.0.0.1 5000 &")
+        os.system("/my/tui/lib/client.py")
+            
+    def startup(m):
+        if m.hw.d4:
+            os.system("sudo killall gpsd; sleep 1; /usr/sbin/gpsd udp://127.0.0.1:5000")
+        
+class GPRS(Test):
+    hotkey = "s"
+    name = "gprS"
+
+    def run(m):
+        if m.hw.n900:
+            print("use ofono to start GPRS")
+            
+        if m.hw.d4:
+            print("gprs?")
+            os.system("sudo qmicli -d /dev/cdc-wdm0 --wds-follow-network --wds-start-network=apn=internet.t-mobile.cz & sleep 1")
+            os.system("sudo route del default")
+            os.system("sudo ifconfig wwan0 up")
+            os.system("sudo dhclient wwan0")
+
+class Touchscreen(Test):
+    hotkey = "u"
+    name = "toUchscreen"
+
+    def run(m):
+        pass
+
+    def enabled(m, on):
+        dev = "Atmel maXTouch Touchscreen"
+        if m.hw.n900:
+            dev = "TSC2005 touchscreen"
+        sy('xinput set-prop "%s" "Device Enabled" %d' % (dev , on))
+            
 class Hardware:
     def __init__(m):
         m.battery = Battery()
@@ -570,9 +625,12 @@ class Hardware:
         m.accelerometer = Accelerometer()
         m.leds = LEDs()
         m.torch = Torch()
+        m.gps = GPS()
+        m.gprs = GPRS()
+        m.touchscreen = Touchscreen()
         m.all = [ m.battery, m.backlight, m.light_sensor, m.vibrations, 
                   m.audio, m.camera, m.temperature, m.led, m.accelerometer,
-                  m.torch, m.leds ]
+                  m.torch, m.leds, m.gps, m.gprs, m.touchscreen ]
 
         m.detect()
         m.hw_probe()
@@ -583,8 +641,9 @@ class Hardware:
 
     def hw_probe(m):
         m.debian = os.path.exists('/my/tui/ofone')
-        m.n900 = m.real_name == "nokia-rx51"
-        m.d4 = m.real_name == "motorola-xt894"
+        m.n900 = m.code_name == "nokia-rx51"
+        m.d4 = m.code_name == "motorola-xt894"
+        #print("Have hardware: n900 d4: ", m.n900, m.d4)
             
     def startup(m):
         for o in m.all:
@@ -599,21 +658,26 @@ class Hardware:
                 s = l1.split(":")
                 s = s[1]
                 s = s[1:-1]
-                print("Have hardware", s)
+                #print("Have hardware", s)
                 if s == "Nokia RX-51 board":
                     m.code_name = "nokia-rx51"
                     m.real_name = "Nokia N900"
+                    return
                 if s == "Generic OMAP36xx (Flattened Device Tree)":
                     if os.path.exists('/sys/devices/platform/68000000.ocp/48058000.ssi-controller/ssi0/port0/n950-modem'):
                         m.code_name = "nokia-rm680"
                         m.real_name = "Nokia N950"
+                        return
                     if os.path.exists('/sys/devices/platform/68000000.ocp/48058000.ssi-controller/ssi0/port0/n9-modem'):
                         m.code_name = "nokia-rm696"
                         m.real_name = "Nokia N9"
+                        return
                 if s == "Generic OMAP4 (Flattened Device Tree)":
-                    if os.path.exists('/sys/bus/platform/drivers/cpcap_battery/48098000.spi:pmic@0:battery'):
+                    if os.path.exists('/sys/devices/platform/44000000.ocp/48098000.spi/spi_master/spi0/spi0.0/cpcap_battery.0'):
                         m.code_name = "motorola-xt894"
                         m.real_name = "Motorola Droid 4"
+                        return
+        print("Unknown hardware! You'll need to implement detection.")
 
 hw = Hardware()
 
