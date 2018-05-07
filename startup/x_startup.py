@@ -71,7 +71,7 @@ xbindkeys -f /my/xbindkeysrc
         except:
             print("ofono unavailable")
 
-        if debian:
+        if debian and n900:
             wd.progress(30, "modem enable")
             sy('./enable-modem')
             time.sleep(1)
