@@ -147,8 +147,8 @@ class Battery(Test):
             enable_access(m.charger+'/current_limit')
             m.fast_charge(500)
         if m.hw.d4:
-            m.write_root(m.charger + "/constant_charge_current", "532000")
-            m.write_root(m.charger + "/constant_charge_voltage", "4100000")
+            #m.write_root(m.charger + "/constant_charge_current", "532000")
+            #m.write_root(m.charger + "/constant_charge_voltage", "4100000")
             m.write_root(m.charger + "/charge_control_limit", "0")
 
 class ChargeBattery(Battery):
