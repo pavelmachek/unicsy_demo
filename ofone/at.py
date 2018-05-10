@@ -156,18 +156,17 @@ class ModemCtrl(PhoneUSB):
         m.registration = {}
         m.command(chr(0x03) + "ATE0")
         m.command("ATE0")
+        m.command("AT+CFUN=1")        
         # Allow terminating voice calls with ATH.
         m.command("AT+CVHU=0")
+        m.command("AT+CREG=2")
         # Format 0: PDU, 1: text
-        m.command("AT+CMGF=1")
-        # Forward messages to me.
+        m.command("AT+CMGF=0")
+        m.command('AT+CPMS="ME","ME","ME"')
+        # Forward messages to me.        
         m.command("AT+CNMI=1,2,2,1,0")
-        #m.command("AT+CNMI=1,2")
-        m.command("AT+CFUN=1")
-
-        #m.command("AT+CSMS=1")
-        #m.command("AT+CGSMS=3")
-        
+        m.command("AT+CSMS=1")
+        m.command("AT+CGSMS=3")
 
     def startup(m):
         m.online_modem()
