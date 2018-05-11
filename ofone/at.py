@@ -94,6 +94,7 @@ class Phone:
             m.line_buf = ""
             if line != "":
                 m.log("<" + line + "_")
+                #print("<" + line + "_")
                 m.line_ready(line)
             
         return True
@@ -108,10 +109,12 @@ class Phone:
         #m.log(">>> "+ s)
         print(">>> ", s)
         m.at.write(s + m.l)
+        time.sleep(.3)
         if m.expect_next != "":
             print("New expectation, but old one was not yet met", m.expect_next, m.expect_reason)
         m.expect_reason = "Command was sent"
         m.expect_next = "OK"
+        #m.data_ready(None, None, None)
 
     def open(m):
         m.open_file()
@@ -154,19 +157,55 @@ class ModemCtrl(PhoneUSB):
 
     def modem_init(m):
         m.registration = {}
-        m.command(chr(0x03) + "ATE0")
-        m.command("ATE0")
-        m.command("AT+CFUN=1")        
+        m.command("ATE0Q0V1")
         # Allow terminating voice calls with ATH.
         m.command("AT+CVHU=0")
-        m.command("AT+CREG=2")
+        #m.command("AT+CREG=2")
         # Format 0: PDU, 1: text
-        m.command("AT+CMGF=0")
-        m.command('AT+CPMS="ME","ME","ME"')
+        m.command("AT+CMGF=1")
+        #m.command('AT+CPMS="ME","ME","ME"')
         # Forward messages to me.        
         m.command("AT+CNMI=1,2,2,1,0")
+        # 1 -- advanced system
+        #m.command("AT+CSMS=0")
+        #m.command("AT+CGSMS=3")
+        # Takes long -> last?!
+        m.command("AT+CFUN=1")
+
+    def modem_init_ofono(m):
+        m.registration = {}
+        m.command("ATE0Q0V1")
+        # For voice calls
+        m.command("AT+CVHU=0")
+        m.command("AT+CFUN=1")
+        m.command("AT+CGMI")
+        m.command("AT+CGMR")
+        m.command("AT+CPIN?")
+        m.command("AT+CSCS?")
+        m.command("AT+CUSD=1")
+        m.command("AT+CAOC=2")
+        m.command("AT+CSMS=?")
+        m.command("AT+CSCS=?")
+        m.command("AT+CREG=2")
         m.command("AT+CSMS=1")
+        m.command("AT+CPBS=?")
+        m.command("AT+CSMS?")
+        m.command("AT+CMGF=?")
+        m.command("AT+CMER=3,0,0,1")
+        m.command("AT+CPMS=?")
+        m.command("AT+CREG?")
+        m.command("AT+CMGF=0")
+        m.command("AT+COPS=3,2")
+        m.command("AT+COPS?")
+        m.command('AT+CPMS="ME","ME","ME"')
+        m.command("AT+COPS=3,0")
+        m.command("AT+COPS?")
+        m.command('AT+CPMS="ME","ME","ME"')
+        m.command("AT+CNMI=?")
+        m.command("AT+CNMI=1,2,2,1,0")
+        m.command("AT+CMGL=4")
         m.command("AT+CGSMS=3")
+        m.command("AT+COPS?")
 
     def startup(m):
         m.online_modem()
