@@ -326,8 +326,6 @@ class MainWindows(ModemCtrl):
             
     def __init__(m):
         ModemCtrl.__init__(m)
-        m.modem_init()
-
         m.main = MainWindow()
         m.main.basic_main_window()        
         m.main.show()
@@ -340,6 +338,8 @@ class MainWindows(ModemCtrl):
         m.update_events()
         
         m.message_windows = []
+
+        m.modem_init()
 
         m.startup()
         m.primary = False
