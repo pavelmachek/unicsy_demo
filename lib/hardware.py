@@ -93,6 +93,7 @@ class Battery(Test):
         volt2 = volt
         current2 = m.read_int(m.battery+"/current_now") / 1000.
         current_avg = m.read_int(m.battery+"/current_avg") / 1000.
+        charge_counter = m.read_int(m.battery+"/charge_counter") / 1000.
 
         # http://www.buchmann.ca/Chap9-page3.asp
         # 0.49 ohm is between "poor" and "fail".
@@ -118,7 +119,9 @@ class Battery(Test):
         m.volt2 = volt2
         m.volt3 = volt3
         m.status = status
-        m.current = -current2
+        m.current = -current2 # >0 : charging
+        m.current_avg = -current_avg
+        m.charge_counter = -charge_counter # increases: charging
         m.max_battery_current = current
         m.charger_limit = limit
 
@@ -336,6 +339,7 @@ class LightSensor(Test):
     def probe(m):
         m.directory = m.probe_paths( "/sys/bus/i2c/drivers",
                                 [ "/tsl2563/2-0029/iio:device1/",
+                                  "/isl29028/1-0044/iio:device1/",
                                   "/isl29028/1-0044/iio:device2/" ] )
         if m.directory:
             m.path = m.directory + "in_illuminance"
