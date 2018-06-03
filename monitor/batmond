@@ -18,6 +18,8 @@ def wall(s):
 
 wd = watchdog.Watchdog("battery")
 bat = hardware.hw.battery
+last_counter = None
+step = 30
 while 1:
     bat.run()
     s = bat.summary()
@@ -54,14 +56,23 @@ while 1:
         wall("Adjusted voltage low, shutdown")
         s = "critical"
     wd.write(s, "%d%%" % bat.perc)
+    if last_counter is None:
+        aacur = 0
+    else:
+        # in uAh
+        aacur = (bat.charge_counter - last_counter) / (step/3600)
+        # WTF? Is that right?
+    
     if True:
         print("utime=%.3f"% time.time(),
               "batvolt=%.3f" % bat.volt,
               "bativolt=%.3f" % bat.volt3,
               "batperc=%.1f" % bat.perc,
               "batiperc=%.1f" % bat.perc3,
-              "batcur=%.5f" % (bat.current / 1000.),
-              "batacur=%.5f" % (bat.current_avg / 1000.),
-              "charge=%f" % bat.charge_counter)
+              "batcur=%.5f" % bat.current,
+              "batacur=%.5f" % bat.current_avg,
+              "bataacur=%f" % aacur,
+              "charge=%f" % (bat.charge_counter * 1000))
+    last_counter = bat.charge_counter
     sys.stdout.flush()
-    time.sleep(30)
+    time.sleep(step)
