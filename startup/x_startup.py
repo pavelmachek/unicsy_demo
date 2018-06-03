@@ -70,13 +70,18 @@ xbindkeys -f /my/xbindkeysrc
             os.chdir('/my/ofono/test')
         except:
             print("ofono unavailable")
+        if debian and d4:
+            sy('sudo /my/ofono/src/ofonod')
+        d4_sudo = ""
+        if d4:
+            d4_sudo = "sudo "
 
         if debian and n900:
             wd.progress(30, "modem enable")
-            sy('./enable-modem')
+            sy(d4_sudo+'./enable-modem')
             time.sleep(1)
             wd.progress(40, "modem online")
-            sy('./online-modem')
+            sy(d4_sudo+'./online-modem')
             time.sleep(1)
 
         def build_script(name, cmd):
@@ -101,9 +106,9 @@ xbindkeys -f /my/xbindkeysrc
         if debian and n900:
             cmd += build_script('4_keys',    p+'hacks/keyd')
         o = ""
-        if d4:
-            o += " -a"
-        cmd += build_script('5_ofone',   pmos_sudo+p+'ofone/ofone --primary'+o)
+#        if d4:
+#            o += " -a"
+        cmd += build_script('5_ofone',   d4_sudo+pmos_sudo+p+'ofone/ofone --primary'+o)
         if debian:
             if n900:
                 cmd += build_script('6_cmtspeech', '/my/libcmtspeechdata/run')
