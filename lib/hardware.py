@@ -315,6 +315,10 @@ class Backlight(Test):
     def set(m, i):
         if m.hw.d4:
             i = m.n900_to_d4(i)
+        if i < 0:
+            i = 255
+        if i > 255:
+            i = 255
         m.write(m.path, str(i))
 
     def run(m):
@@ -374,7 +378,7 @@ class LightAdjustment:
         m.dark_room = LightSettings(20, 255, "dark room", 0.1)
         m.night_room = LightSettings(40, 10, "night room", 0.1)
         m.cloudy_day_room = LightSettings(128, 10, "cloudy day room", 0.1)
-        m.sunlight = LightSettings(255, 10, "sunlight")
+        m.sunlight = LightSettings(99999, 10, "sunlight")
         m.error = LightSettings(255, 255, "error")
 
         m.sleep_test = LightSettings(128, 10, "sleep test", 0.1)

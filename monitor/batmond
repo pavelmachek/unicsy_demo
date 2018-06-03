@@ -55,10 +55,11 @@ while 1:
         s = "critical"
     wd.write(s, "%d%%" % bat.perc)
     if True:
-        print("(", time.time(),
-              ", ", bat.volt,
-              ", ", bat.volt3,
-              ", ", bat.perc,
-              ", ", bat.perc3,
-              ", ", bat.current, ")")
+        print("utime=%.3f"% time.time(),
+              "batvolt=%.3f" % bat.volt,
+              "bativolt=%.3f" % bat.volt3,
+              "batperc=%.1f" % bat.perc,
+              "batiperc=%.1f" % bat.perc3,
+              "batcur=%.5f" % (bat.current / 1000))
+    sys.stdout.flush()
     time.sleep(30)

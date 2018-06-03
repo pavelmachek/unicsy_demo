@@ -158,7 +158,7 @@ class Power(rotatable.SubWindow):
         table.attach(w, 1,2, 12,15)
         
         _, w = m.big_button('Tefone', 'tests')
-        w.connect("clicked", lambda _: os.system("mate-terminal -e /usr/share/unicsy/demo/tefone"))
+        w.connect("clicked", lambda _: os.system("mate-terminal -e /usr/share/unicsy/demo/tefone &"))
         table.attach(w, 2,3, 12,15)
     
     def aux_interior(m):
