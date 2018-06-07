@@ -59,8 +59,8 @@ while 1:
     if last_counter is None:
         aacur = 0
     else:
-        # in uAh
-        aacur = (bat.charge_counter - last_counter) / (step/3600)
+        # in mAh
+        aacur = (bat.charge_now - last_counter) / (step/3600)
         # WTF? Is that right?
     
     if True:
@@ -72,7 +72,7 @@ while 1:
               "batcur=%.5f" % bat.current,
               "batacur=%.5f" % bat.current_avg,
               "bataacur=%f" % aacur,
-              "charge=%f" % (bat.charge_counter * 1000))
-    last_counter = bat.charge_counter
+              "charge=%f" % bat.charge_now)
+    last_counter = bat.charge_now
     sys.stdout.flush()
     time.sleep(step)

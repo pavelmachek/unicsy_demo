@@ -122,6 +122,7 @@ class Battery(Test):
         m.current = -current2 # >0 : charging
         m.current_avg = -current_avg
         m.charge_counter = -charge_counter # increases: charging
+        m.charge_now = charge_now
         m.max_battery_current = current
         m.charger_limit = limit
 
