@@ -148,6 +148,49 @@ class Battery(Test):
         m.max_battery_current = current
         m.charger_limit = limit
 
+    def wall(m, s):
+        os.system("echo %s | wall" % s)
+
+    def handle_protect(m):
+        # N900:
+        # Battery 3.14V 3.23V 3.33V 0% 0% 35% 632/1797 mAh Not charging -454/650/100 mA
+        # Battery 3.16V 3.19V 3.34V 0% 0% 6% 111/1797 mAh Not charging -423/650/100 mA
+        # Battery 2.94V 3.04V 3.13V 0% 0% 5% 97/1797 mAh Not charging -454/650/100 mA
+        # Battery 2.88V 2.98V 3.09V 0% 0% 5% 96/1797 mAh Not charging -481/650/100 mA
+        # Battery 2.88V 2.96V 3.08V 0% 0% 5% 93/1797 mAh Not charging -476/650/100 mA
+        # Battery 2.82V 2.90V 3.04V 0% 0% 5% 91/1797 mAh Not charging -511/650/100 mA
+
+        # N900:
+        # Shutdown at 2.95V / 3.15V was too late -- system could not boot up next time.
+        # Shutdown at 3.20V / 3.40V seems to be too early -- system shuts down with > 60% battery.
+        # At steady state, 3.2V / 3.4V seems to be right point. Voltage goes steadily down, quickly, at that moment
+
+        s = None
+        
+        raw_warn, adj_warn, raw_shut, adj_shut = 3.50, 3.60, 3.40, 3.50
+        if hw.n900:
+            raw_warn, adj_warn, raw_shut, adj_shut = 3.20, 3.40, 3.16, 3.30
+
+        if m.volt < raw_warn:
+            wall("Raw voltage low, warning")
+            s = "warning"
+        if m.volt3 < adj_warn:
+            wall("Adjusted voltage low, warning")
+            s = "warning"            
+
+        if m.volt < raw_shut:
+            os.system("sudo /sbin/shutdown -h now")
+            wall("Raw voltage low, shutdown")
+            s = "critical"
+        # When transitioning from charger to battery discharge, ampermeter
+        # lags behind, and produces < 3.55V for a while
+        if m.volt3 < adj_shut:
+            os.system("sudo /sbin/shutdown -h now")
+            wall("Adjusted voltage low, shutdown")
+            s = "critical"
+        return s
+        
+
     def summary(m):
         if m.volt < 3.3:
             return "critical"
