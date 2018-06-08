@@ -57,6 +57,9 @@ class Battery(Test):
     name = "Battery"
 
     def probe(m):
+        m.battery_full = None
+        m.battery_empty = None
+        m.charge_now = None
         m.battery = m.probe_paths("/sys/class/power_supply/",
                                   [ 'bq27200-0', 'bq27521-0', 'battery' ])
         m.charger = m.probe_paths("/sys/class/power_supply/",
@@ -68,11 +71,17 @@ class Battery(Test):
             return max(  ((v - 3.3) / (3.756 - 3.300)) * 19.66, 0) 
         return 19.66+100*math.sqrt(u)
 
+    def fmt(m, v):
+        if v is None:
+            return "???"
+        return "%d" % v
+
     def run(m):
         volt = m.read_int(m.battery+"/voltage_now") / 1000000.
         perc = m.percent(volt)
         
         status = m.read(m.charger+"/status")[:-1]
+        b_status = m.read(m.battery+"/status")[:-1]
 
         current = m.read_int(m.charger+"/charge_current")
         limit = m.read_int(m.charger+"/current_limit")
@@ -81,6 +90,17 @@ class Battery(Test):
         charge_full = m.read_int(m.battery+"/charge_full") / 1000
         if charge_now < 0:
             charge_now = -m.read_int(m.battery+"/charge_counter") / 1000
+
+        if b_status == "Full":
+            m.battery_full = charge_now
+        if b_status == "Empty": # ? FIXME
+            if not m.battery_empty:
+                m.battery_empty = m.charge_now # Take _previous_ value
+            elif m.battery_empty < charge_now:
+                # And we don't want to overwrite it with hardware value
+                # realizing battery is now empty
+                m.battery_empty = m.charge_now
+            
 
         #perc2 = int(m.read(m.battery+"/capacity"))
         # Buggy in v4.4
@@ -109,8 +129,9 @@ class Battery(Test):
         print("Battery (%.2fV) %.2fV" % (volt, volt3), \
               "(%d%%) %d%% %d%%" % (int(perc), int(perc3), perc2), \
               "%d/%d mAh" % (charge_now, charge_full), \
-              status, \
+              status, b_status, \
               "%d %d %d/%d mA" % (int(-current2), int(-current_avg), current, limit),
+              "%s %d %s mAh" % (m.fmt(m.battery_empty), charge_now, m.fmt(m.battery_full)),
               file=sys.stderr )
         m.perc = perc
         m.perc2 = perc2
@@ -118,6 +139,7 @@ class Battery(Test):
         m.volt = volt
         m.volt2 = volt2
         m.volt3 = volt3
+        m.b_status = b_status
         m.status = status
         m.current = -current2 # >0 : charging
         m.current_avg = -current_avg
