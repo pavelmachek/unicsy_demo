@@ -77,6 +77,15 @@ class Battery(Test):
             return "???"
         return "%d" % v
 
+    def guess_charge(m, known_val, known_perc, capacity):
+        if known_val:
+            c_4 = m.charge_now - known_val + known_perc * capacity
+            c_4p = (100 * c_4) / capacity
+            return ("capacity %.0f mAh cap %s mAh %s %%" %
+        	    (capacity, m.fmt(c_4), m.fmt(c_4p)))
+
+        return ""
+
     def run(m):
         volt = m.read_int(m.battery+"/voltage_now") / 1000000.
         perc = m.percent(volt)

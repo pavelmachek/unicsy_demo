@@ -48,16 +48,12 @@ def run():
             capacity = 1785
             if bat.battery_empty and bat.battery_full:
                 capacity = bat.battery_full-bat.battery_empty
-            c_4 = None
-            c_4p = None
-            if bat.battery_4V:
-                c_4 = bat.charge_now - bat.battery_4V + .79 * capacity
-                c_4p = (100 * c_4) / capacity
                 
             print("now %.2f V %.2f %% %f |" % (bat.volt, bat.perc, bat.charge_now),
-                  "empty %s 4V,79%% %s full %s |" % (bat.fmt(bat.battery_empty), bat.fmt(bat.battery_4V), bat.fmt(bat.battery_full)),
-                  "capacity %f mAh cap %s mAh %s %%" % (capacity, bat.fmt(c_4), bat.fmt(c_4p))
-            	)
+                  "empty %s 4V,79%% %s full %s |" % (bat.fmt(bat.battery_empty), bat.fmt(bat.battery_4V), bat.fmt(bat.battery_full)))
+            print(bat.guess_charge(bat.battery_empty, 0, capacity) + " to empty")
+            print(bat.guess_charge(bat.battery_4V, .79, capacity) + " or more -- to 79%")
+            print(bat.guess_charge(bat.battery_full, 1.12, capacity) + " to full")
         
         sys.stdout.flush()
         time.sleep(step)
