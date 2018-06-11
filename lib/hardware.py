@@ -59,6 +59,7 @@ class Battery(Test):
     def probe(m):
         m.battery_full = None
         m.battery_empty = None
+        m.battery_4V = None
         m.charge_now = None
         m.battery = m.probe_paths("/sys/class/power_supply/",
                                   [ 'bq27200-0', 'bq27521-0', 'battery' ])
@@ -114,6 +115,11 @@ class Battery(Test):
         current2 = m.read_int(m.battery+"/current_now") / 1000.
         current_avg = m.read_int(m.battery+"/current_avg") / 1000.
         charge_counter = m.read_int(m.battery+"/charge_counter") / 1000.
+
+        if m.battery_4V is None and volt > 4.:
+            m.battery_4V = charge_now
+        if volt > 4. and charge_now < m.battery_4V:
+            m.battery_4V = charge_now
 
         # http://www.buchmann.ca/Chap9-page3.asp
         # 0.49 ohm is between "poor" and "fail".
