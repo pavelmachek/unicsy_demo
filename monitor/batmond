@@ -53,7 +53,7 @@ def run():
                   "empty %s 4V,79%% %s full %s |" % (bat.fmt(bat.battery_empty), bat.fmt(bat.battery_4V), bat.fmt(bat.battery_full)))
             print(bat.guess_charge(bat.battery_empty, 0, capacity) + " to empty")
             print(bat.guess_charge(bat.battery_4V, .79, capacity) + " or more -- to 79%")
-            print(bat.guess_charge(bat.battery_full, 1.12, capacity) + " to full")
+            print(bat.guess_charge(bat.battery_full, 1.135, capacity) + " to full")
         
         sys.stdout.flush()
         time.sleep(step)
