@@ -61,16 +61,20 @@ class Battery(Test):
         m.battery_empty = None
         m.battery_4V = None
         m.charge_now = None
+        m.design_full_V = 4.2
         m.battery = m.probe_paths("/sys/class/power_supply/",
                                   [ 'bq27200-0', 'bq27521-0', 'battery' ])
         m.charger = m.probe_paths("/sys/class/power_supply/",
                                   [ 'bq24150a-0', 'bq24153-0', 'usb' ])
 
-    def percent(m, v):
+    def percent_to_42v(m, v):
         u = 0.0387-(1.4523*(3.7835-v))
         if u < 0:
             return max(  ((v - 3.3) / (3.756 - 3.300)) * 19.66, 0) 
         return 19.66+100*math.sqrt(u)
+
+    def percent(m, v):
+        return 100*m.percent_to_42v(v)/m.percent_to_42v(m.design_full_V)
 
     def fmt(m, v):
         if v is None:
