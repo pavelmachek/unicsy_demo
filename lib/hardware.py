@@ -62,6 +62,8 @@ class Battery(Test):
         m.battery_4V = None
         m.charge_now = None
         m.design_full_V = 4.2
+        if m.hw.d4:
+            m.design_full_V = 4.35
         m.battery = m.probe_paths("/sys/class/power_supply/",
                                   [ 'bq27200-0', 'bq27521-0', 'battery' ])
         m.charger = m.probe_paths("/sys/class/power_supply/",
