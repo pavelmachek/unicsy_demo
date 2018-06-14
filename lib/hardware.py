@@ -62,6 +62,7 @@ class Battery(Test):
         m.battery_4V = None
         m.charge_now = None
         m.design_full_V = 4.2
+        # N900 has 1320mAh battery.
         if m.hw.d4:
             m.design_full_V = 4.35
         m.battery = m.probe_paths("/sys/class/power_supply/",
@@ -193,21 +194,21 @@ class Battery(Test):
             raw_warn, adj_warn, raw_shut, adj_shut = 3.20, 3.40, 3.16, 3.30
 
         if m.volt < raw_warn:
-            wall("Raw voltage low, warning")
+            m.wall("Raw voltage low, warning")
             s = "warning"
         if m.volt3 < adj_warn:
-            wall("Adjusted voltage low, warning")
+            m.wall("Adjusted voltage low, warning")
             s = "warning"            
 
         if m.volt < raw_shut:
             os.system("sudo /sbin/shutdown -h now")
-            wall("Raw voltage low, shutdown")
+            m.wall("Raw voltage low, shutdown")
             s = "critical"
         # When transitioning from charger to battery discharge, ampermeter
         # lags behind, and produces < 3.55V for a while
         if m.volt3 < adj_shut:
             os.system("sudo /sbin/shutdown -h now")
-            wall("Adjusted voltage low, shutdown")
+            m.wall("Adjusted voltage low, shutdown")
             s = "critical"
         return s
         
