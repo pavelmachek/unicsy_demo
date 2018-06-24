@@ -59,6 +59,7 @@ class Battery(Test):
     def probe(m):
         m.battery_full = None
         m.battery_empty = None
+        m.battery_35V = None        
         m.battery_4V = None
         m.charge_now = None
         m.design_full_V = 4.2
@@ -110,7 +111,7 @@ class Battery(Test):
 
         if b_status == "Full":
             m.battery_full = charge_now
-        if b_status == "Empty": # ? FIXME
+        if b_status == "Empty": # FIXME: this will never trigger on d4
             if not m.battery_empty:
                 m.battery_empty = m.charge_now # Take _previous_ value
             elif m.battery_empty < charge_now:
@@ -132,6 +133,11 @@ class Battery(Test):
         current_avg = m.read_int(m.battery+"/current_avg") / 1000.
         charge_counter = m.read_int(m.battery+"/charge_counter") / 1000.
 
+        if m.battery_35V is None and volt < 3.5:
+            m.battery_35V = charge_now
+        if volt < 3.5 and charge_now > m.battery_4V:
+            m.battery_35V = charge_now
+        
         if m.battery_4V is None and volt > 4.:
             m.battery_4V = charge_now
         if volt > 4. and charge_now < m.battery_4V:
@@ -173,6 +179,10 @@ class Battery(Test):
     def wall(m, s):
         os.system("echo %s | wall" % s)
 
+    def shutdown(m, s):
+        os.system("sudo /sbin/shutdown -h now")
+        m.wall(s)
+        
     def handle_protect(m):
         # N900:
         # Battery 3.14V 3.23V 3.33V 0% 0% 35% 632/1797 mAh Not charging -454/650/100 mA
@@ -189,7 +199,7 @@ class Battery(Test):
 
         s = None
         
-        raw_warn, adj_warn, raw_shut, adj_shut = 3.50, 3.60, 3.40, 3.50
+        raw_warn, adj_warn, raw_shut, adj_shut = 3.40, 3.50, 3.30, 3.40
         if hw.n900:
             raw_warn, adj_warn, raw_shut, adj_shut = 3.20, 3.40, 3.16, 3.30
 
@@ -201,14 +211,12 @@ class Battery(Test):
             s = "warning"            
 
         if m.volt < raw_shut:
-            os.system("sudo /sbin/shutdown -h now")
-            m.wall("Raw voltage low, shutdown")
+            m.shutdown("Raw voltage low, shutdown")
             s = "critical"
         # When transitioning from charger to battery discharge, ampermeter
         # lags behind, and produces < 3.55V for a while
         if m.volt3 < adj_shut:
-            os.system("sudo /sbin/shutdown -h now")
-            m.wall("Adjusted voltage low, shutdown")
+            m.shutdown("Adjusted voltage low, shutdown")
             s = "critical"
         return s
         

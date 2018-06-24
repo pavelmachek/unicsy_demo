@@ -50,8 +50,9 @@ def run():
                 capacity = bat.battery_full-bat.battery_empty
                 
             print("now %.2f V %.2f %% %f |" % (bat.volt, bat.perc, bat.charge_now),
-                  "empty %s 4V,79%% %s full %s |" % (bat.fmt(bat.battery_empty), bat.fmt(bat.battery_4V), bat.fmt(bat.battery_full)), file=sys.stderr)
+                  "empty %s 3.5V %s 4V %s full %s |" % (bat.fmt(bat.battery_empty), bat.fmt(bat.battery_35V), bat.fmt(bat.battery_4V), bat.fmt(bat.battery_full)), file=sys.stderr)
             print(bat.guess_charge(bat.battery_empty, 0, capacity) + " to empty", file=sys.stderr)
+            print(bat.guess_charge(bat.battery_35V, bat.percent(3.5) / 100., capacity) + " to 3.5V", file=sys.stderr)
             print(bat.guess_charge(bat.battery_4V, bat.percent(4.) / 100., capacity) + " or more -- to 4V", file=sys.stderr)
             print(bat.guess_charge(bat.battery_full, 1., capacity) + " to full", file=sys.stderr)
         
