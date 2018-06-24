@@ -273,9 +273,12 @@ class ModemCtrl:
 
     def send_sms(m, number, message):
         try:
+            # Delivery reports seem to fail _first time afterofonod starts_?!
             m.mm.SetProperty("UseDeliveryReports", dbus.Boolean(True))
         except:
             print("Could not set deliver reports")
+        if len(message) > 160:
+            raise("message too long")
         path = m.mm.SendMessage(number, message)
         print("Message sent as ", path)
 
