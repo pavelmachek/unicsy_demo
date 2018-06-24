@@ -208,6 +208,12 @@ class ModemCtrl:
         print("Connecting modem %s..." % m.path)
         m.modem = dbus.Interface(
                 m.bus.get_object('org.ofono', m.path), 'org.ofono.Modem')
+
+    def startup(m):
+        m.online_modem()
+        time.sleep(5)
+        reg = dbus.Interface(
+                m.bus.get_object('org.ofono', m.path), 'org.ofono.NetworkRegistration')
         m.vcm = dbus.Interface(
                 m.bus.get_object('org.ofono', m.path), 'org.ofono.VoiceCallManager')
         m.ussd = dbus.Interface(
@@ -216,12 +222,6 @@ class ModemCtrl:
                 m.bus.get_object('org.ofono', m.path), 'org.ofono.ConnectionManager')
         m.mm = dbus.Interface(
                 m.bus.get_object('org.ofono', m.path), 'org.ofono.MessageManager')
-
-    def startup(m):
-        m.online_modem()
-        time.sleep(15)
-        reg = dbus.Interface(
-                m.bus.get_object('org.ofono', m.path), 'org.ofono.NetworkRegistration')
         m.netreg = reg
         m.registration = reg.GetProperties()
         m.network_updated()
@@ -272,7 +272,10 @@ class ModemCtrl:
             m.message("something unexpected with ussd, not implemented")
 
     def send_sms(m, number, message):
-        m.mm.SetProperty("UseDeliveryReports", dbus.Boolean(True))
+        try:
+            m.mm.SetProperty("UseDeliveryReports", dbus.Boolean(True))
+        except:
+            print("Could not set deliver reports")
         path = m.mm.SendMessage(number, message)
         print("Message sent as ", path)
 
