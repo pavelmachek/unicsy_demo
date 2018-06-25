@@ -16,18 +16,18 @@ class MessageWindow(rotatable.SubWindow):
     def __init__(m, msg):
         rotatable.SubWindow.__init__(m)
         m.basic_window()
-        m.call_button.set_label(msg)
+        m.call_button.set_label(m.middle(msg))
         m.window.show_all()
 
     def interior(m):
         table = gtk.Table(6,6,True)
 
-        button = gtk.Label("")
+        button = m.font_label("")
         button.set_line_wrap(True)
         m.call_button = button
         table.attach(button, 0,6,0,5)
 
-        button = gtk.Button("Close")
+        _, button = m.font_button("Close")
         button.connect("clicked", lambda _: m.close())
         table.attach(button, 5,6,5,6)
         return table
