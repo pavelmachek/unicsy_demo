@@ -49,8 +49,9 @@ class InputHandler:
     def __init__(m):
         m.wd = watchdog.Watchdog("key")
         m.lock_control = lock.LockControl()
-        m.devs = map(InputDevice, ('/dev/input/event6', '/dev/input/event5',
-                                   '/dev/input/event1', '/dev/input/event0'))
+        m.devs = m.probe_devices()
+        #m.devs = ('/dev/input/event6', '/dev/input/event5', '/dev/input/event1', '/dev/input/event0')
+        m.devs = map(InputDevice, m.devs)
         m.devs = {dev.fd: dev for dev in m.devs}
         print(m.devs)
 
@@ -64,9 +65,14 @@ class InputHandler:
             m.key_times[k] = 0
 
     def probe_devices(m):
+        res = []
         devices = [InputDevice(fn) for fn in list_devices()]
         for dev in devices:
             print(dev.fn, dev.name, dev.phys)
+            if dev.name == "Atmel maXTouch Touchscreen":
+                continue
+            res = res + [ dev.fn ]
+        return res
             
     def screen_off(m):
         m.lock_control.screen_off()
@@ -183,6 +189,7 @@ class InputHandler:
                     m.handle_event(event)
 
 ih = InputHandler()
+ih.probe_devices()
 ih.run()
 #print(ecodes.KEY[30])
 #print(ecodes.bytype[ecodes.EV_KEY][30])
