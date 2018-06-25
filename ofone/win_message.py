@@ -25,8 +25,6 @@ class MessageWindow(rotatable.SubWindow):
         table = gtk.Table(6,6,True)
 
         buf = gtk.TextBuffer()
-        buf.insert_at_cursor("foobar 1234:")
-
         view = gtk.TextView(buf)
         view.modify_font(pango.FontDescription("sans 22"))
         view.set_wrap_mode(gtk.WRAP_WORD)
