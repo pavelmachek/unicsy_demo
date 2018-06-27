@@ -114,7 +114,6 @@ class ActionsWindow(rotatable.SubWindow):
     def action_call(m):
         number = m.phone_number.get_text()
         print("Should call", number)
-        elog.add_call("out", number)
         mw.dial_number(number)
         m.hide()
 
@@ -185,9 +184,11 @@ class CallWindow(win_call.CallWindow):
     def call_started(m, name, number, state):
         win_call.CallWindow.call_started(m, name, number, state)
         if state != "incoming":
+            elog.add_call("out", number)
             m.call_detail.set_label("outgoing call")
             notify.call_starts()
         else:
+            elog.add_call("in", number)
             notify.call_incoming(number)
             m.call_detail.set_label("incoming call")
             
