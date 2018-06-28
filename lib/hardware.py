@@ -57,44 +57,91 @@ class Battery(Test):
     name = "Battery"
 
     def probe(m):
+        m.battery_full = None
+        m.battery_empty = None
+        m.battery_35V = None        
+        m.battery_4V = None
+        m.charge_now = None
+        m.design_full_V = 4.2
+        # N900 has 1320mAh battery.
+        if m.hw.d4:
+            m.design_full_V = 4.35
         m.battery = m.probe_paths("/sys/class/power_supply/",
                                   [ 'bq27200-0', 'bq27521-0', 'battery' ])
         m.charger = m.probe_paths("/sys/class/power_supply/",
                                   [ 'bq24150a-0', 'bq24153-0', 'usb' ])
 
-    def percent(m, v):
+    def percent_to_42v(m, v):
         u = 0.0387-(1.4523*(3.7835-v))
         if u < 0:
             return max(  ((v - 3.3) / (3.756 - 3.300)) * 19.66, 0) 
         return 19.66+100*math.sqrt(u)
 
+    def percent(m, v):
+        return 100*m.percent_to_42v(v)/m.percent_to_42v(m.design_full_V)
+
+    def fmt(m, v):
+        if v is None:
+            return "???"
+        return "%d" % v
+
+    def guess_charge(m, known_val, known_perc, capacity):
+        if known_val:
+            c_4 = m.charge_now - known_val + known_perc * capacity
+            c_4p = (100 * c_4) / capacity
+            return ("capacity %.0f mAh cap %s mAh %s %%" %
+        	    (capacity, m.fmt(c_4), m.fmt(c_4p)))
+
+        return ""
+
     def run(m):
-        volt = int(m.read(m.battery+"/voltage_now"))
-        volt /= 1000000.
+        volt = m.read_int(m.battery+"/voltage_now") / 1000000.
         perc = m.percent(volt)
         
         status = m.read(m.charger+"/status")[:-1]
-        try:
-            current = int(m.read(m.charger+"/charge_current"))
-            limit = int(m.read(m.charger+"/current_limit"))
-        except:
-            current = -1
-            limit = -1
+        b_status = m.read(m.battery+"/status")[:-1]
 
-        try:
-            charge_now = int(m.read(m.battery+"/charge_now")) / 1000
-            charge_full = int(m.read(m.battery+"/charge_full")) / 1000
-            #perc2 = int(m.read(m.battery+"/capacity"))
-            # Buggy in v4.4
+        current = m.read_int(m.charger+"/charge_current")
+        limit = m.read_int(m.charger+"/current_limit")
+
+        charge_now = m.read_int(m.battery+"/charge_now") / 1000
+        charge_full = m.read_int(m.battery+"/charge_full") / 1000
+        if charge_now < 0:
+            charge_now = -m.read_int(m.battery+"/charge_counter") / 1000
+
+        if b_status == "Full":
+            m.battery_full = charge_now
+        if b_status == "Empty": # FIXME: this will never trigger on d4
+            if not m.battery_empty:
+                m.battery_empty = m.charge_now # Take _previous_ value
+            elif m.battery_empty < charge_now:
+                # And we don't want to overwrite it with hardware value
+                # realizing battery is now empty
+                m.battery_empty = m.charge_now
+            
+
+        #perc2 = int(m.read(m.battery+"/capacity"))
+        # Buggy in v4.4
+        perc2 = 0
+        if charge_full >= 0:
             perc2 = int((charge_now * 100.) / charge_full)
-        except:
-            # bq27x00-battery 2-0055: battery is not calibrated! ignoring capacity values
-            charge_now = 0
-            charge_full = 0
-            perc2 = 0
+
         charge_design = m.read_int(m.battery+"/charge_full_design") / 1000
-        volt2 = m.read_int(m.battery+"/voltage_now") / 1000000.
+        # FIXME: volt2 from the other sensor on N900?
+        volt2 = volt
         current2 = m.read_int(m.battery+"/current_now") / 1000.
+        current_avg = m.read_int(m.battery+"/current_avg") / 1000.
+        charge_counter = m.read_int(m.battery+"/charge_counter") / 1000.
+
+        if m.battery_35V is None and volt < 3.5:
+            m.battery_35V = charge_now
+        if volt < 3.5 and charge_now > m.battery_4V:
+            m.battery_35V = charge_now
+        
+        if m.battery_4V is None and volt > 4.:
+            m.battery_4V = charge_now
+        if volt > 4. and charge_now < m.battery_4V:
+            m.battery_4V = charge_now
 
         # http://www.buchmann.ca/Chap9-page3.asp
         # 0.49 ohm is between "poor" and "fail".
@@ -107,11 +154,12 @@ class Battery(Test):
         volt3 = volt + (current2 / 1000. * resistance)
         perc3 = m.percent(volt3)
 
-        print("Battery %.2fV %.2fV %.2fV" % (volt, volt2, volt3), \
-              "%d%% %d%% %d%%" % (int(perc), int(perc3), perc2), \
+        print("Battery (%.2fV) %.2fV" % (volt, volt3), \
+              "(%d%%) %d%% %d%%" % (int(perc), int(perc3), perc2), \
               "%d/%d mAh" % (charge_now, charge_full), \
-              status, \
-              "%d/%d/%d mA" % (int(-current2), current, limit),
+              status, b_status, \
+              "%d %d %d/%d mA" % (int(-current2), int(-current_avg), current, limit),
+              "%s %d %s mAh" % (m.fmt(m.battery_empty), charge_now, m.fmt(m.battery_full)),
               file=sys.stderr )
         m.perc = perc
         m.perc2 = perc2
@@ -119,10 +167,59 @@ class Battery(Test):
         m.volt = volt
         m.volt2 = volt2
         m.volt3 = volt3
+        m.b_status = b_status
         m.status = status
-        m.current = -current2
+        m.current = -current2 # >0 : charging
+        m.current_avg = -current_avg
+        m.charge_counter = -charge_counter # increases: charging
+        m.charge_now = charge_now
         m.max_battery_current = current
         m.charger_limit = limit
+
+    def wall(m, s):
+        os.system("echo %s | wall" % s)
+
+    def shutdown(m, s):
+        os.system("sudo /sbin/shutdown -h now")
+        m.wall(s)
+        
+    def handle_protect(m):
+        # N900:
+        # Battery 3.14V 3.23V 3.33V 0% 0% 35% 632/1797 mAh Not charging -454/650/100 mA
+        # Battery 3.16V 3.19V 3.34V 0% 0% 6% 111/1797 mAh Not charging -423/650/100 mA
+        # Battery 2.94V 3.04V 3.13V 0% 0% 5% 97/1797 mAh Not charging -454/650/100 mA
+        # Battery 2.88V 2.98V 3.09V 0% 0% 5% 96/1797 mAh Not charging -481/650/100 mA
+        # Battery 2.88V 2.96V 3.08V 0% 0% 5% 93/1797 mAh Not charging -476/650/100 mA
+        # Battery 2.82V 2.90V 3.04V 0% 0% 5% 91/1797 mAh Not charging -511/650/100 mA
+
+        # N900:
+        # Shutdown at 2.95V / 3.15V was too late -- system could not boot up next time.
+        # Shutdown at 3.20V / 3.40V seems to be too early -- system shuts down with > 60% battery.
+        # At steady state, 3.2V / 3.4V seems to be right point. Voltage goes steadily down, quickly, at that moment
+
+        s = None
+        
+        raw_warn, adj_warn, raw_shut, adj_shut = 3.40, 3.50, 3.30, 3.40
+        if hw.n900:
+            raw_warn, adj_warn, raw_shut, adj_shut = 3.20, 3.40, 3.16, 3.30
+
+        if m.volt < raw_warn:
+            m.wall("Raw voltage low, warning")
+            s = "warning"
+        if m.volt3 < adj_warn:
+            m.wall("Adjusted voltage low, warning")
+            s = "warning"            
+
+        if m.volt < raw_shut:
+            m.shutdown("Raw voltage low, shutdown")
+            s = "critical"
+        # When transitioning from charger to battery discharge, ampermeter
+        # lags behind, and produces < 3.55V for a while
+        if m.volt3 < adj_shut:
+            m.shutdown("Adjusted voltage low, shutdown")
+            s = "critical"
+        return s
+        
 
     def summary(m):
         if m.volt < 3.3:
@@ -144,11 +241,14 @@ class Battery(Test):
     def startup(m):
         if m.hw.n900:
             # Disable yellow battery light:
-            enable_access('/sys/class/power_supply/bq24150a-0/stat_pin_enable')
-            sy('echo 0 > /sys/class/power_supply/bq24150a-0/stat_pin_enable')
+            m.write_root(m.charger+'/stat_pin_enable', '0')
             # Enable charger control from non-root
-            enable_access('/sys/class/power_supply/bq24150a-0/current_limit')
+            enable_access(m.charger+'/current_limit')
             m.fast_charge(500)
+        if m.hw.d4:
+            #m.write_root(m.charger + "/constant_charge_current", "532000")
+            #m.write_root(m.charger + "/constant_charge_voltage", "4100000")
+            m.write_root(m.charger + "/charge_control_limit", "0")
 
 class ChargeBattery(Battery):
     hotkey = "B"
@@ -297,8 +397,9 @@ class Backlight(Test):
     def probe(m):
         m.path = "/sys/class/backlight/"
         p = os.listdir(m.path)
-        m.path += p[0]
-        m.path += "/brightness"
+        if p:
+            m.path += p[0]
+            m.path += "/brightness"
 
     def startup(m):
         enable_access(m.path)
@@ -313,6 +414,10 @@ class Backlight(Test):
     def set(m, i):
         if m.hw.d4:
             i = m.n900_to_d4(i)
+        if i < 0:
+            i = 255
+        if i > 255:
+            i = 255
         m.write(m.path, str(i))
 
     def run(m):
@@ -330,10 +435,12 @@ class LightSensor(Test):
     def probe(m):
         m.directory = m.probe_paths( "/sys/bus/i2c/drivers",
                                 [ "/tsl2563/2-0029/iio:device1/",
+                                  "/isl29028/1-0044/iio:device1/",
                                   "/isl29028/1-0044/iio:device2/" ] )
-        m.path = m.directory + "in_illuminance"
-        if os.path.exists( m.path + "0_input" ):
-            m.path += "0"
+        if m.directory:
+            m.path = m.directory + "in_illuminance"
+            if os.path.exists( m.path + "0_input" ):
+                m.path += "0"
 
     def get_illuminance(m):
         scale = m.read_int(m.path + "_scale")
@@ -371,7 +478,7 @@ class LightAdjustment:
         m.dark_room = LightSettings(20, 255, "dark room", 0.1)
         m.night_room = LightSettings(40, 10, "night room", 0.1)
         m.cloudy_day_room = LightSettings(128, 10, "cloudy day room", 0.1)
-        m.sunlight = LightSettings(255, 10, "sunlight")
+        m.sunlight = LightSettings(99999, 10, "sunlight")
         m.error = LightSettings(255, 255, "error")
 
         m.sleep_test = LightSettings(128, 10, "sleep test", 0.1)

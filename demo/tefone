@@ -120,6 +120,7 @@ class UI:
                     WIFI(), Autosleep(), AutosleepVerify()]
 
         for t in local:
+            t.hw = hw
             t.probe()
         m.tests += local
 
