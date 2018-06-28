@@ -101,7 +101,7 @@ class Battery(Test):
         # 0.15 ohm is between "excelent" and "good".
         # at 3.6V.
         if m.hw.n900:
-            resistance = 0.43 # Suitable for old N900
+            resistance = 0.33 # Suitable for old N900
         else:
             resistance = 0.08
         volt3 = volt + (current2 / 1000. * resistance)
