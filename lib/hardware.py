@@ -1,6 +1,8 @@
 #!/usr/bin/python2
 # -*- python -*-
 
+# Vibrations need "joystick" package
+
 from __future__ import print_function
 
 import math
@@ -135,7 +137,7 @@ class Battery(Test):
 
         if m.battery_35V is None and volt < 3.5:
             m.battery_35V = charge_now
-        if volt < 3.5 and charge_now > m.battery_4V:
+        if volt < 3.5 and charge_now > m.battery_35V:
             m.battery_35V = charge_now
         
         if m.battery_4V is None and volt > 4.:
