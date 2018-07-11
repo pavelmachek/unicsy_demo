@@ -171,6 +171,7 @@ class InputHandler:
             print("Unknown switch ", event.code)
 
     def handle_event(m, event):
+        print("got event", event)
         if event.type == ecodes.EV_SW:
             m.handle_switch(event)
 
@@ -189,7 +190,6 @@ class InputHandler:
                     m.handle_event(event)
 
 ih = InputHandler()
-ih.probe_devices()
 ih.run()
 #print(ecodes.KEY[30])
 #print(ecodes.bytype[ecodes.EV_KEY][30])
