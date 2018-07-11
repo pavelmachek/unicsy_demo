@@ -36,7 +36,7 @@ class Startup:
             sy('../vfone/win_lock startup &')
             wd.progress(1, "sound")
             sy('sudo ./ztime')
-            sy('sudo alsactl restore -f audio/alsa.playback.loud')
+            hardware.hw.audio.mixer_ringing()
             sy('mplayer /my/tui/ofone/audio/message.mp3 &')
 
         if debian and n900:
@@ -103,7 +103,7 @@ xbindkeys -f /my/xbindkeysrc
         cmd += build_script('1_tefone',  p+'demo/tefone')
         cmd += build_script('2_battery', p+'monitor/batmond')
         cmd += build_script('3_monitor', p+'monitor/mond')
-        if debian and n900:
+        if debian:
             cmd += build_script('4_keys',    p+'hacks/keyd')
         o = ""
 #        if d4:
