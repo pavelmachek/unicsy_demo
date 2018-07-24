@@ -193,6 +193,9 @@ class CallWindow(win_call.CallWindow):
             m.call_detail.set_label("incoming call")
             
     def call_ended(m, name):
+        if m.call_number is None:
+            print("call ended, but have no call to end")
+            return
         elog.add_missed_call(m.call_number)
         notify.end_incoming("unknown")
         notify.call_ends()
