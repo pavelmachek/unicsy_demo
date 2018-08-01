@@ -531,9 +531,13 @@ class LightAdjustment:
 class Vibrations(Test):
     hotkey = "v"
     name = "Vibrations"
+
+    def probe(m):
+        m.vib_event = m.probe_paths("/dev/input/by-path/",
+                                    [ "platform-vibrator-event" ])
     
     def on(m, t):
-        sy("(echo 5; sleep %f; echo -1) | sudo fftest /dev/input/event2" % t)
+        sy("(echo 5; sleep %f; echo -1) | sudo fftest %s" % (t, m.vib_event))
 
     def run(m):
         m.on(.15)
