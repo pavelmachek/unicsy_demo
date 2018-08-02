@@ -533,11 +533,16 @@ class Vibrations(Test):
     name = "Vibrations"
 
     def probe(m):
-        m.vib_event = m.probe_paths("/dev/input/by-path/",
-                                    [ "platform-vibrator-event" ])
+        m.path = m.probe_paths("/dev/input/by-path/",
+                               [ "platform-vibrator-event",
+                                 "platform-48070000.i2c-platform-twl4030-vibra-event" ])
+    def startup(m):
+        enable_access(m.path)
     
     def on(m, t):
-        sy("(echo 5; sleep %f; echo -1) | sudo fftest %s" % (t, m.vib_event))
+        print("fftest at ", m.path)
+        # fftest on N900 can not handle "too long" paths.
+        sy("(echo 5; sleep %f; echo -1) | fftest /proc/self/fd/3 3< %s" % (t, m.path))
 
     def run(m):
         m.on(.15)
