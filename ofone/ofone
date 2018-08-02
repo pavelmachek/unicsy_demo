@@ -114,7 +114,6 @@ class ActionsWindow(rotatable.SubWindow):
     def action_call(m):
         number = m.phone_number.get_text()
         print("Should call", number)
-        elog.add_call("out", number)
         mw.dial_number(number)
         m.hide()
 
@@ -185,13 +184,18 @@ class CallWindow(win_call.CallWindow):
     def call_started(m, name, number, state):
         win_call.CallWindow.call_started(m, name, number, state)
         if state != "incoming":
+            elog.add_call("out", number)
             m.call_detail.set_label("outgoing call")
             notify.call_starts()
         else:
+            elog.add_call("in", number)
             notify.call_incoming(number)
             m.call_detail.set_label("incoming call")
             
     def call_ended(m, name):
+        if m.call_number is None:
+            print("call ended, but have no call to end")
+            return
         elog.add_missed_call(m.call_number)
         notify.end_incoming("unknown")
         notify.call_ends()
@@ -326,8 +330,6 @@ class MainWindows(ModemCtrl):
             
     def __init__(m):
         ModemCtrl.__init__(m)
-        m.modem_init()
-
         m.main = MainWindow()
         m.main.basic_main_window()        
         m.main.show()
@@ -340,6 +342,8 @@ class MainWindows(ModemCtrl):
         m.update_events()
         
         m.message_windows = []
+
+        m.modem_init()
 
         m.startup()
         m.primary = False

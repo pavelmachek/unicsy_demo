@@ -1,6 +1,6 @@
 #!/usr/bin/python2
 # -*- python -*-
-# Needs "pip3 install evdev"
+# Needs "pip install evdev"
 #
 # On pmos, needs:
 # apk add py2-pip linux-headers gcc g++ python2-dev
@@ -17,6 +17,7 @@ import time
 import lock
 import watchdog
 import hardware
+import software
 import select
 
 # event6:
@@ -49,8 +50,9 @@ class InputHandler:
     def __init__(m):
         m.wd = watchdog.Watchdog("key")
         m.lock_control = lock.LockControl()
-        m.devs = map(InputDevice, ('/dev/input/event6', '/dev/input/event5',
-                                   '/dev/input/event1', '/dev/input/event0'))
+        m.devs = m.probe_devices()
+        #m.devs = ('/dev/input/event6', '/dev/input/event5', '/dev/input/event1', '/dev/input/event0')
+        m.devs = map(InputDevice, m.devs)
         m.devs = {dev.fd: dev for dev in m.devs}
         print(m.devs)
 
@@ -64,9 +66,14 @@ class InputHandler:
             m.key_times[k] = 0
 
     def probe_devices(m):
+        res = []
         devices = [InputDevice(fn) for fn in list_devices()]
         for dev in devices:
             print(dev.fn, dev.name, dev.phys)
+            if dev.name == "Atmel maXTouch Touchscreen":
+                continue
+            res = res + [ dev.fn ]
+        return res
             
     def screen_off(m):
         m.lock_control.screen_off()
@@ -100,7 +107,7 @@ class InputHandler:
 
     def handle_release(m, key, t):
         print("Key released, ", key, t)
-        if key == ecodes.KEY_SCREENLOCK:
+        if key == ecodes.KEY_POWER or key == ecodes.KEY_SCREENLOCK:
             if t < 1.5:
                 print("Should de activate screensaver")
                 m.screen_on()
@@ -109,7 +116,7 @@ class InputHandler:
                 print("Should shut the system down")
                 os.system("sudo /sbin/shutdown -h now")
                 return
-            os.system("echo More than 5 seconds for system shutdown. | festival --tts &")
+            software.sw.say("More than 5 seconds for system shutdown.")
             return
         if key == ecodes.KEY_F7 or key == ecodes.KEY_F8:
             if t < 0.3:
@@ -139,15 +146,17 @@ class InputHandler:
             if event.code == ecodes.KEY_CAMERA_FOCUS:
                 m.screen_off()
                 return
-            if event.code == ecodes.KEY_POWER:
-                print("mixer: ringing")
-                hardware.hw.audio.mixer_ringing()
-                return
+            if hardware.hw.n900:
+                if event.code == ecodes.KEY_POWER:
+                    print("mixer: ringing")
+                    hardware.hw.audio.mixer_ringing()
+                    return
         if event.value == 0:
-            if event.code == ecodes.KEY_POWER:
-                print("mixer: call")
-                hardware.hw.audio.mixer_call()
-                return
+            if hardware.hw.n900:
+                if event.code == ecodes.KEY_POWER:
+                    print("mixer: call")
+                    hardware.hw.audio.mixer_call()
+                    return
             m.handle_release(event.code, time.time()-m.key_times[event.code])
 
     def handle_switch(m, event):
@@ -165,6 +174,7 @@ class InputHandler:
             print("Unknown switch ", event.code)
 
     def handle_event(m, event):
+        print("got event", event)
         if event.type == ecodes.EV_SW:
             m.handle_switch(event)
 

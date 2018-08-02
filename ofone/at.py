@@ -75,14 +75,10 @@ class Phone:
             args['SentTime'] = s[2]
             m.expect_message = args
 
-# +CMT: "+420604334013",,"18/04/01,17:15:07+08"
-# Testovaci aprilova zprava
-#
-    def data_ready(m, a, b, c):
-        r = m.at.read(1)
+    def process_byte(m, r):
         #print("Got character ", r)
         if ord(r) == 13:
-            return True
+            return None
         if ord(r) != 10 and ord(r) < 32:
             print(".... Received strange character ", ord(r))
 
@@ -94,8 +90,18 @@ class Phone:
             m.line_buf = ""
             if line != "":
                 m.log("<" + line + "_")
-                m.line_ready(line)
-            
+                #print("<" + line + "_")
+                return line
+        return None
+
+# +CMT: "+420604334013",,"18/04/01,17:15:07+08"
+# Testovaci aprilova zprava
+#
+    def data_ready(m, a, b, c):
+        r = m.at.read(1)
+        line = m.process_byte(r)
+        if line:
+            m.line_ready(line)
         return True
 
     def run(m):
@@ -108,10 +114,23 @@ class Phone:
         #m.log(">>> "+ s)
         print(">>> ", s)
         m.at.write(s + m.l)
-        if m.expect_next != "":
-            print("New expectation, but old one was not yet met", m.expect_next, m.expect_reason)
+        #time.sleep(.3)
+        #if m.expect_next != "":
+        #    print("New expectation, but old one was not yet met", m.expect_next, m.expect_reason)
         m.expect_reason = "Command was sent"
         m.expect_next = "OK"
+        #m.data_ready(None, None, None)
+
+    def blocking(m, cmd, exp):
+        m.command(cmd)
+        while True:
+            r = m.at.read(1)
+            line = m.process_byte(r)
+            if line:
+                if line == exp:
+                    return
+                #print("U?> ", line)
+                m.line_ready(line)
 
     def open(m):
         m.open_file()
@@ -122,7 +141,6 @@ class Phone:
         # | glib.IO_OUT | glib.IO_PRI | glib.IO_ERR | glib.IO_HUP
         glib.io_add_watch(m.at, glib.IO_IN, m.data_ready, m)
         m.l = "\r"
-        
 
 class PhoneSim(Phone):
     def open_file(m):
@@ -142,25 +160,89 @@ class PhoneSim(Phone):
 
 class PhoneUSB(Phone):
     def open_file(m):
+        os.system("sudo chown user /dev/ttyUSB4")
+        os.system("stty 0:0:8bd:0:3:1c:7f:15:4:0:1:0:11:13:1a:0:12:f:17:16:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0 < /dev/ttyUSB4")
         m.at = open("/dev/ttyUSB4", "r+", 0)
         print("Opened", m.at)
+
+    def powercycle(m):
+        bus = "/sys/bus/platform/drivers/"
+        phone = "phy-mapphone-mdm6600"
+        ohci = "ohci-platform"
+        os.system("sudo chown user "+bus+phone+"/unbind")
+        os.system("sudo chown user "+bus+phone+"/bind")
+        os.system("sudo chown user "+bus+ohci+"/unbind")
+        os.system("sudo chown user "+bus+ohci+"/bind")
+        os.system("echo 4a064800.ohci > "+bus+ohci+"/unbind")
+        os.system("echo usb-phy@1 > "+bus+phone+"/unbind")
+        os.system("echo usb-phy@1 > "+bus+phone+"/bind")
+        os.system("echo 4a064800.ohci > "+bus+ohci+"/bind")
+        # With sleep 3, modem is initialized, but +CSMS (etc) still fails
+        time.sleep(10)
 
 class ModemCtrl(PhoneUSB):
     def __init__(m):
         m.registration = {}
         m.signal_strength = 0
         m.network = ""
-        m.open()
 
-    def modem_init(m):
+    def modem_init(m, pdu=0):
+        m.open()
         m.registration = {}
-        m.command(chr(0x03) + "ATE0")
-        m.command("ATE0")
-        m.command("AT+CVHU=0")
-        m.command("AT+CMGF=1")
-        # Forward messages to me.
-        m.command("AT+CNMI=1,2")
-        #m.command("AT+CFUN=1")
+        m.blocking("ATE0Q0V1", "OK")
+        # CVHU fails otherwise?
+        m.blocking("AT+CFUN=1", "OK")
+        time.sleep(15)
+        #m.command("AT+CREG=2")
+        # Format 0: PDU, 1: text
+        if pdu:
+            m.blocking("AT+CMGF=0", "OK")
+        else:
+            m.blocking("AT+CMGF=1", "OK")        
+        # Forward messages to me.        
+        m.blocking("AT+CNMI=1,2,2,1,0", "OK")
+        m.blocking("AT+CSMS=0", "OK")
+        m.blocking("AT+CGSMS=3", "OK")
+        #m.command('AT+CPMS="ME","ME","ME"')
+        # 1 -- advanced system
+        # Allow terminating voice calls with ATH.
+        m.blocking("AT+CVHU=0", "OK")
+        
+    def modem_init_ofono(m):
+        m.open()
+        m.registration = {}
+        m.blocking("ATE0Q0V1", "OK")
+        # For voice calls
+        m.blocking("AT+CVHU=0", "OK")
+        m.blocking("AT+CFUN=1", "OK")
+        m.blocking("AT+CGMI", "OK")
+        m.blocking("AT+CGMR", "OK")
+        m.blocking("AT+CPIN?", "OK")
+        m.blocking("AT+CSCS?", "OK")
+        m.blocking("AT+CUSD=1", "OK")
+        m.blocking("AT+CAOC=2", "OK")
+        m.blocking("AT+CSMS=?", "OK")
+        m.blocking("AT+CSCS=?", "OK")
+        m.blocking("AT+CREG=2", "OK")
+        m.blocking("AT+CSMS=1", "OK")
+        m.blocking("AT+CPBS=?", "OK")
+        m.blocking("AT+CSMS?", "OK")
+        m.blocking("AT+CMGF=?", "OK")
+        m.blocking("AT+CMER=3,0,0,1", "OK")
+        m.blocking("AT+CPMS=?", "OK")
+        m.blocking("AT+CREG?", "OK")
+        m.blocking("AT+CMGF=0", "OK")
+        m.blocking("AT+COPS=3,2", "OK")
+        m.blocking("AT+COPS?", "OK")
+        m.blocking('AT+CPMS="ME","ME","ME"', "OK")
+        m.blocking("AT+COPS=3,0", "OK")
+        m.blocking("AT+COPS?", "OK")
+        m.blocking('AT+CPMS="ME","ME","ME"', "OK")
+        m.blocking("AT+CNMI=?", "OK")
+        m.blocking("AT+CNMI=1,2,2,1,0", "OK")
+        m.blocking("AT+CMGL=4", "OK")
+        m.blocking("AT+CGSMS=3", "OK")
+        m.blocking("AT+COPS?", "OK")
 
     def startup(m):
         m.online_modem()
@@ -235,6 +317,7 @@ class ModemCtrl(PhoneUSB):
         m.network_updated()
 
 if __name__ == "__main__":
-    m = PhoneSim()
-    m.open()
+    m = ModemCtrl()
+    m.powercycle()
+    m.modem_init(pdu=1)
     m.run()

@@ -55,6 +55,20 @@ class Software:
             os.system("foxtrotgps")
             sys.exit(0)
 
+    def say(m, s, lang="en"):
+        # europe/cs
+        os.system("echo '%s' | espeak -a 100 -p 50 -s 170 -g 1 -v en &" % s)
+
+    def stop_say(m, s, lang="en"):
+        # europe/cs
+        os.system("killall espeak")
+
+    def play_mp3(m, f):
+        os.system("mpg123 -a plughw:CARD=Audio,DEV=0 %s &", f)
+
+    def stop_mp3(m):
+        os.system("killall mpg123")
+
 sw = Software()
 
 if __name__ == "__main__":

@@ -3,6 +3,9 @@
 import json
 import mailbox
 import email.utils
+import sys
+import copy
+import time
 
 class EventLog:
     def __init__(m):
@@ -25,7 +28,8 @@ class EventLog:
         pass
 
     def add_event(m, extra = {}):
-        m.events += [ extra ]
+        extra['time'] = time.time()
+        m.events += [ copy.deepcopy(extra) ]
         m.save()
         m.updated()
 

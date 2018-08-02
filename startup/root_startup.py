@@ -26,14 +26,17 @@ class Startup:
         if debian:
             os.chdir('/my/tui/ofone')
 
-        if hardware.hw.n900:
-            # Enable hardware control from non-root, for tefone etc.
-            hardware.enable_access('/sys/power/state')
-            # keyd needs /dev/input access
-            hardware.enable_access('/dev/input/event6')
-            hardware.enable_access('/dev/input/event5')
-            hardware.enable_access('/dev/input/event1')
-            hardware.enable_access('/dev/input/event0')
+        # Enable hardware control from non-root, for tefone etc.
+        hardware.enable_access('/sys/power/state')            
+
+        # keyd needs /dev/input access
+        hardware.enable_access('/dev/input/event6')
+        hardware.enable_access('/dev/input/event5')
+        hardware.enable_access('/dev/input/event4')
+        hardware.enable_access('/dev/input/event3')
+        hardware.enable_access('/dev/input/event2')
+        hardware.enable_access('/dev/input/event1')
+        hardware.enable_access('/dev/input/event0')
             
         # power management
         sy('sudo mount /dev/zero -t debugfs /sys/kernel/debug/')
