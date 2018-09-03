@@ -33,7 +33,13 @@ class Test:
         if not os.path.exists(s):
             return None
         f = open(s, "r")
-        r = f.read()
+        try:
+            r = f.read()
+        except:
+            # Sometimes file exist but read returns error.
+            # cat time_to_full_now
+            # cat: time_to_full_now: No data available
+            return None
         f.close()
         return r
 
