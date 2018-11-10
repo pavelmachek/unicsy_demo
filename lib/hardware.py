@@ -445,6 +445,8 @@ class LightSensor(Test):
                                 [ "/tsl2563/2-0029/iio:device1/",
                                   "/isl29028/1-0044/iio:device1/",
                                   "/isl29028/1-0044/iio:device2/" ] )
+        if not m.directory:
+            m.directory = "/dev/zero/no"
         if m.directory:
             m.path = m.directory + "in_illuminance"
             if os.path.exists( m.path + "0_input" ):
