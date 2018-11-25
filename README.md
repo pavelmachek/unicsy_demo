@@ -31,3 +31,12 @@ ofono modem rules https://gitlab.com/postmarketOS/pmaports/blob/master/device/de
 ofono compilation:
 
 sudo aptitude install gcc make automake libtool libglib2.0-dev libdbus-1-dev libudev-dev mobile-broadband-provider-info
+
+# Authors
+
+This project started in November 2014, in the "tui" project.
+
+Copyright 2014-2018 Pavel Machek <pavel@ucw.cz>
+
+Distribute under GPLv3 or later, as described in the COPYING file.
+
