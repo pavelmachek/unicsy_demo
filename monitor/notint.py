@@ -34,7 +34,8 @@ class LinuxLed(ColorDisplay):
 
 class LedN900(LinuxLed):
     #scales = (1., 0.5, 0.3)
-    #scales = (1., 0.39, 0.11)
+    scales = (1., 0.39, 0.11)
+    # Other variant is 255, 90, 50
     def __init__(m):
         m.path = "/sys/class/leds/lp5523:"
         m.scale = 1.0
@@ -298,9 +299,20 @@ class ClockTest(Test):
             m.d.pattern(graph)
             time.sleep(60)
 
+class WhiteTest(Test):
+    def run(m):
+        v = 0.0
+        while True:
+            m.d.change_color((v, v, v))
+            time.sleep(.01)
+            v += 0.001
+            if v > 1:
+                v = 0
+
 if __name__ == "__main__":
     # GtkColorDisplay
-    t = PatternTest(LedN900())
+    t = WhiteTest(LedN900())
+    #t = PatternTest(LedN900())
     #t = ClockTest(LedEsp())
     #t = PatternTest(LedEsp())
     #t = StringTest(LedEsp())
