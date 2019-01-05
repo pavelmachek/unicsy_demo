@@ -203,7 +203,7 @@ class Power(rotatable.SubWindow):
         s = ('Battery %d%%' % p) + s
 
         m.battery_text.set_text(s)
-        if p <= 100.:
+        if p >= 0 and p <= 100.:
             m.battery_bar.set_fraction(p / 100.)
         else:
             m.battery_bar.set_fraction(1.)            
@@ -212,7 +212,10 @@ class Power(rotatable.SubWindow):
             m.current_text.set_text("Charging at %d mA, limits %d / %d mA" % (b.current, b.max_battery_current, b.charger_limit))
             if mygtk.is3:
                 m.current_bar.set_inverted(False)
-            m.current_bar.set_fraction(b.current / 650.)
+            if b.current >= 0 and b.current < 650.:
+                m.current_bar.set_fraction(b.current / 650.)
+            else:
+                m.current_bar.set_fraction(1.)
         else:
             s = "Discharging at %d mA" % -b.current
             if b.status != "Not charging":

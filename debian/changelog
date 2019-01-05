@@ -1,0 +1,5 @@
+unicsy-demo (0.5-0) UNRELEASED; urgency=medium
+
+  * Initial release. (Closes: leste #174)
+
+ -- MAINTAINER <pavel@ucw.cz>  Sun, 11 Nov 2018 15:48:49 +0100
