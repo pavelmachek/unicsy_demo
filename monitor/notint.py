@@ -24,6 +24,7 @@ class LinuxLed(ColorDisplay):
 
     def change_color(m, val):
         val = map(lambda x: int((x**2.2)*255), val)
+        #val = map(lambda x: int(x*255), val) # FIXME
         (r, g, b) = val
         #print("Values ", r, g, b)
         (red, green, blue) = m.names
@@ -309,9 +310,23 @@ class WhiteTest(Test):
             if v > 1:
                 v = 0
 
+class ColorTest(Test):
+    def run(m):
+        v = 0.0
+        while True:
+            m.d.change_color((255/255., 165/255., 0/255.)) # Orange
+            time.sleep(1)
+            # 138,43,226
+            m.d.change_color((138/255., 43/255., 226/255.)) # blue violet
+            time.sleep(1)
+            
+            m.d.change_color((128/255., 128/255., 0/255.)) # olive
+            time.sleep(1)
+
 if __name__ == "__main__":
     # GtkColorDisplay
-    t = WhiteTest(LedN900())
+    t = ColorTest(LedN900())
+    #t = WhiteTest(LedN900())
     #t = PatternTest(LedN900())
     #t = ClockTest(LedEsp())
     #t = PatternTest(LedEsp())
