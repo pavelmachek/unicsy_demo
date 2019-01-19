@@ -7,7 +7,7 @@ Build-Depends: debhelper (>= 9)
 
 Package: unicsy-demo
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}, python-gtk2, python-dbus, ofono
 Description: Unicsy Demo
  Provides demos and hardware tests for cellphone-related functionality.
  
