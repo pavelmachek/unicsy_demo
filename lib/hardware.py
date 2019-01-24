@@ -784,7 +784,8 @@ class Hardware:
                         m.real_name = "Nokia N9"
                         return
                 if s == "Generic OMAP4 (Flattened Device Tree)":
-                    if os.path.exists('/sys/devices/platform/44000000.ocp/48098000.spi/spi_master/spi0/spi0.0/cpcap_battery.0'):
+                    if os.path.exists('/sys/devices/platform/44000000.ocp/48098000.spi/spi_master/spi0/spi0.0/cpcap_battery.0') or \
+                       os.path.exists('/sys/devices/platform/44000000.ocp/48000000.interconnect/48000000.interconnect:segment@0/48098000.target-module/48098000.spi/spi_master/spi0/spi0.0/cpcap_battery.0'):
                         m.code_name = "motorola-xt894"
                         m.real_name = "Motorola Droid 4"
                         return
