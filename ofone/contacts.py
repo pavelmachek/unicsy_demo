@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/python2
 
 import sys
 sys.path += [ "/usr/share/unicsy/lib" ]

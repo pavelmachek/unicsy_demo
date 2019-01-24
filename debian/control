@@ -1,0 +1,13 @@
+Source: unicsy-demo
+Maintainer: Pavel Machek <pavel@ucw.cz>
+Section: misc
+Priority: optional
+Standards-Version: 3.9.2
+Build-Depends: debhelper (>= 9)
+
+Package: unicsy-demo
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, python-gtk2, python-dbus, ofono
+Description: Unicsy Demo
+ Provides demos and hardware tests for cellphone-related functionality.
+ 

@@ -63,9 +63,17 @@ class TouchWindow(TouchWidgets):
         m.window.hide()
         return True
 
+    def close(m):
+        m.window.destroy()
+        if m.main_window:
+            gtk.main_quit()
+
     def basic_main_window(m):
         m.basic_window()
         m.main_window = 1
+
+    def gtk_main(m):
+        gtk.main()
 
 class Panel(TouchWindow):
     def interior(m):
@@ -157,4 +165,4 @@ class SubWindow(Rotatable):
 if __name__ == "__main__":
     test = TestWindow()
     test.basic_main_window()
-    gtk.main()
+    test.gtk_main()

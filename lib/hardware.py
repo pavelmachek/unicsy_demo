@@ -33,7 +33,13 @@ class Test:
         if not os.path.exists(s):
             return None
         f = open(s, "r")
-        r = f.read()
+        try:
+            r = f.read()
+        except:
+            # Sometimes file exist but read returns error.
+            # cat time_to_full_now
+            # cat: time_to_full_now: No data available
+            return None
         f.close()
         return r
 
@@ -122,7 +128,7 @@ class Battery(Test):
                 m.battery_empty = m.charge_now
             
 
-        #perc2 = int(m.read(m.battery+"/capacity"))
+        #perc2 = m.read_int(m.battery+"/capacity")
         # Buggy in v4.4
         perc2 = 0
         if charge_full >= 0:
@@ -439,6 +445,8 @@ class LightSensor(Test):
                                 [ "/tsl2563/2-0029/iio:device1/",
                                   "/isl29028/1-0044/iio:device1/",
                                   "/isl29028/1-0044/iio:device2/" ] )
+        if not m.directory:
+            m.directory = "/dev/zero/no"
         if m.directory:
             m.path = m.directory + "in_illuminance"
             if os.path.exists( m.path + "0_input" ):
@@ -533,11 +541,16 @@ class Vibrations(Test):
     name = "Vibrations"
 
     def probe(m):
-        m.vib_event = m.probe_paths("/dev/input/by-path/",
-                                    [ "platform-vibrator-event" ])
+        m.path = m.probe_paths("/dev/input/by-path/",
+                               [ "platform-vibrator-event",
+                                 "platform-48070000.i2c-platform-twl4030-vibra-event" ])
+    def startup(m):
+        enable_access(m.path)
     
     def on(m, t):
-        sy("(echo 5; sleep %f; echo -1) | sudo fftest %s" % (t, m.vib_event))
+        print("fftest at ", m.path)
+        # fftest on N900 can not handle "too long" paths.
+        sy("(echo 5; sleep %f; echo -1) | fftest /proc/self/fd/3 3< %s" % (t, m.path))
 
     def run(m):
         m.on(.15)
@@ -636,24 +649,20 @@ class Temperature(Test):
 
     def read_battery_temp(m):
         temp = "/sys/devices/platform/n900-battery/power_supply/rx51-battery/temp"
-        v = m.read(temp)
-        if v is None:
-            return -274
-        return (int(v) / 10.) - 7.5
+        v = m.read_int(temp)
+        return (v / 10.) - 7.5
 
     def read_charger_temp(m):
         temp = "/sys/devices/platform/68000000.ocp/48072000.i2c/i2c-2/2-0055/power_supply/bq27200-0/temp"
-        v = m.read(temp)
-        if v is None:
-            return -274
-        return (int(v) / 10.) - 7.5
+        v = m.read_int(temp)
+        return (v / 10.) - 7.5
 
     # FIXME: this is probably wrong. thermal_zone0/temp seems to correspond to 
     # /sys/class/hwmon/hwmon0/temp1_input, which is bq27200-0
     # If we get three thermal zones, 0 is CPU (+20 Celsius?), 1 and 2 is chargers.
     def read_cpu_temp0(m):
         temp = "/sys/devices/virtual/thermal/thermal_zone0/temp"
-        return int(m.read(temp)) / 1000. - 21.5
+        return m.read_int(temp) / 1000. - 21.5
 
     def run(m):
         print("Battery temperature", m.read_battery_temp())

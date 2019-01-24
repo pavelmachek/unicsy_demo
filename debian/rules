@@ -1,0 +1,9 @@
+#!/usr/bin/make -f
+%:
+	dh $@
+
+override_dh_auto_install:
+	pwd
+	mkdir -p debian/unicsy-demo/usr/share/unicsy
+	cp -av demo audio ofone lib hacks monitor debian/unicsy-demo/usr/share/unicsy
+

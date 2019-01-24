@@ -24,6 +24,7 @@ class LinuxLed(ColorDisplay):
 
     def change_color(m, val):
         val = map(lambda x: int((x**2.2)*255), val)
+        #val = map(lambda x: int(x*255), val) # FIXME
         (r, g, b) = val
         #print("Values ", r, g, b)
         (red, green, blue) = m.names
@@ -34,7 +35,8 @@ class LinuxLed(ColorDisplay):
 
 class LedN900(LinuxLed):
     #scales = (1., 0.5, 0.3)
-    #scales = (1., 0.39, 0.11)
+    scales = (1., 0.39, 0.11)
+    # Other variant is 255, 90, 50
     def __init__(m):
         m.path = "/sys/class/leds/lp5523:"
         m.scale = 1.0
@@ -298,9 +300,34 @@ class ClockTest(Test):
             m.d.pattern(graph)
             time.sleep(60)
 
+class WhiteTest(Test):
+    def run(m):
+        v = 0.0
+        while True:
+            m.d.change_color((v, v, v))
+            time.sleep(.01)
+            v += 0.001
+            if v > 1:
+                v = 0
+
+class ColorTest(Test):
+    def run(m):
+        v = 0.0
+        while True:
+            m.d.change_color((255/255., 165/255., 0/255.)) # Orange
+            time.sleep(1)
+            # 138,43,226
+            m.d.change_color((138/255., 43/255., 226/255.)) # blue violet
+            time.sleep(1)
+            
+            m.d.change_color((128/255., 128/255., 0/255.)) # olive
+            time.sleep(1)
+
 if __name__ == "__main__":
     # GtkColorDisplay
-    t = PatternTest(LedN900())
+    t = ColorTest(LedN900())
+    #t = WhiteTest(LedN900())
+    #t = PatternTest(LedN900())
     #t = ClockTest(LedEsp())
     #t = PatternTest(LedEsp())
     #t = StringTest(LedEsp())
