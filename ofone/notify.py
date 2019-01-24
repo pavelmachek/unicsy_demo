@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python
 # -*- python -*-
 
 import sys
@@ -39,21 +39,30 @@ class MediaPlayer:
             m.player.send_signal(signal.SIGSTOP)
 
 class NotifyInterface(MediaPlayer):
-    def sms(m, event):
-        print("Incoming SMS")
+    def start_notify(m, t, detail):
         #m.mediaPlay(m.audio+"message.mp3")
         hardware.hw.audio.mixer_ringing()
         m.mediaPlay(m.audio+"orig.wav")
 
+    def stop_notify(m, detail):
+        m.mediaPlayPause()
+        
+    def sms(m, event):
+        print("Incoming SMS")
+        m.start_notify("sms", event)
+
+    def calendar_event(m, title, detail):
+        print("Calendar event")
+        m.start_notify("calendar", (title, detail))
+
     def call_incoming(m, number):
         print("Incoming call")
         #m.mediaPlay(m.audio+"ringtone.mp3")
-        hardware.hw.audio.mixer_ringing()
-        m.mediaPlay(m.audio+"orig.wav")
+        m.start_notify("call", number)
 
     def end_incoming(m, reason):
         print("Incoming call no longer")
-        m.mediaPlayPause()
+        m.stop_notify(reason)
 
     def call_starts(m):
         hardware.hw.audio.mixer_call()
