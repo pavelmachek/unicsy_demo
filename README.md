@@ -18,6 +18,8 @@ xscreensaver-demo. Powermanagement needs to be enabled. Default timeouts are 120
 
 On maemo leste
 
+run /etc/expandcard.sh
+
 sudo su
 aptitude install python-gtk2 python-dbus ofono git
 
