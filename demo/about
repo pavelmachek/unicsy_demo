@@ -1,0 +1,112 @@
+#!/usr/bin/python2
+
+import sys
+import pygtk
+pygtk.require('2.0')
+
+import gtk
+import os
+import pango
+
+# On N900, when used by single hand, right portion of screen is usable
+# in horizontal mode, and whole screen is usable in vertical mode,
+# with bottom portions maybe being slightly easier to access.
+
+class TouchWidgets:
+    def __init__(m):
+        pass
+
+    def big(m, s):
+        return '<span size="xx-large">%s</span>' % s
+
+    def middle(m, s):
+        return '<span size="x-large">%s</span>' % s
+    
+    def small(m, s):
+        return '<small>%s</small>' % s
+
+    def font_label(m, s):
+        w = gtk.Label(s)
+        w.set_use_markup(True)
+        return w
+        
+    def font_button(m, s):
+        w = m.font_label(s)
+        w1 = gtk.Button()
+        w1.add(w)
+        return w, w1
+
+    def font_entry(m, size = 32, font=""):
+        e = gtk.Entry()
+        e.modify_font(pango.FontDescription("sans "+str(size)))
+        return e
+
+    def big_button(m, big, small):
+        return m.font_button(m.big(big) + '\n' + m.small(small))
+
+class TouchWindow(TouchWidgets):
+    def __init__(m):
+        m.main_window = 0
+        m.window = None
+
+    def show(m):
+        if m.window:
+            m.window.show_all()
+            return
+        m.basic_window()
+
+    def hide(m):
+        print("Hiding window")
+        if m.main_window:
+            gtk.main_quit()
+        m.window.hide()
+        return True
+
+    def close(m):
+        m.window.destroy()
+        if m.main_window:
+            gtk.main_quit()
+
+    def basic_main_window(m):
+        m.basic_window()
+        m.main_window = 1
+
+    def gtk_main(m):
+        gtk.main()
+
+    def basic_window(m):
+        window = gtk.Window(gtk.WINDOW_TOPLEVEL)
+        window.set_default_size(800, 400)
+        window.set_border_width(3)
+        #window.maximize()
+        m.window = window
+        table = m.interior()
+
+        window.add(table)
+        window.show_all()
+        m.window.connect("delete-event", lambda _, _1: m.hide())
+
+class AboutWindow(TouchWindow):
+    def interior(m):
+        table = gtk.Table(10, 6, False)
+
+        l, b = m.font_button(m.big("Close"))
+        b.connect("clicked", lambda _: m.close())
+        table.attach(b, 8, 10, 0, 1)
+
+        l = m.font_label(m.big("Maemo Leste")+"\n"+
+                         "Version 201903xx\n\n"+
+"""Welcome to the Maemo Leste; Maemo Leste continues the legacy of Maemo. We aim to provide a free Maemo experience on mobile phones and tablets like the Nokia N900, Motorola Droid 4, Allwinner Tablets and more.
+
+More information is at https://maemo-leste.github.io/
+""")
+        #l.set_justify(GTK_JUSTIFY_CENTER);
+        l.set_line_wrap(True);
+        table.attach(l, 0, 8, 0, 6)
+        return table
+
+if __name__ == "__main__":
+    test = AboutWindow()
+    test.basic_main_window()
+    test.gtk_main()
+
