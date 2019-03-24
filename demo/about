@@ -1,4 +1,5 @@
 #!/usr/bin/python2
+# apt install python-gtk2
 
 import sys
 import pygtk
@@ -17,10 +18,10 @@ class TouchWidgets:
         pass
 
     def big(m, s):
-        return '<span size="xx-large">%s</span>' % s
+        return '<span size="x-large">%s</span>' % s
 
     def middle(m, s):
-        return '<span size="x-large">%s</span>' % s
+        return '<span size="medium">%s</span>' % s
     
     def small(m, s):
         return '<small>%s</small>' % s
@@ -96,18 +97,19 @@ class AboutWindow(TouchWindow):
         b.connect("clicked", lambda _: m.root_command("passwd user"))
         table.attach(b, 8, 10, 3, 4)
 
-        l = m.font_label(
-              m.big("Maemo Leste")+"\n"+
-              "Version 201903xx\n\n"+
-"""Welcome to the Maemo Leste; Maemo Leste continues the legacy of Maemo. We aim to provide a free Maemo experience on mobile phones and tablets like the Nokia N900, Motorola Droid 4, Allwinner Tablets and more.
+        welcome = ("""Welcome to the Maemo Leste; Maemo Leste continues the legacy of Maemo. We aim to provide a free Maemo experience on mobile phones and tablets like the Nokia N900, Motorola Droid 4, Allwinner Tablets and more.
 
 More information is at https://maemo-leste.github.io/
 
-"""+
-              m.middle("Grow SD Partition: ")+"Installation images use small fixed partition size. Press the button to grow partition to the available space.\n"+
+""")
+        details = (m.middle("Grow SD Partition: ")+"Installation images use small fixed partition size. Press the button to grow partition to the available space.\n"+
               m.middle("Set passwords: ")+"You can set root and user passwords. User account username is 'user'.\n"+
-              m.middle("USB networking: ")+"Connect USB cable, and you can connect to 192.168.2.XXX using ssh.\n"
-        )
+              m.middle("USB networking: ")+"Connect USB cable, and you can connect to 192.168.2.XXX using ssh.\n")
+
+        welcome = ""
+
+        l = m.font_label(m.big("Maemo Leste")+"\n"+
+              "Version 20190324\n\n"+welcome+details)
         #l.set_justify(GTK_JUSTIFY_CENTER);
         l.set_line_wrap(True);
         table.attach(l, 0, 8, 0, 6)
