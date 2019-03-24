@@ -49,19 +49,6 @@ class TouchWindow(TouchWidgets):
         m.main_window = 0
         m.window = None
 
-    def show(m):
-        if m.window:
-            m.window.show_all()
-            return
-        m.basic_window()
-
-    def hide(m):
-        print("Hiding window")
-        if m.main_window:
-            gtk.main_quit()
-        m.window.hide()
-        return True
-
     def close(m):
         m.window.destroy()
         if m.main_window:
@@ -84,9 +71,12 @@ class TouchWindow(TouchWidgets):
 
         window.add(table)
         window.show_all()
-        m.window.connect("delete-event", lambda _, _1: m.hide())
+        m.window.connect("delete-event", lambda _, _1: m.close())
 
 class AboutWindow(TouchWindow):
+    def root_command(m, s):
+        os.system("osso-xterm 'sudo %s'" % s)
+        
     def interior(m):
         table = gtk.Table(10, 6, False)
 
@@ -94,12 +84,30 @@ class AboutWindow(TouchWindow):
         b.connect("clicked", lambda _: m.close())
         table.attach(b, 8, 10, 0, 1)
 
-        l = m.font_label(m.big("Maemo Leste")+"\n"+
-                         "Version 201903xx\n\n"+
+        l, b = m.font_button(m.big("Grow\n")+"SD partition")
+        b.connect("clicked", lambda _: m.root_command("/etc/expandcard.sh"))
+        table.attach(b, 8, 10, 1, 2)
+
+        l, b = m.font_button("Set\n"+m.big("root\n")+"password")
+        b.connect("clicked", lambda _: m.root_command("passwd"))
+        table.attach(b, 8, 10, 2, 3)
+
+        l, b = m.font_button("Set\n"+m.big("user\n")+"password")
+        b.connect("clicked", lambda _: m.root_command("passwd user"))
+        table.attach(b, 8, 10, 3, 4)
+
+        l = m.font_label(
+              m.big("Maemo Leste")+"\n"+
+              "Version 201903xx\n\n"+
 """Welcome to the Maemo Leste; Maemo Leste continues the legacy of Maemo. We aim to provide a free Maemo experience on mobile phones and tablets like the Nokia N900, Motorola Droid 4, Allwinner Tablets and more.
 
 More information is at https://maemo-leste.github.io/
-""")
+
+"""+
+              m.middle("Grow SD Partition: ")+"Installation images use small fixed partition size. Press the button to grow partition to the available space.\n"+
+              m.middle("Set passwords: ")+"You can set root and user passwords. User account username is 'user'.\n"+
+              m.middle("USB networking: ")+"Connect USB cable, and you can connect to 192.168.2.XXX using ssh.\n"
+        )
         #l.set_justify(GTK_JUSTIFY_CENTER);
         l.set_line_wrap(True);
         table.attach(l, 0, 8, 0, 6)
