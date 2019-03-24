@@ -77,7 +77,13 @@ class ContactsCheck(ContactsDb):
                           
         super().add_contact(name, num)
 
+    def dump_for_rphone(m):
+        for a in m.contacts:
+            name, num = a
+            print("%s\t%s" % (num, name))
+
 if __name__ == "__main__":
     db = ContactsCheck()
     db.load_org()
-    print(db.from_number("299149009").fmt())
+    #print(db.from_number("299149009").fmt())
+    db.dump_for_rphone()
