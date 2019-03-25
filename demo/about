@@ -77,6 +77,16 @@ class TouchWindow(TouchWidgets):
 class AboutWindow(TouchWindow):
     def root_command(m, s):
         os.system("osso-xterm 'sudo %s'" % s)
+
+    def action(m, title, action, descripton):
+        box = gtk.HBox()
+        _, button = m.font_button(title)
+        button.connect("clicked", action)
+        label = m.font_label(descripton)
+        label.set_line_wrap(True)
+        box.add(button)
+        box.add(label)
+        return box, button, label
         
     def interior(m):
         table = gtk.Table(10, 6, False)
@@ -149,20 +159,24 @@ know their rights.
 """
 
         l = m.font_label(m.big("Maemo Leste")+"\n"+
-                         "Version 20190324\n\n"+welcome+details+fill)
+                         "Version 20190324\n\n"+welcome+details)
         #l.set_justify(GTK_JUSTIFY_CENTER)
         l.set_line_wrap(True)
 
-        
-        t = gtk.Table(1,2, False)
-        l_, b_ = m.font_button("Scroll me")
-        t.attach(b_, 0,1, 0,1)        
-        t.attach(l, 0,1, 1,2)
-        
+        t = gtk.VBox()
+        t.add(l)
+
+        box, label, button = m.action(m.big("Grow\n")+"SD partition",
+        	lambda _: m.root_command("/etc/expandcard.sh"),
+                "Installation images use small fixed partition size. Press the button to grow partition to the available space."
+                )
+        t.add(box)
+
 
         scrolled = gtk.ScrolledWindow()
         scrolled.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_ALWAYS)
         scrolled.add_with_viewport(t)
+        #scrolled.set_kinetic_scrolling(True)
         table.attach(scrolled, 0, 8, 0, 6)
         return table
 
