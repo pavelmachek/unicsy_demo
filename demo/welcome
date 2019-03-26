@@ -95,6 +95,11 @@ class AboutWindow(TouchWindow):
         b.connect("clicked", lambda _: m.close())
         table.attach(b, 8, 10, 0, 1)
 
+        img = gtk.Image()
+        img.set_from_file("logo.png")
+        img.set_size_request(120, 120)
+        table.attach(img, 8, 10, 2, 3)
+
         welcome = ("""Welcome to the Maemo Leste; Maemo Leste continues the legacy of Maemo. We aim to provide a free Maemo experience on mobile phones and tablets like the Nokia N900, Motorola Droid 4, Allwinner Tablets and more.
 
 More information is at https://maemo-leste.github.io/
@@ -121,7 +126,7 @@ More information is at https://maemo-leste.github.io/
  	        "User account username is 'user'. When you connect USB cable, and you can connect to 192.168.2.XXX using ssh."
         )
         t.add(box)
-                                      
+
         scrolled = gtk.ScrolledWindow()
         scrolled.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_ALWAYS)
         scrolled.add_with_viewport(t)
