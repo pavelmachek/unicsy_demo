@@ -798,6 +798,12 @@ class Hardware:
                         m.code_name = "motorola-xt894"
                         m.real_name = "Motorola Droid 4"
                         return
+        l = open('/sys/firmware/devicetree/base/compatible').readlines()
+        print(l[0][:21])
+        if 'purism,librem5-devkit' == l[0][:21]:
+            m.code_name = "librem5-devkit"
+            m.real_name = "Librem 5 devkit"
+            return
         print("Unknown hardware! You'll need to implement detection.")
 
 hw = Hardware()
