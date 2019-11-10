@@ -75,9 +75,9 @@ class Battery(Test):
         if m.hw.d4:
             m.design_full_V = 4.35
         m.battery = m.probe_paths("/sys/class/power_supply/",
-                                  [ 'bq27200-0', 'bq27521-0', 'battery' ])
+                                  [ 'bq27200-0', 'bq27521-0', 'tcpm-source-psy-0-0052', 'battery' ])
         m.charger = m.probe_paths("/sys/class/power_supply/",
-                                  [ 'bq24150a-0', 'bq24153-0', 'usb' ])
+                                  [ 'bq24150a-0', 'bq24153-0', 'bq25890-charger', 'usb' ])
 
     def percent_to_42v(m, v):
         u = 0.0387-(1.4523*(3.7835-v))
@@ -662,7 +662,10 @@ class Temperature(Test):
     # If we get three thermal zones, 0 is CPU (+20 Celsius?), 1 and 2 is chargers.
     def read_cpu_temp0(m):
         temp = "/sys/devices/virtual/thermal/thermal_zone0/temp"
-        return m.read_int(temp) / 1000. - 21.5
+        v =  m.read_int(temp) / 1000.
+        if m.hw.n900:
+            v = v - 21.5
+        return v
 
     def run(m):
         print("Battery temperature", m.read_battery_temp())
@@ -798,6 +801,12 @@ class Hardware:
                         m.code_name = "motorola-xt894"
                         m.real_name = "Motorola Droid 4"
                         return
+        l = open('/sys/firmware/devicetree/base/compatible').readlines()
+        print(l[0][:21])
+        if 'purism,librem5-devkit' == l[0][:21]:
+            m.code_name = "librem5-devkit"
+            m.real_name = "Librem 5 devkit"
+            return
         print("Unknown hardware! You'll need to implement detection.")
 
 hw = Hardware()
