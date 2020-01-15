@@ -27,12 +27,17 @@ cd /usr/share/unicsy
 git clone https://github.com/pavelmachek/unicsy_demo.git
 
 
-
-
 ofono modem rules https://gitlab.com/postmarketOS/pmaports/blob/master/device/device-nokia-n900/udev/10-nokia-modem.rules
 ofono compilation:
 
 sudo aptitude install gcc make automake libtool libglib2.0-dev libdbus-1-dev libudev-dev mobile-broadband-provider-info
+
+Running as GTK2_RC_FILES= demo/demo.py provides more reasonable
+graphics output.
+
+sudo modprobe ssi_protocol
+sudo modprobe cmt_speech
+sudo modprobe nokia-modem
 
 # Authors
 
