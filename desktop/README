@@ -1,0 +1,8 @@
+early autostart: add yourself to /etc/X11/Xsession.d/80-custom or something. Be sure to run with &
+
+/usr/share/applications/hildon/
+
+It reloads modified desktop files itself, but is somehow very
+sensitive to format?
+
+scp root@10.0.0.122:/usr/share/applications/hildon/{ofone,demo}.desktop .

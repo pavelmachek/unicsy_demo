@@ -1,0 +1,11 @@
+[Desktop Entry]
+Encoding=UTF-8
+Version=1.0
+Name=Ofone
+Comment=Phone application
+Exec=/usr/share/unicsy/ofone/ofone
+Icon=call_button
+Terminal=true
+Type=Application
+Categories=System;Phone;
+X-Osso-Type=application/x-executable
