@@ -5,5 +5,5 @@
 override_dh_auto_install:
 	pwd
 	mkdir -p debian/unicsy-demo/usr/share/unicsy
-	cp -av demo audio ofone lib hacks monitor debian/unicsy-demo/usr/share/unicsy
+	cp -av demo audio ofone lib hacks monitor tones debian/unicsy-demo/usr/share/unicsy
 

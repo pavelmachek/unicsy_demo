@@ -17,7 +17,13 @@ class MediaPlayer:
             m.audio = "/my/tui/ofone/audio/"
             m.play_cmd = [ 'mplayer' ]
         else:
-            m.audio = "/usr/share/sounds/linphone/rings/"
+            if False:
+                m.audio = "/usr/share/sounds/linphone/rings/"
+                m.ring = "orig.wav"
+            else:
+                m.audio = "/usr/share/sounds/"
+                m.ring = "ui-wake_up_tune.wav"
+                
             m.play_cmd = [ 'aplay' ]
             if hardware.hw.d4:
                 m.play_cmd += [ '-D', 'plughw:CARD=Audio,DEV=0' ]
@@ -42,7 +48,7 @@ class NotifyInterface(MediaPlayer):
     def start_notify(m, t, detail):
         #m.mediaPlay(m.audio+"message.mp3")
         hardware.hw.audio.mixer_ringing()
-        m.mediaPlay(m.audio+"orig.wav")
+        m.mediaPlay(m.audio+m.ring)
 
     def stop_notify(m, detail):
         m.mediaPlayPause()
