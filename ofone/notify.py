@@ -17,9 +17,9 @@ class MediaPlayer:
             m.audio = "/my/tui/ofone/audio/"
             m.play_cmd = [ 'mplayer' ]
         else:
-            if False:
-                m.audio = "/usr/share/sounds/linphone/rings/"
-                m.ring = "orig.wav"
+            if True:
+                m.audio = "/usr/share/unicsy/tones/"
+                m.ring = "fallback.wav"
             else:
                 m.audio = "/usr/share/sounds/"
                 m.ring = "ui-wake_up_tune.wav"
