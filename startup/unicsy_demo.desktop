@@ -1,7 +1,7 @@
 [Desktop Entry]
-Name=Unicsy Demo
+Name=Unicsy Demo Ofone
 Comment=TestIcon=xfce4-power-manager-settings
-Exec=/usr/share/unicsy/startup/x_startup.py
+Exec=/usr/share/unicsy/ofone/ofone -p
 Terminal=true
 Type=Application
 NotShowIn=GNOME;KDE;Unity;
