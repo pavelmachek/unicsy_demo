@@ -112,7 +112,7 @@ xbindkeys -f /my/xbindkeysrc
         if debian:
             if n900:
                 cmd += build_script('6_cmtspeech', '/my/libcmtspeechdata/run')
-            cmd += build_script('7_lockd',   p+'hacks/lockd.py')
+            #cmd += build_script('7_lockd',   p+'hacks/lockd.py')
             if n900:
                 cmd += build_script('8_gps3',    '/my/tui/ofone/gps_run')
                 cmd += build_script('9_wifi',    '/my/tui/ofone/wifid.py')
