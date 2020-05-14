@@ -252,7 +252,7 @@ class Power(rotatable.SubWindow):
 
     def update_temperature(m, bar, temp):
         bar.set_text("%.1f C" % temp)
-        f = temp / 30.
+        f = (temp - 20.) / 60.
         if f < 0: f = 0
         if f > 1: f = 1
         bar.set_fraction(f)
