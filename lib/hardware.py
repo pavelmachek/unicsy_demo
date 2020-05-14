@@ -669,7 +669,7 @@ class Temperature(Test):
 
     def run(m):
         print("Battery temperature", m.read_battery_temp())
-        print("Charger temperature", m.read_battery_temp())
+        print("Charger temperature", m.read_charger_temp())
         print("CPU temperature", m.read_cpu_temp0())
 
 class Accelerometer(Test):
