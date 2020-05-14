@@ -648,14 +648,17 @@ class Temperature(Test):
     name = "Temperature"
 
     def read_battery_temp(m):
-        temp = "/sys/devices/platform/n900-battery/power_supply/rx51-battery/temp"
-        v = m.read_int(temp)
-        return (v / 10.) - 7.5
+        v = m.read_int(m.battery_path)
+        if m.hw.n900:
+            return (v / 10.) - 7.5
+        return (v / 10.)
 
-    def read_charger_temp(m):
-        temp = "/sys/devices/platform/68000000.ocp/48072000.i2c/i2c-2/2-0055/power_supply/bq27200-0/temp"
-        v = m.read_int(temp)
-        return (v / 10.) - 7.5
+    # Charger in case of N900
+    def read_board_temp(m):
+        v = m.read_int(m.board_path)
+        if m.hw.n900:
+            return (v / 10.) - 7.5
+        return (v / 1000.)
 
     # FIXME: this is probably wrong. thermal_zone0/temp seems to correspond to 
     # /sys/class/hwmon/hwmon0/temp1_input, which is bq27200-0
@@ -667,9 +670,16 @@ class Temperature(Test):
             v = v - 21.5
         return v
 
+    def probe(m):
+        m.battery_path = m.probe_paths("/sys/class/power_supply/",
+                                  [ 'rx51-battery/temp', 'battery/temp' ])
+        m.board_path = m.probe_paths("/",
+                                     [ "/sys/class/power_supply/bq27200-0/temp",
+                                       "/sys/class/hwmon/hwmon0/temp1_input" ])
+        
     def run(m):
         print("Battery temperature", m.read_battery_temp())
-        print("Charger temperature", m.read_charger_temp())
+        print("Board/charger temperature", m.read_board_temp())
         print("CPU temperature", m.read_cpu_temp0())
 
 class Accelerometer(Test):

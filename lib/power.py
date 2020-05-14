@@ -72,16 +72,16 @@ class Power(rotatable.SubWindow):
         m.illum_visible = w = gtk.ProgressBar()
         table.attach(w, 0,4, 8,9)
 
-        w = gtk.Label("Charger")
-        table.attach(w, 0,1, 9,10)
         w = gtk.Label("Battery")
+        table.attach(w, 0,1, 9,10)
+        w = gtk.Label("Board")
         table.attach(w, 0,1, 10,11)
         w = gtk.Label("CPU")
         table.attach(w, 0,1, 11,12)
 
-        m.charger_temp_bar = w = gtk.ProgressBar()
-        table.attach(w, 1,4, 9,10)
         m.battery_temp_bar = w = gtk.ProgressBar()
+        table.attach(w, 1,4, 9,10)
+        m.board_temp_bar = w = gtk.ProgressBar()
         table.attach(w, 1,4, 10,11)
         m.cpu_temp_bar = w = gtk.ProgressBar()
         table.attach(w, 1,4, 11,12)
@@ -280,7 +280,7 @@ class Power(rotatable.SubWindow):
         m.accel_3.set_fraction(abs(z)/1.3)
 
         temp = hardware.hw.temperature
-        m.update_temperature(m.charger_temp_bar, temp.read_charger_temp())
+        m.update_temperature(m.board_temp_bar, temp.read_board_temp())
         m.update_temperature(m.battery_temp_bar, temp.read_battery_temp())
         m.update_temperature(m.cpu_temp_bar, temp.read_cpu_temp0())
 
