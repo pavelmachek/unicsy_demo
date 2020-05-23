@@ -11,6 +11,7 @@ def setup2():
 def setup3():
     global is3
     # This needs python3-gi
+    # May need python3-cairo-dev, python3-gi-cairo.
     from gi import pygtkcompat
 
     pygtkcompat.enable() 
