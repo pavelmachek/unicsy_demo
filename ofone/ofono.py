@@ -93,7 +93,6 @@ def removed(name, member, path, interface):
         iface = interface[interface.rfind(".") + 1:]
         mw.log("removed {%s} [%s] %s" % (iface, name, member))
         if iface == "VoiceCallManager":
-            print("Call ended")
             mw.call_ended(name)
 
 def event(member, path, interface):
@@ -244,6 +243,8 @@ class ModemCtrl:
 
     def online_modem(m):
         m.modem.SetProperty("Powered", dbus.Boolean(1), timeout = 120)
+        # Delay is needed, at least for qmi+gsmmux version of ofono
+        time.sleep(1)
         m.modem.SetProperty("Online", dbus.Boolean(1), timeout = 120)
 
     def offline_modem(m):
