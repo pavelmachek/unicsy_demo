@@ -717,6 +717,7 @@ class Accelerometer(Test):
 
         m.use_iio = True
         m.directory = m.probe_paths( "", [ "/sys/bus/iio/devices/iio:device0" ])
+        m.write_root(m.directory+"/sampling_frequency", "100")
 
 class GPS(Test):
     hotkey = "g"
