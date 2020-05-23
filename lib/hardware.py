@@ -687,19 +687,36 @@ class Accelerometer(Test):
     name = "acceleroMeter"
 
     def position(m):
-        r = m.read("/sys/devices/platform/lis3lv02d/position")
-        if r is None:
-            return (0., 0., 0.)
-        r = r[1:-2]
-        s = r.split(",")
+        if not m.use_iio:
+            # This works on N900, but it looks the world is moving
+            # to the other driver.
+            r = m.read(m.directory+"/position")
+            if r is None:
+                return (0., 0., 0.)
+            r = r[1:-2]
+            s = r.split(",")
+            return list(map(lambda x: float(int(x)/1044.), s))
+        x = m.read_int(m.directory+"/in_accel_x_raw")
+        y = m.read_int(m.directory+"/in_accel_y_raw")
+        z = m.read_int(m.directory+"/in_accel_z_raw")
+        s = (x, y, z)
         return list(map(lambda x: float(int(x)/1044.), s))
         
     def run(m):
         print(m.position())
-        sy("cat /sys/devices/platform/lis3lv02d/position")
-        time.sleep(5)
+        time.sleep(1)
         print(m.position())
-        sy("cat /sys/devices/platform/lis3lv02d/position")
+        time.sleep(1)
+        print(m.position())
+
+    def probe(m):
+        m.directory = "/sys/devices/platform/lis3lv02d"
+        if os.path.exists(m.directory):
+            m.use_iio = False
+            return
+
+        m.use_iio = True
+        m.directory = m.probe_paths( "", [ "/sys/bus/iio/devices/iio:device0" ])
 
 class GPS(Test):
     hotkey = "g"
