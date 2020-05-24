@@ -745,7 +745,7 @@ class GPRS(Test):
             
         if m.hw.d4:
             print("gprs?")
-            os.system("sudo qmicli -d /dev/cdc-wdm0 --wds-follow-network --wds-start-network=apn=internet.t-mobile.cz & sleep 1")
+            os.system("sudo qmicli -d /dev/cdc-wdm0 --wds-follow-network --wds-start-network=apn=internet & sleep 1")
             os.system("sudo route del default")
             os.system("sudo ifconfig wwan0 up")
             os.system("sudo dhclient wwan0")
