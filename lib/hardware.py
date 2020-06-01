@@ -586,8 +586,11 @@ class Audio(Test):
         sy("sudo amixer set PCM " + s)
 
     def set_mixer(m, name):
-        #sy("sudo alsactl restore -f /usr/share/unicsy/audio/nokia-n900/alsa.playback." + name)
-        sy("sudo alsactl restore -f /usr/share/unicsy/audio/"+m.hw.code_name+"/alsa.playback." + name)
+        card = ""
+        if m.hw.d4:
+            # This seems neccessary on Leste.
+            card = "Audio"
+        sy("sudo alsactl restore "+card+" -f /usr/share/unicsy/audio/"+m.hw.code_name+"/alsa.playback." + name)
 
     def mixer_call(m):
         m.set_mixer("call")
@@ -717,7 +720,7 @@ class Accelerometer(Test):
 
         m.use_iio = True
         m.directory = m.probe_paths( "", [ "/sys/bus/iio/devices/iio:device0" ])
-        m.write_root(m.directory+"/sampling_frequency", "100")
+        #m.write_root(m.directory+"/sampling_frequency", "100")
 
 class GPS(Test):
     hotkey = "g"
