@@ -11,6 +11,7 @@ mygtk.setup()
 
 at_mode = False
 debug_mode = False
+poll_period = 3000
 
 if len(sys.argv) > 1:
     for a in sys.argv[1:]:
@@ -18,6 +19,8 @@ if len(sys.argv) > 1:
             at_mode = True
         if a == '--debug' or a == '-d':
             debug_mode = True
+        if a == '--slow' or a == '-s':
+            poll_period = 90000
 
 if not at_mode:
     import dbus
@@ -432,7 +435,7 @@ class MainWindow(power.Power):
         m.tick_status_text()
         m.tick_time()
 
-        gobject.timeout_add(3000, lambda: m.tick())
+        gobject.timeout_add(poll_period, lambda: m.tick())
 
 
 class EventLog(event_log.EventMbox):
