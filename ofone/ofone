@@ -21,6 +21,8 @@ if len(sys.argv) > 1:
             debug_mode = True
         if a == '--slow' or a == '-s':
             poll_period = 90000
+        if a[:7] == '--poll=':
+            poll_period = int(a[7:])
 
 if not at_mode:
     import dbus
