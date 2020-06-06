@@ -78,7 +78,8 @@ class NotifyInterface(MediaPlayer):
 
 if __name__ == "__main__":
     m = MediaPlayer()
-    m.mediaPlay(m.audio+"ringtone.mp3")
+    hardware.hw.audio.mixer_ringing()
+    m.mediaPlay(m.audio+m.ring)
     time.sleep(5)
     m.mediaPlayPause()
 
