@@ -135,6 +135,10 @@ class Power(rotatable.SubWindow):
         m.status_text = w
         table.attach(w, 0,4, 7,15)
 
+    def audio_test(m):
+        hardware.hw.audio.mixer_ringing()
+        os.system( 'aplay -D plughw:CARD=Audio,DEV=0 /usr/share/unicsy/tones/fallback.wav' )
+
     def control_buttons(m, table):
         _, w = m.big_button('Re', 'start')
         w.connect("clicked", lambda _: os.system("sudo /sbin/reboot"))
@@ -160,7 +164,11 @@ class Power(rotatable.SubWindow):
         _, w = m.big_button('Tefone', 'tests')
         w.connect("clicked", lambda _: os.system("mate-terminal -e /usr/share/unicsy/demo/tefone &"))
         table.attach(w, 2,3, 12,15)
-    
+
+        _, w = m.big_button('Audio', 'test')
+        w.connect("clicked", lambda _: m.audio_test())
+        table.attach(w, 3,4, 12,15)
+        
     def aux_interior(m):
         table = gtk.Table(15,4,True)
         m.battery_interior(table)
