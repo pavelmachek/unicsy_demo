@@ -1,6 +1,7 @@
 #!/usr/bin/python2
 # -*- python -*-
 # Not to be ran as root.
+# Will write to events.json (etc) in current directory. Run from home.
 
 from __future__ import print_function
 

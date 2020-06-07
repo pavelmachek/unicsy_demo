@@ -24,7 +24,7 @@ class MediaPlayer:
                 m.audio = "/usr/share/sounds/"
                 m.ring = "ui-wake_up_tune.wav"
                 
-            m.play_cmd = [ 'aplay' ]
+            m.play_cmd = [ '/usr/bin/aplay' ]
             if hardware.hw.d4:
                 m.play_cmd += [ '-D', 'plughw:CARD=Audio,DEV=0' ]
 
@@ -38,7 +38,8 @@ class MediaPlayer:
     def mediaPlay(m, file):
         if not m.playback_finished():
             m.player.send_signal(signal.SIGTERM)
-        m.player = subprocess.Popen(m.play_cmd + [ file ], stdin=subprocess.PIPE)
+        null = open('/dev/null', 'r+')
+        m.player = subprocess.Popen(m.play_cmd + [ file ], stdin=subprocess.PIPE, stdout=null, stderr=null, shell=False, cwd=None, env=None)
 
     def mediaPlayPause(m):
         if m.player:

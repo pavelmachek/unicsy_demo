@@ -1,0 +1,11 @@
+[Desktop Entry]
+Encoding=UTF-8
+Version=1.0
+Name=Development test
+Comment=foo
+Exec=/usr/share/unicsy/ofone/notify.py
+Icon=system-run
+Terminal=true
+Type=Application
+Categories=System;Demo;
+X-Osso-Type=application/x-executable
