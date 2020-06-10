@@ -19,7 +19,9 @@ class MediaPlayer:
         else:
             if True:
                 m.audio = "/usr/share/unicsy/tones/"
-                m.ring = "fallback.wav"
+                m.ring = "CALL.wav"
+                m.sms = "SMS.wav"
+                m.alarm = "ALARM.wav"
             else:
                 m.audio = "/usr/share/sounds/"
                 m.ring = "ui-wake_up_tune.wav"
@@ -49,7 +51,12 @@ class NotifyInterface(MediaPlayer):
     def start_notify(m, t, detail):
         #m.mediaPlay(m.audio+"message.mp3")
         hardware.hw.audio.mixer_ringing()
-        m.mediaPlay(m.audio+m.ring)
+        if detail == "sms":
+            m.mediaPlay(m.audio+m.sms)
+        elif detail == "calendar":
+            m.mediaPlay(m.audio+m.alarm)
+        else:
+            m.mediaPlay(m.audio+m.ring)
 
     def stop_notify(m, detail):
         m.mediaPlayPause()
