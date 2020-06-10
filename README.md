@@ -22,6 +22,7 @@ run /etc/expandcard.sh
 
 sudo su
 aptitude install python-gtk2 python-dbus ofono git
+# Also needs yad libqmi-utils
 
 cd /usr/share/unicsy
 git clone https://github.com/pavelmachek/unicsy_demo.git
