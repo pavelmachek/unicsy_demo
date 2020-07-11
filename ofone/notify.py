@@ -48,7 +48,7 @@ class MediaPlayer:
             m.player.send_signal(signal.SIGSTOP)
 
 class NotifyInterface(MediaPlayer):
-    def start_notify(m, t, detail):
+    def start_notify(m, detail, t):
         #m.mediaPlay(m.audio+"message.mp3")
         hardware.hw.audio.mixer_ringing()
         if detail == "sms":
