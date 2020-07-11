@@ -19,12 +19,12 @@ class MediaPlayer:
         else:
             if True:
                 m.audio = "/usr/share/unicsy/tones/"
-                m.ring = "CALL.wav"
-                m.sms = "SMS.wav"
-                m.alarm = "ALARM.wav"
+                m.t_ring = "CALL.wav"
+                m.t_sms = "SMS.wav"
+                m.t_alarm = "ALARM.wav"
             else:
                 m.audio = "/usr/share/sounds/"
-                m.ring = "ui-wake_up_tune.wav"
+                m.t_ring = "ui-wake_up_tune.wav"
                 
             m.play_cmd = [ '/usr/bin/aplay' ]
             if hardware.hw.d4:
@@ -52,11 +52,11 @@ class NotifyInterface(MediaPlayer):
         #m.mediaPlay(m.audio+"message.mp3")
         hardware.hw.audio.mixer_ringing()
         if detail == "sms":
-            m.mediaPlay(m.audio+m.sms)
+            m.mediaPlay(m.audio+m.t_sms)
         elif detail == "calendar":
-            m.mediaPlay(m.audio+m.alarm)
+            m.mediaPlay(m.audio+m.t_alarm)
         else:
-            m.mediaPlay(m.audio+m.ring)
+            m.mediaPlay(m.audio+m.t_ring)
 
     def stop_notify(m, detail):
         m.mediaPlayPause()
@@ -87,7 +87,7 @@ class NotifyInterface(MediaPlayer):
 if __name__ == "__main__":
     m = MediaPlayer()
     hardware.hw.audio.mixer_ringing()
-    m.mediaPlay(m.audio+m.ring)
+    m.mediaPlay(m.audio+m.t_ring)
     time.sleep(5)
     m.mediaPlayPause()
 
