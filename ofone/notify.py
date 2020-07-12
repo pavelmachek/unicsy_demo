@@ -22,6 +22,7 @@ class MediaPlayer:
                 m.t_ring = "CALL.wav"
                 m.t_sms = "SMS.wav"
                 m.t_alarm = "ALARM.wav"
+                m.t_fallback = "fallback.wav"
             else:
                 m.audio = "/usr/share/sounds/"
                 m.t_ring = "ui-wake_up_tune.wav"
@@ -55,9 +56,11 @@ class NotifyInterface(MediaPlayer):
             m.mediaPlay(m.audio+m.t_sms)
         elif detail == "calendar":
             m.mediaPlay(m.audio+m.t_alarm)
-        else:
+        elif detail == "call":
             m.mediaPlay(m.audio+m.t_ring)
-
+        else:
+            m.mediaPlay(m.audio+m.t_fallback)
+            
     def stop_notify(m, detail):
         m.mediaPlayPause()
         
