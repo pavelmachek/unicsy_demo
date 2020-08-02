@@ -58,7 +58,7 @@ state.Audio {
 	control.5 {
 		iface MIXER
 		name 'Mic2 Capture Volume'
-		value 0
+		value 19
 		comment {
 			access 'read write'
 			type INTEGER
@@ -125,32 +125,6 @@ state.Audio {
 			access 'read write'
 			type BOOLEAN
 			count 1
-		}
-	}
-	control.11 {
-		iface MIXER
-		name 'Call DTMF'
-		value '0'
-		comment {
-			access 'read write'
-			type ENUMERATED
-			count 1
-			item.0 '0'
-			item.1 '1'
-			item.2 '2'
-			item.3 '3'
-			item.4 '4'
-			item.5 '5'
-			item.6 '6'
-			item.7 '7'
-			item.8 '8'
-			item.9 '9'
-			item.10 'A'
-			item.11 'B'
-			item.12 'C'
-			item.13 'D'
-			item.14 '*'
-			item.15 '#'
 		}
 	}
 	control.12 {
