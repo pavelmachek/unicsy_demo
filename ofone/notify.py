@@ -51,6 +51,7 @@ class MediaPlayer:
 class NotifyInterface(MediaPlayer):
     def start_notify(m, detail, t):
         #m.mediaPlay(m.audio+"message.mp3")
+        hardware.hw.vibrations.run_bg()
         hardware.hw.audio.mixer_ringing()
         if detail == "sms":
             m.mediaPlay(m.audio+m.t_sms)
@@ -89,6 +90,7 @@ class NotifyInterface(MediaPlayer):
 
 if __name__ == "__main__":
     m = MediaPlayer()
+    hardware.hw.vibrations.run_bg()
     hardware.hw.audio.mixer_ringing()
     m.mediaPlay(m.audio+m.t_ring)
     time.sleep(5)
