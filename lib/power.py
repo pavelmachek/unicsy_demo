@@ -305,11 +305,15 @@ class Power(rotatable.SubWindow):
         m.tick_sensors()
         m.tick_rgb()
 
-        gobject.timeout_add(3000, lambda: m.tick())
+        m.time_tick = gobject.timeout_add(3000, lambda: m.tick())
 
     def show(m):
         rotatable.SubWindow.show(m)
         m.tick()
+
+    def hide(m):
+        rotatable.Subwindow.hide(m)
+        gobject.source_remove(m.time_tick)
 
 if __name__ == "__main__":
     test = Power()
