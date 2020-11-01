@@ -383,7 +383,8 @@ class MainWindow(power.Power):
         
         w, b = m.font_button("(operator name)")
         m.operator_button = w
-        b.connect("clicked", lambda _: os.system("./win_pos.py &"))
+#        b.connect("clicked", lambda _: os.system("./win_pos.py &"))
+        b.connect("clicked", lambda _: hardware.hw.gprs.run())
         table.attach(b, 4,12,1,3)
         
         w, b = m.font_button("(signal)")
@@ -408,7 +409,7 @@ class MainWindow(power.Power):
         table.attach(button, 0,4,6,9)
 
         w, button = m.font_button(m.big("web"))
-        button.connect("clicked", lambda _: os.system("midori /my/tui/ofone/home.html &"))
+        button.connect("clicked", lambda _: os.system("firefox /my/tui/ofone/home.html &"))
         table.attach(button, 4,8,6,9)
 
         w, button = m.font_button(m.big("sms"))

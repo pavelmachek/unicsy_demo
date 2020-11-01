@@ -8,6 +8,8 @@ import time
 import os
 import sys
 
+# leste: osso-xterm "ping 8.8.8.8" 
+
 def sy(s):
     return os.system(s)
 
