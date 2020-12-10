@@ -1,1 +1,2 @@
+sabotage /etc/init.d/ofono
 cp unicsy_demo.desktop /etc/xdg/autostart/

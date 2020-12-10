@@ -555,6 +555,16 @@ class Vibrations(Test):
     def run(m):
         m.on(.15)
 
+    def run_bg(m):
+        if os.fork():
+            return
+        m.on(.5)
+        time.sleep(3)
+        m.on(.9)
+        time.sleep(3)
+        m.on(.5)
+        sys.exit(0)
+
 class Audio(Test):
     hotkey = "a"
     name = "Audio"
