@@ -843,9 +843,7 @@ class Hardware:
 hw = Hardware()
 
 if __name__ == "__main__":
-    b = hw.battery
-    b.run()
-
-if __name__ == "__main__":
     hw.detect()
     print(hw.code_name, hw.real_name)
+    b = hw.battery
+    b.run()
