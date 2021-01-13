@@ -729,7 +729,7 @@ class Accelerometer(Test):
             return
 
         m.use_iio = True
-        m.directory = m.probe_paths( "", [ "/sys/bus/iio/devices/iio:device0" ])
+        m.directory = m.probe_paths( "/sys/devices/platform/44000000.ocp/48000000.interconnect/48000000.interconnect:segment@200000/48350000.target-module/48350000.i2c/i2c-3/3-0018/", [ "iio:device0", "iio:device1", "iio:device2", "iio:device3", "iio:device4" ])
         #m.write_root(m.directory+"/sampling_frequency", "100")
 
 class GPS(Test):
