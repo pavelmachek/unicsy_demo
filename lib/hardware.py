@@ -556,7 +556,8 @@ class Vibrations(Test):
         m.on(.15)
 
     def run_bg(m):
-        if os.fork():
+        return
+        if not os.fork():
             return
         m.on(.5)
         time.sleep(3)
