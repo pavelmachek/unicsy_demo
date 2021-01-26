@@ -1,2 +1,4 @@
-sabotage /etc/init.d/ofono
-cp unicsy_demo.desktop /etc/xdg/autostart/
+# sabotage /etc/init.d/ofono
+# sudo cp unicsy_demo.desktop /etc/xdg/autostart/
+
+sudo cp -a leste_startup.sh /etc/X11/Xsession.post/95unicsy
