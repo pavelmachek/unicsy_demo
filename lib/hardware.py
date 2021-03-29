@@ -43,6 +43,12 @@ class Test:
         f.close()
         return r
 
+    def read_nocr(m, s):
+        r = m.read(s)
+        if r:
+            return r[:-1]
+        return None
+
     def read_int(m, s):
         v = m.read(s)
         if v is None:
@@ -75,9 +81,9 @@ class Battery(Test):
         if m.hw.d4:
             m.design_full_V = 4.35
         m.battery = m.probe_paths("/sys/class/power_supply/",
-                                  [ 'bq27200-0', 'bq27521-0', 'tcpm-source-psy-0-0052', 'battery' ])
+                                  [ 'bq27200-0', 'bq27521-0', 'tcpm-source-psy-0-0052', 'battery', 'axp20x-battery' ])
         m.charger = m.probe_paths("/sys/class/power_supply/",
-                                  [ 'bq24150a-0', 'bq24153-0', 'bq25890-charger', 'usb' ])
+                                  [ 'bq24150a-0', 'bq24153-0', 'bq25890-charger', 'usb', 'axp20x-usb' ])
 
     def percent_to_42v(m, v):
         u = 0.0387-(1.4523*(3.7835-v))
@@ -106,8 +112,8 @@ class Battery(Test):
         volt = m.read_int(m.battery+"/voltage_now") / 1000000.
         perc = m.percent(volt)
         
-        status = m.read(m.charger+"/status")[:-1]
-        b_status = m.read(m.battery+"/status")[:-1]
+        status = m.read_nocr(m.charger+"/status")
+        b_status = m.read_nocr(m.battery+"/status")
 
         current = m.read_int(m.charger+"/charge_current")
         limit = m.read_int(m.charger+"/current_limit")
@@ -849,6 +855,11 @@ class Hardware:
             m.code_name = "librem5-devkit"
             m.real_name = "Librem 5 devkit"
             return
+        if 'pine64,pinephone-1.2' == l[0][:20]:
+            m.code_name = "pinephone"
+            m.real_name = "PinePhone"
+            return
+        
         print("Unknown hardware! You'll need to implement detection.")
 
 hw = Hardware()
