@@ -226,7 +226,7 @@ class Power(rotatable.SubWindow):
                 m.current_bar.set_fraction(1.)
         else:
             s = "Discharging at %d mA" % -b.current
-            if b.status != "Not charging":
+            if b.status and b.status != "Not charging":
                 s += ", status " + b.status
             m.current_text.set_text(s)
             if mygtk.is3:

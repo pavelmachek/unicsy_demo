@@ -29,8 +29,13 @@ class Test:
         enable_access(s)
         return m.write(s, v)
 
+    def exists(m, s):
+        if not s:
+            return False
+        return os.path.exists(s)
+
     def read(m, s):
-        if not os.path.exists(s):
+        if not m.exists(s):
             return None
         f = open(s, "r")
         try:
@@ -450,7 +455,8 @@ class LightSensor(Test):
         m.directory = m.probe_paths( "/sys/bus/i2c/drivers",
                                 [ "/tsl2563/2-0029/iio:device1/",
                                   "/isl29028/1-0044/iio:device1/",
-                                  "/isl29028/1-0044/iio:device2/" ] )
+                                  "/isl29028/1-0044/iio:device2/",
+                                  "/st-magn-i2c/2-001e/iio:device1" ] )
         if not m.directory:
             m.directory = "/dev/zero/no"
         if m.directory:
@@ -731,13 +737,17 @@ class Accelerometer(Test):
 
     def probe(m):
         m.directory = "/sys/devices/platform/lis3lv02d"
-        if os.path.exists(m.directory):
+        if m.exists(m.directory):
             m.use_iio = False
             return
 
         m.use_iio = True
         m.directory = m.probe_paths( "/sys/devices/platform/44000000.ocp/48000000.interconnect/48000000.interconnect:segment@200000/48350000.target-module/48350000.i2c/i2c-3/3-0018/", [ "iio:device0", "iio:device1", "iio:device2", "iio:device3", "iio:device4" ])
         #m.write_root(m.directory+"/sampling_frequency", "100")
+        if m.exists(m.directory):
+            return
+        
+        m.directory = m.probe_paths( "/sys/devices/platform/soc/1c2b000.i2c/i2c-2/2-0068/", [ "iio:device2" ])
 
 class GPS(Test):
     hotkey = "g"
