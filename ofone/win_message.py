@@ -18,7 +18,7 @@ class MessageWindow(rotatable.SubWindow):
         rotatable.SubWindow.__init__(m)
         m.basic_window()
 #        m.call_button.set_label(m.middle(msg))
-	m.call_button.insert_at_cursor(msg)
+        m.call_button.insert_at_cursor(msg)
         m.window.show_all()
 
     def interior(m):

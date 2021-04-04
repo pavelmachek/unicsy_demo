@@ -79,7 +79,7 @@ def property_changed(name, value, path, interface):
             time.sleep(1)
             subprocess.call(      ["/usr/bin/sudo", "/sbin/route", "del", "default"])
             subprocess.check_call(["/usr/bin/sudo", "/sbin/route", "add", "default", "gw", addr])
-            print("dns says", DNS, str(DNS[0]))
+            #print("dns says", DNS, str(DNS[0]))
             #dns1, dns2 = DNS.split(" ")
             open("/etc/resolv.conf", "w").write("nameserver "+str(DNS[0]))
 
@@ -116,9 +116,9 @@ def value(value, member, path, interface):
 
 def start_ofono():
         loop = dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
-        print("Setting main loop")
-        print(loop)
-        print("done")
+        #print("Setting main loop")
+        #print(loop)
+        #print("done")
         bus = dbus.SystemBus()
 
 
@@ -231,7 +231,7 @@ class ModemCtrl:
 
         for path, properties in calls:
                 state = properties["State"]
-                print("[ %s ] %s" % (path, state))
+                #print("[ %s ] %s" % (path, state))
 
                 if state != "incoming":
                         continue
@@ -260,11 +260,11 @@ class ModemCtrl:
         properties = m.ussd.GetProperties()
         state = properties["State"]
 
-        print("State: %s" % (state))
+        #print("State: %s" % (state))
 
         if state == "idle":
             result = m.ussd.Initiate(ussdstring, timeout=100)
-            print(result[0] + ": " + result[1])
+            #print(result[0] + ": " + result[1])
             m.message(result[0] + ": " + result[1])
         elif state == "user-response":
             m.message("ussd expects user response, not implemented " +
@@ -281,7 +281,7 @@ class ModemCtrl:
         if len(message) > 160:
             raise("message too long")
         path = m.mm.SendMessage(number, message)
-        print("Message sent as ", path)
+        #print("Message sent as ", path)
 
     def connect_internet(m):
         connman = m.connman
@@ -347,7 +347,7 @@ class ModemCtrl:
             if label == "MobileNetworkCode": label = "MNC"
             if label == "LocationAreaCode": label = "LAC"
             if label == "Strength":
-                print(a, type(m.registration[a]), m.registration[a])
+                #print(a, type(m.registration[a]), m.registration[a])
                 signal_strength = int(dbus.Byte(m.registration[a]))
                 ss = "%d %%" % signal_strength
                 s += label + ": "+ss+"\n"

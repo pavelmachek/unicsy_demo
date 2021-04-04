@@ -6,7 +6,7 @@ is3 = False
 def setup2():
     import pygtk
     pygtk.require('2.0')
-    print("Fell back to pygtk 2")
+    #print("Fell back to pygtk 2")
 
 def setup3():
     global is3
@@ -16,7 +16,7 @@ def setup3():
 
     pygtkcompat.enable() 
     pygtkcompat.enable_gtk(version='3.0')
-    print("Having pygtk 3")
+    #print("Having pygtk 3")
     is3 = True
 
 
