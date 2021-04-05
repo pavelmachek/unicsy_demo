@@ -278,7 +278,7 @@ class ChargeBattery(Battery):
 
 class LED(Test):
     def set_bright(m, s, v):
-        f = open(m.path + s + "/brightness", "w")
+        f = open(m.path + s + m.suffix + "/brightness", "w")
         f.write(str(int(v*m.scale)))
         f.close()
 
@@ -316,14 +316,22 @@ class LEDs(LED):
 
     def probe(m):
         m.path='/sys/class/leds/'
+        m.suffix=''
+        m.short = False        
         if os.path.exists(m.path+"status-led"):
             m.white = "status-led"
+        # Nokia N900
         if os.path.exists(m.path+"lp5523:r"):
             m.path += "lp5523:"
             m.short = True
+        # Droid 4
         if os.path.exists(m.path+"status-led:red"):
             m.path += "status-led:"
-            m.short = False
+        # Pinephone
+        if os.path.exists(m.path+"red:indicator"):
+            m.suffix = ":indicator"
+            m.scale = 1
+        
 
     def startup(m):
         enable_access(m.path+"*/brightness")
