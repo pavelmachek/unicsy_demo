@@ -113,7 +113,7 @@ class Battery(Test):
 
         return ""
 
-    def run(m):
+    def run(m, verbose = False):
         volt = m.read_int(m.battery+"/voltage_now") / 1000000.
         perc = m.percent(volt)
         
@@ -173,7 +173,8 @@ class Battery(Test):
         volt3 = volt + (current2 / 1000. * resistance)
         perc3 = m.percent(volt3)
 
-        print("Battery (%.2fV) %.2fV" % (volt, volt3), \
+        if verbose:
+            print("Battery (%.2fV) %.2fV" % (volt, volt3), \
               "(%d%%) %d%% %d%%" % (int(perc), int(perc3), perc2), \
               "%d/%d mAh" % (charge_now, charge_full), \
               status, b_status, \
