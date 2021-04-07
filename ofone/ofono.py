@@ -70,18 +70,8 @@ def property_changed(name, value, path, interface):
         if iface == "ConnectionContext" and name == "Active":
             # Display some indication that GPRS is active?
             mw.connection_active(value)
-        if iface == "ConnectionContext" and name == "Settings":
-            interface = str(value["Interface"])
-            addr = str(value["Address"])
-            DNS = value["DomainNameServers"]
-            print("Connected to the internet, my IP address is "+addr+".")
-            subprocess.check_call(["/usr/bin/sudo", "/sbin/ifconfig", interface, addr, "up"])
-            time.sleep(1)
-            subprocess.call(      ["/usr/bin/sudo", "/sbin/route", "del", "default"])
-            subprocess.check_call(["/usr/bin/sudo", "/sbin/route", "add", "default", "gw", addr])
-            #print("dns says", DNS, str(DNS[0]))
-            #dns1, dns2 = DNS.split(" ")
-            open("/etc/resolv.conf", "w").write("nameserver "+str(DNS[0]))
+        if iface == "ConnectionContext" and name == "Settings" and ("Interface" in value):
+            mw.activate_gprs(value)
 
 def added(name, value, member, path, interface):
         iface = interface[interface.rfind(".") + 1:]
@@ -391,6 +381,19 @@ class ModemCtrl:
     def connection_active(m, value):
         if value == False:
             m.no_network()
+
+    def activate_gprs(m, value):
+        interface = str(value["Interface"])
+        addr = str(value["Address"])
+        DNS = value["DomainNameServers"]
+        print("Connected to the internet, my IP address is "+addr+".")
+        subprocess.check_call(["/usr/bin/sudo", "/sbin/ifconfig", interface, addr, "up"])
+        time.sleep(1)
+        subprocess.call(      ["/usr/bin/sudo", "/sbin/route", "del", "default"])
+        subprocess.check_call(["/usr/bin/sudo", "/sbin/route", "add", "default", "gw", addr])
+        #print("dns says", DNS, str(DNS[0]))
+        #dns1, dns2 = DNS.split(" ")
+        open("/etc/resolv.conf", "w").write("nameserver "+str(DNS[0]))
 
 if __name__ == "__main__":
     mc = ModemCtrl()
