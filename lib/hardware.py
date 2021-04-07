@@ -887,4 +887,4 @@ if __name__ == "__main__":
     hw.detect()
     print(hw.code_name, hw.real_name)
     b = hw.battery
-    b.run()
+    b.run(verbose=True)
