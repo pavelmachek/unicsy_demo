@@ -11,25 +11,25 @@ import vobject
 from collections import defaultdict
 from subprocess import call
 
-__all__ = (
-	"HOME",
-	"XDG_DATA_HOME",
-)
+def detect_abook():
 
-# Always points to the user's home directory
-HOME = os.path.expanduser("~")
-XDG_DATA_EVOLUTION = os.environ.get("XDG_DATA_HOME", os.path.join(HOME, ".local", "share", "evolution", "addressbook"))
+    __all__ = (
+            "HOME",
+            "XDG_DATA_HOME",
+    )
 
-addressbook_uids = []
-for dir in os.listdir(XDG_DATA_EVOLUTION):
-  addressbook_uids += [dir]  #To-do: Don't include trash folder
+    # Always points to the user's home directory
+    HOME = os.path.expanduser("~")
+    XDG_DATA_EVOLUTION = os.environ.get("XDG_DATA_HOME", os.path.join(HOME, ".local", "share", "evolution", "addressbook"))
+
+    addressbook_uids = []
+    for dir in os.listdir(XDG_DATA_EVOLUTION):
+      addressbook_uids += [dir]  #To-do: Don't include trash folder
 
 #we should loop through each addessbook but as example I am using a single adb.
 #addressbook_uid = addressbook_uids[1]
 #addressbook_uid = "be9ba530cf805cc8bf8891209984c1b09bdbf169"
 addressbook_uid = "system-address-book"
-
-
 
 #get eds factory bus
 bus = dbus.SessionBus()
@@ -90,7 +90,22 @@ FN:Dbus Hacker
 TEL;TYPE=CELL:800123456
 """], 0)
 
-dump_contacts(iface)
+def sync_all(iface):
+    import contactsdb
+    db = contactsdb.ContactsDb()
+    db.load_org()
+    for a in db.contacts:
+        name, num = a
+        vcard = """
+FN:%s
+TEL;TYPE=CELL:%s
+NOTE:import from org
+""" % (name, num)
+        ids = iface.CreateContacts([vcard], 0)
+        print(ids)
+
+#dump_contacts(iface)
 #delete_all(iface)
 #create(iface)
+sync_all(iface)
 
