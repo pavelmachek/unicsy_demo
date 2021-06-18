@@ -201,6 +201,7 @@ class CallWindow(win_call.CallWindow):
     def call_ended(m, name):
         if m.call_number is None:
             print("call ended, but have no call to end")
+            hardware.hw.audio.mixer_ringing()
             return
         elog.add_missed_call(m.call_number)
         notify.end_incoming("unknown")
