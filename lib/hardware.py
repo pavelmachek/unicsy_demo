@@ -29,8 +29,13 @@ class Test:
         enable_access(s)
         return m.write(s, v)
 
+    def exists(m, s):
+        if not s:
+            return False
+        return os.path.exists(s)
+
     def read(m, s):
-        if not os.path.exists(s):
+        if not m.exists(s):
             return None
         f = open(s, "r")
         try:
@@ -42,6 +47,12 @@ class Test:
             return None
         f.close()
         return r
+
+    def read_nocr(m, s):
+        r = m.read(s)
+        if r:
+            return r[:-1]
+        return None
 
     def read_int(m, s):
         v = m.read(s)
@@ -75,9 +86,9 @@ class Battery(Test):
         if m.hw.d4:
             m.design_full_V = 4.35
         m.battery = m.probe_paths("/sys/class/power_supply/",
-                                  [ 'bq27200-0', 'bq27521-0', 'tcpm-source-psy-0-0052', 'battery' ])
+                                  [ 'bq27200-0', 'bq27521-0', 'tcpm-source-psy-0-0052', 'battery', 'axp20x-battery' ])
         m.charger = m.probe_paths("/sys/class/power_supply/",
-                                  [ 'bq24150a-0', 'bq24153-0', 'bq25890-charger', 'usb' ])
+                                  [ 'bq24150a-0', 'bq24153-0', 'bq25890-charger', 'usb', 'axp20x-usb' ])
 
     def percent_to_42v(m, v):
         u = 0.0387-(1.4523*(3.7835-v))
@@ -102,12 +113,12 @@ class Battery(Test):
 
         return ""
 
-    def run(m):
+    def run(m, verbose = False):
         volt = m.read_int(m.battery+"/voltage_now") / 1000000.
         perc = m.percent(volt)
         
-        status = m.read(m.charger+"/status")[:-1]
-        b_status = m.read(m.battery+"/status")[:-1]
+        status = m.read_nocr(m.charger+"/status")
+        b_status = m.read_nocr(m.battery+"/status")
 
         current = m.read_int(m.charger+"/charge_current")
         limit = m.read_int(m.charger+"/current_limit")
@@ -162,7 +173,8 @@ class Battery(Test):
         volt3 = volt + (current2 / 1000. * resistance)
         perc3 = m.percent(volt3)
 
-        print("Battery (%.2fV) %.2fV" % (volt, volt3), \
+        if verbose:
+            print("Battery (%.2fV) %.2fV" % (volt, volt3), \
               "(%d%%) %d%% %d%%" % (int(perc), int(perc3), perc2), \
               "%d/%d mAh" % (charge_now, charge_full), \
               status, b_status, \
@@ -267,7 +279,7 @@ class ChargeBattery(Battery):
 
 class LED(Test):
     def set_bright(m, s, v):
-        f = open(m.path + s + "/brightness", "w")
+        f = open(m.path + s + m.suffix + "/brightness", "w")
         f.write(str(int(v*m.scale)))
         f.close()
 
@@ -305,14 +317,22 @@ class LEDs(LED):
 
     def probe(m):
         m.path='/sys/class/leds/'
+        m.suffix=''
+        m.short = False        
         if os.path.exists(m.path+"status-led"):
             m.white = "status-led"
+        # Nokia N900
         if os.path.exists(m.path+"lp5523:r"):
             m.path += "lp5523:"
             m.short = True
+        # Droid 4
         if os.path.exists(m.path+"status-led:red"):
             m.path += "status-led:"
-            m.short = False
+        # Pinephone
+        if os.path.exists(m.path+"red:indicator"):
+            m.suffix = ":indicator"
+            m.scale = 1
+        
 
     def startup(m):
         enable_access(m.path+"*/brightness")
@@ -444,7 +464,8 @@ class LightSensor(Test):
         m.directory = m.probe_paths( "/sys/bus/i2c/drivers",
                                 [ "/tsl2563/2-0029/iio:device1/",
                                   "/isl29028/1-0044/iio:device1/",
-                                  "/isl29028/1-0044/iio:device2/" ] )
+                                  "/isl29028/1-0044/iio:device2/",
+                                  "/st-magn-i2c/2-001e/iio:device1" ] )
         if not m.directory:
             m.directory = "/dev/zero/no"
         if m.directory:
@@ -725,13 +746,17 @@ class Accelerometer(Test):
 
     def probe(m):
         m.directory = "/sys/devices/platform/lis3lv02d"
-        if os.path.exists(m.directory):
+        if m.exists(m.directory):
             m.use_iio = False
             return
 
         m.use_iio = True
         m.directory = m.probe_paths( "/sys/devices/platform/44000000.ocp/48000000.interconnect/48000000.interconnect:segment@200000/48350000.target-module/48350000.i2c/i2c-3/3-0018/", [ "iio:device0", "iio:device1", "iio:device2", "iio:device3", "iio:device4" ])
         #m.write_root(m.directory+"/sampling_frequency", "100")
+        if m.exists(m.directory):
+            return
+        
+        m.directory = m.probe_paths( "/sys/devices/platform/soc/1c2b000.i2c/i2c-2/2-0068/", [ "iio:device2" ])
 
 class GPS(Test):
     hotkey = "g"
@@ -849,6 +874,11 @@ class Hardware:
             m.code_name = "librem5-devkit"
             m.real_name = "Librem 5 devkit"
             return
+        if 'pine64,pinephone-1.2' == l[0][:20]:
+            m.code_name = "pinephone"
+            m.real_name = "PinePhone"
+            return
+        
         print("Unknown hardware! You'll need to implement detection.")
 
 hw = Hardware()
@@ -857,4 +887,4 @@ if __name__ == "__main__":
     hw.detect()
     print(hw.code_name, hw.real_name)
     b = hw.battery
-    b.run()
+    b.run(verbose=True)

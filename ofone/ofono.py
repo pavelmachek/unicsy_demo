@@ -70,18 +70,8 @@ def property_changed(name, value, path, interface):
         if iface == "ConnectionContext" and name == "Active":
             # Display some indication that GPRS is active?
             mw.connection_active(value)
-        if iface == "ConnectionContext" and name == "Settings":
-            interface = str(value["Interface"])
-            addr = str(value["Address"])
-            DNS = value["DomainNameServers"]
-            print("Connected to the internet, my IP address is "+addr+".")
-            subprocess.check_call(["/usr/bin/sudo", "/sbin/ifconfig", interface, addr, "up"])
-            time.sleep(1)
-            subprocess.call(      ["/usr/bin/sudo", "/sbin/route", "del", "default"])
-            subprocess.check_call(["/usr/bin/sudo", "/sbin/route", "add", "default", "gw", addr])
-            print("dns says", DNS, str(DNS[0]))
-            #dns1, dns2 = DNS.split(" ")
-            open("/etc/resolv.conf", "w").write("nameserver "+str(DNS[0]))
+        if iface == "ConnectionContext" and name == "Settings" and ("Interface" in value):
+            mw.activate_gprs(value)
 
 def added(name, value, member, path, interface):
         iface = interface[interface.rfind(".") + 1:]
@@ -116,9 +106,9 @@ def value(value, member, path, interface):
 
 def start_ofono():
         loop = dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
-        print("Setting main loop")
-        print(loop)
-        print("done")
+        #print("Setting main loop")
+        #print(loop)
+        #print("done")
         bus = dbus.SystemBus()
 
 
@@ -231,7 +221,7 @@ class ModemCtrl:
 
         for path, properties in calls:
                 state = properties["State"]
-                print("[ %s ] %s" % (path, state))
+                #print("[ %s ] %s" % (path, state))
 
                 if state != "incoming":
                         continue
@@ -260,11 +250,11 @@ class ModemCtrl:
         properties = m.ussd.GetProperties()
         state = properties["State"]
 
-        print("State: %s" % (state))
+        #print("State: %s" % (state))
 
         if state == "idle":
             result = m.ussd.Initiate(ussdstring, timeout=100)
-            print(result[0] + ": " + result[1])
+            #print(result[0] + ": " + result[1])
             m.message(result[0] + ": " + result[1])
         elif state == "user-response":
             m.message("ussd expects user response, not implemented " +
@@ -281,7 +271,7 @@ class ModemCtrl:
         if len(message) > 160:
             raise("message too long")
         path = m.mm.SendMessage(number, message)
-        print("Message sent as ", path)
+        #print("Message sent as ", path)
 
     def connect_internet(m):
         connman = m.connman
@@ -347,7 +337,7 @@ class ModemCtrl:
             if label == "MobileNetworkCode": label = "MNC"
             if label == "LocationAreaCode": label = "LAC"
             if label == "Strength":
-                print(a, type(m.registration[a]), m.registration[a])
+                #print(a, type(m.registration[a]), m.registration[a])
                 signal_strength = int(dbus.Byte(m.registration[a]))
                 ss = "%d %%" % signal_strength
                 s += label + ": "+ss+"\n"
@@ -391,6 +381,19 @@ class ModemCtrl:
     def connection_active(m, value):
         if value == False:
             m.no_network()
+
+    def activate_gprs(m, value):
+        interface = str(value["Interface"])
+        addr = str(value["Address"])
+        DNS = value["DomainNameServers"]
+        print("Connected to the internet, my IP address is "+addr+".")
+        subprocess.check_call(["/usr/bin/sudo", "/sbin/ifconfig", interface, addr, "up"])
+        time.sleep(1)
+        subprocess.call(      ["/usr/bin/sudo", "/sbin/route", "del", "default"])
+        subprocess.check_call(["/usr/bin/sudo", "/sbin/route", "add", "default", "gw", addr])
+        #print("dns says", DNS, str(DNS[0]))
+        #dns1, dns2 = DNS.split(" ")
+        open("/etc/resolv.conf", "w").write("nameserver "+str(DNS[0]))
 
 if __name__ == "__main__":
     mc = ModemCtrl()

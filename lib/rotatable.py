@@ -15,13 +15,19 @@ import pango
 
 class TouchWidgets:
     def __init__(m):
-        pass
+        m.isbig = 0
 
     def big(m, s):
-        return '<span size="xx-large">%s</span>' % s
+        if m.isbig:
+            return '<span size="xx-large">%s</span>' % s
+        else:
+            return s
 
     def middle(m, s):
-        return '<span size="x-large">%s</span>' % s
+        if m.isbig:
+            return '<span size="x-large">%s</span>' % s
+        else:
+            return s
     
     def small(m, s):
         return '<small>%s</small>' % s
@@ -47,6 +53,7 @@ class TouchWidgets:
 
 class TouchWindow(TouchWidgets):
     def __init__(m):
+        TouchWidgets.__init__(m)
         m.main_window = 0
         m.window = None
 
