@@ -18,55 +18,58 @@ class Man:
     def cls(m):
         m.esc("c")
 
+    def one_step(m):
+        bat = m.bat
+        bat.run()
+        s = bat.summary()
+        s2 = bat.handle_protect()
+        if s2: s = s2
+
+        if m.last_counter is None:
+            aacur = 0
+        else:
+            # in mAh
+            aacur = (bat.charge_now - m.last_counter) / (m.step/3600.)
+            # WTF? Is that right?
+        m.last_counter = bat.charge_now
+
+        if False:
+            print("utime=%.3f"% time.time(),
+                  "batvolt=%.3f" % bat.volt,
+                  "bativolt=%.3f" % bat.volt3,
+                  "batperc=%.1f" % bat.perc,
+                  "batiperc=%.1f" % bat.perc3,
+                  "batcur=%.5f" % bat.current,
+                  "batacur=%.5f" % bat.current_avg,
+                  "bataacur=%f" % aacur,
+                  "charge=%f" % bat.charge_now, file=bat_log)
+
+        if True:
+            capacity = 1785
+            if bat.battery_empty and bat.battery_full:
+                capacity = bat.battery_full-bat.battery_empty
+
+            print("bat %.2f V %.2f %% |" % (bat.volt, bat.perc))
+            print("int %.2f V %.2f %% |" % (bat.volt3, bat.perc3))
+            print("now %.2f A %f Ah" % (bat.current_avg/1000, -bat.charge_now/1000))
+
+        if False:
+            print("empty %s 3.5V %s 4V %s full %s |" % (bat.fmt(bat.battery_empty), bat.fmt(bat.battery_35V), bat.fmt(bat.battery_4V), bat.fmt(bat.battery_full)), file=sys.stderr)
+
+            print(bat.guess_charge(bat.battery_empty, 0, capacity) + " to empty", file=sys.stderr)
+            print(bat.guess_charge(bat.battery_35V, bat.percent(3.5) / 100., capacity) + " to 3.5V", file=sys.stderr)
+            print(bat.guess_charge(bat.battery_4V, bat.percent(4.) / 100., capacity) + " or more -- to 4V", file=sys.stderr)
+            print(bat.guess_charge(bat.battery_full, 1., capacity) + " to full", file=sys.stderr)
+
     def run(m):
-        bat = hardware.hw.battery
-        last_counter = None
-        step = 5
+        m.bat = hardware.hw.battery
+        m.last_counter = None
+        m.step = 5
         while 1:
             m.cls()
-            bat.run()
-            s = bat.summary()
-            s2 = bat.handle_protect()
-            if s2: s = s2
-
-            if last_counter is None:
-                aacur = 0
-            else:
-                # in mAh
-                aacur = (bat.charge_now - last_counter) / (step/3600)
-                # WTF? Is that right?
-            last_counter = bat.charge_now
-
-            if False:
-                print("utime=%.3f"% time.time(),
-                      "batvolt=%.3f" % bat.volt,
-                      "bativolt=%.3f" % bat.volt3,
-                      "batperc=%.1f" % bat.perc,
-                      "batiperc=%.1f" % bat.perc3,
-                      "batcur=%.5f" % bat.current,
-                      "batacur=%.5f" % bat.current_avg,
-                      "bataacur=%f" % aacur,
-                      "charge=%f" % bat.charge_now, file=bat_log)
-
-            if True:
-                capacity = 1785
-                if bat.battery_empty and bat.battery_full:
-                    capacity = bat.battery_full-bat.battery_empty
-
-                print("bat %.2f V %.2f %% |" % (bat.volt, bat.perc))
-                print("int %.2f V %.2f %% |" % (bat.volt3, bat.perc3))
-                print("now %.2f A %f Ah" % (bat.current_avg/1000, bat.charge_now/1000))
-
-            if False:
-                print("empty %s 3.5V %s 4V %s full %s |" % (bat.fmt(bat.battery_empty), bat.fmt(bat.battery_35V), bat.fmt(bat.battery_4V), bat.fmt(bat.battery_full)), file=sys.stderr)
-
-                print(bat.guess_charge(bat.battery_empty, 0, capacity) + " to empty", file=sys.stderr)
-                print(bat.guess_charge(bat.battery_35V, bat.percent(3.5) / 100., capacity) + " to 3.5V", file=sys.stderr)
-                print(bat.guess_charge(bat.battery_4V, bat.percent(4.) / 100., capacity) + " or more -- to 4V", file=sys.stderr)
-                print(bat.guess_charge(bat.battery_full, 1., capacity) + " to full", file=sys.stderr)
-
+            m.one_step()
             sys.stdout.flush()
-            time.sleep(step)
+            time.sleep(m.step)
 
 m = Man()
 m.run()
