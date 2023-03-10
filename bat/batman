@@ -26,6 +26,15 @@ class Man:
     def cls(m):
         m.esc("c")
 
+    def disp(m, v):
+        if v in m.states:
+            old = m.states[v]
+            dt = time.time() - old.time
+            dc = (m.bat.charge_now - old.charge_now) / 1000
+            print(v, "%.1f min ago" % (dt/60),
+                  "%.6f Ah" % dc,
+                  "%.6f A" % ((dc * 3600.)/dt) )
+
     def one_step(m):
         bat = m.bat
         bat.run()
@@ -44,8 +53,13 @@ class Man:
         if not "startup" in m.states:
             m.states["startup"] = State(bat)
         if "last" in m.states:
-            if bat.status != m.states["last"].status:
-                m.states[m.last_status + "-" + bat.status] = State(bat)
+            ls = m.states["last"].status
+            if bat.status != ls:
+                m.states[ls + "-" + bat.status] = State(bat)
+            p2 = bat.perc3 // 10
+            p1 = m.states["last"].perc3 // 10
+            if p1 != p2:
+                m.states["%d-%d" % (p1, p2)] = State(bat)
 
         if False:
             print("utime=%.3f"% time.time(),
@@ -68,6 +82,14 @@ class Man:
             print("now %.2f A %f Ah" % (bat.current_avg/1000, -bat.charge_now/1000))
             print()
             print("st %s b_st %s" % (bat.status, bat.b_status))
+            m.disp("Full-Discharging")
+            m.disp("Charging-Discharging")
+            m.disp("Discharging-Charging")
+            m.disp("Charging-Full")
+            m.disp("startup")
+            m.disp("9-8")
+            m.disp("8-7")
+            m.disp("3-2")
 
         if False:
             print("empty %s 3.5V %s 4V %s full %s |" % (bat.fmt(bat.battery_empty), bat.fmt(bat.battery_35V), bat.fmt(bat.battery_4V), bat.fmt(bat.battery_full)), file=sys.stderr)
