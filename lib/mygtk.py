@@ -15,9 +15,9 @@ def setup3():
     from gi import pygtkcompat
 
     pygtkcompat.enable() 
-    pygtkcompat.enable_gtk(version='3.0')
+    pygtkcompat.enable_gtk(version='2.0')
     #print("Having pygtk 3")
-    is3 = True
+    #is3 = True
 
 
 def setup_try():
