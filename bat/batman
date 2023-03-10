@@ -30,7 +30,7 @@ class Man:
         if v in m.states:
             old = m.states[v]
             dt = time.time() - old.time
-            dc = (m.bat.charge_now - old.charge_now) / 1000
+            dc = (old.charge_now - m.bat.charge_now) / 1000
             print(v, "%.1f min ago" % (dt/60),
                   "%.6f Ah" % dc,
                   "%.6f A" % ((dc * 3600.)/dt) )
@@ -59,7 +59,7 @@ class Man:
             p2 = bat.perc3 // 10
             p1 = m.states["last"].perc3 // 10
             if p1 != p2:
-                m.states["%d-%d" % (p1, p2)] = State(bat)
+                m.states["%s%d-%d" % (bat.status, p1, p2)] = State(bat)
 
         if False:
             print("utime=%.3f"% time.time(),
@@ -87,9 +87,12 @@ class Man:
             m.disp("Discharging-Charging")
             m.disp("Charging-Full")
             m.disp("startup")
-            m.disp("9-8")
-            m.disp("8-7")
-            m.disp("3-2")
+            m.disp("Discharging9-8")
+            m.disp("Discharging8-7")
+            m.disp("Discharging3-2")
+            m.disp("Charging2-3")
+            m.disp("Charging7-8")
+            m.disp("Charging8-9")
 
         if False:
             print("empty %s 3.5V %s 4V %s full %s |" % (bat.fmt(bat.battery_empty), bat.fmt(bat.battery_35V), bat.fmt(bat.battery_4V), bat.fmt(bat.battery_full)), file=sys.stderr)
