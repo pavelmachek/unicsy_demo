@@ -11,6 +11,14 @@ import time
 import hardware
 import watchdog
 
+class State:
+    def __init__(m, bat):
+        m.volt3 = bat.volt3
+        m.perc3 = bat.perc3
+        m.charge_now = bat.charge_now
+        m.time = time.time()
+        m.status = bat.status
+
 class Man:
     def esc(m, s):
         print(chr(27)+s)
@@ -33,6 +41,12 @@ class Man:
             # WTF? Is that right?
         m.last_counter = bat.charge_now
 
+        if not "startup" in m.states:
+            m.states["startup"] = State(bat)
+        if "last" in m.states:
+            if bat.status != m.states["last"].status:
+                m.states[m.last_status + "-" + bat.status] = State(bat)
+
         if False:
             print("utime=%.3f"% time.time(),
                   "batvolt=%.3f" % bat.volt,
@@ -43,27 +57,32 @@ class Man:
                   "batacur=%.5f" % bat.current_avg,
                   "bataacur=%f" % aacur,
                   "charge=%f" % bat.charge_now, file=bat_log)
-
         if True:
-            capacity = 1785
+            m.capacity = 1785
             if bat.battery_empty and bat.battery_full:
-                capacity = bat.battery_full-bat.battery_empty
+                m.capacity = bat.battery_full-bat.battery_empty
 
             print("bat %.2f V %.2f %% |" % (bat.volt, bat.perc))
             print("int %.2f V %.2f %% |" % (bat.volt3, bat.perc3))
+            print()
             print("now %.2f A %f Ah" % (bat.current_avg/1000, -bat.charge_now/1000))
+            print()
+            print("st %s b_st %s" % (bat.status, bat.b_status))
 
         if False:
             print("empty %s 3.5V %s 4V %s full %s |" % (bat.fmt(bat.battery_empty), bat.fmt(bat.battery_35V), bat.fmt(bat.battery_4V), bat.fmt(bat.battery_full)), file=sys.stderr)
 
-            print(bat.guess_charge(bat.battery_empty, 0, capacity) + " to empty", file=sys.stderr)
-            print(bat.guess_charge(bat.battery_35V, bat.percent(3.5) / 100., capacity) + " to 3.5V", file=sys.stderr)
-            print(bat.guess_charge(bat.battery_4V, bat.percent(4.) / 100., capacity) + " or more -- to 4V", file=sys.stderr)
-            print(bat.guess_charge(bat.battery_full, 1., capacity) + " to full", file=sys.stderr)
+            print(bat.guess_charge(bat.battery_empty, 0, m.capacity) + " to empty", file=sys.stderr)
+            print(bat.guess_charge(bat.battery_35V, bat.percent(3.5) / 100., m.capacity) + " to 3.5V", file=sys.stderr)
+            print(bat.guess_charge(bat.battery_4V, bat.percent(4.) / 100., m.capacity) + " or more -- to 4V", file=sys.stderr)
+            print(bat.guess_charge(bat.battery_full, 1., m.capacity) + " to full", file=sys.stderr)
+
+        m.states["last"] = State(bat)
 
     def run(m):
         m.bat = hardware.hw.battery
         m.last_counter = None
+        m.states = {}
         m.step = 5
         while 1:
             m.cls()
