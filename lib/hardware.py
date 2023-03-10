@@ -848,7 +848,7 @@ class Hardware:
                 s = l1.split(":")
                 s = s[1]
                 s = s[1:-1]
-                #print("Have hardware", s)
+                print("Have hardware", s)
                 if s == "Nokia RX-51 board":
                     m.code_name = "nokia-rx51"
                     m.real_name = "Nokia N900"
@@ -869,7 +869,7 @@ class Hardware:
                         m.real_name = "Motorola Droid 4"
                         return
         l = open('/sys/firmware/devicetree/base/compatible').readlines()
-        print(l[0][:21])
+        print(l[0][:16])
         if 'purism,librem5-devkit' == l[0][:21]:
             m.code_name = "librem5-devkit"
             m.real_name = "Librem 5 devkit"
@@ -878,7 +878,10 @@ class Hardware:
             m.code_name = "pinephone"
             m.real_name = "PinePhone"
             return
-        
+        if 'motorola,droid4' == l[0][:15]:
+            m.code_name = "motorola-xt894"
+            m.real_name = "Motorola Droid 4"
+            return
         print("Unknown hardware! You'll need to implement detection.")
 
 hw = Hardware()
