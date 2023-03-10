@@ -13,16 +13,17 @@ import watchdog
 
 class Man:
     def esc(m, s):
-        print('\e'+s)
+        print(chr(27)+s)
 
     def cls(m):
-        esc("c")
+        m.esc("c")
 
     def run(m):
         bat = hardware.hw.battery
         last_counter = None
-        step = 30
+        step = 5
         while 1:
+            m.cls()
             bat.run()
             s = bat.summary()
             s2 = bat.handle_protect()
@@ -36,7 +37,7 @@ class Man:
                 # WTF? Is that right?
             last_counter = bat.charge_now
 
-            if True:
+            if False:
                 print("utime=%.3f"% time.time(),
                       "batvolt=%.3f" % bat.volt,
                       "bativolt=%.3f" % bat.volt3,
@@ -45,15 +46,20 @@ class Man:
                       "batcur=%.5f" % bat.current,
                       "batacur=%.5f" % bat.current_avg,
                       "bataacur=%f" % aacur,
-                      "charge=%f" % bat.charge_now)
+                      "charge=%f" % bat.charge_now, file=bat_log)
 
             if True:
                 capacity = 1785
                 if bat.battery_empty and bat.battery_full:
                     capacity = bat.battery_full-bat.battery_empty
 
-                print("now %.2f V %.2f %% %f |" % (bat.volt, bat.perc, bat.charge_now),
-                      "empty %s 3.5V %s 4V %s full %s |" % (bat.fmt(bat.battery_empty), bat.fmt(bat.battery_35V), bat.fmt(bat.battery_4V), bat.fmt(bat.battery_full)), file=sys.stderr)
+                print("bat %.2f V %.2f %% |" % (bat.volt, bat.perc))
+                print("int %.2f V %.2f %% |" % (bat.volt3, bat.perc3))
+                print("now %.2f A %f Ah" % (bat.current_avg/1000, bat.charge_now/1000))
+
+            if False:
+                print("empty %s 3.5V %s 4V %s full %s |" % (bat.fmt(bat.battery_empty), bat.fmt(bat.battery_35V), bat.fmt(bat.battery_4V), bat.fmt(bat.battery_full)), file=sys.stderr)
+
                 print(bat.guess_charge(bat.battery_empty, 0, capacity) + " to empty", file=sys.stderr)
                 print(bat.guess_charge(bat.battery_35V, bat.percent(3.5) / 100., capacity) + " to 3.5V", file=sys.stderr)
                 print(bat.guess_charge(bat.battery_4V, bat.percent(4.) / 100., capacity) + " or more -- to 4V", file=sys.stderr)
@@ -61,7 +67,6 @@ class Man:
 
             sys.stdout.flush()
             time.sleep(step)
-
 
 m = Man()
 m.run()
