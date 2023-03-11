@@ -37,6 +37,9 @@ class Man:
                   "%.6f Ah" % dc,
                   "%.6f A" % ((dc * 3600.)/dt) )
 
+    def perc(m, p):
+        return '#'*(int(p/2))
+
     def one_step(m):
         bat = m.bat
         bat.run()
@@ -58,9 +61,10 @@ class Man:
             ls = m.states["last"].status
             if bat.status != ls:
                 m.states[ls + "-" + bat.status] = State(bat)
-            def cvt(x): int(x*10)
+            def cvt(x): return int(x*10)
             p2 = cvt(bat.volt)
             p1 = cvt(m.states["last"].volt)
+            print("---", p1, p2)
             if p1 != p2:
                 m.states["%s%d-%d" % (bat.status, p1, p2)] = State(bat)
 
@@ -79,8 +83,8 @@ class Man:
             if bat.battery_empty and bat.battery_full:
                 m.capacity = bat.battery_full-bat.battery_empty
 
-            print("bat %.2f V %.2f %% |" % (bat.volt, bat.perc))
-            print("int %.2f V %.2f %% |" % (bat.volt3, bat.perc3))
+            print("bat %.2f V %.2f %% |%s" % (bat.volt, bat.perc, m.perc(bat.perc)))
+            print("int %.2f V %.2f %% |%s" % (bat.volt3, bat.perc3, m.perc(bat.perc)))
             print()
             print("now %.2f A %f Ah" % (bat.current_avg/1000, -bat.charge_now/1000))
             print()
@@ -102,6 +106,7 @@ class Man:
             m.disp("Charging37-38")
             m.disp("Charging38-39")
             m.disp("Charging39-40")
+            print(m.states)
 
         if False:
             print("empty %s 3.5V %s 4V %s full %s |" % (bat.fmt(bat.battery_empty), bat.fmt(bat.battery_35V), bat.fmt(bat.battery_4V), bat.fmt(bat.battery_full)), file=sys.stderr)
