@@ -13,6 +13,8 @@ import watchdog
 
 class State:
     def __init__(m, bat):
+        m.volt = bat.volt
+        m.perc = bat.perc
         m.volt3 = bat.volt3
         m.perc3 = bat.perc3
         m.charge_now = bat.charge_now
@@ -56,8 +58,9 @@ class Man:
             ls = m.states["last"].status
             if bat.status != ls:
                 m.states[ls + "-" + bat.status] = State(bat)
-            p2 = bat.perc3 // 10
-            p1 = m.states["last"].perc3 // 10
+            def cvt(x): int(x*10)
+            p2 = cvt(bat.volt)
+            p1 = cvt(m.states["last"].volt)
             if p1 != p2:
                 m.states["%s%d-%d" % (bat.status, p1, p2)] = State(bat)
 
@@ -87,12 +90,18 @@ class Man:
             m.disp("Discharging-Charging")
             m.disp("Charging-Full")
             m.disp("startup")
-            m.disp("Discharging9-8")
-            m.disp("Discharging8-7")
-            m.disp("Discharging3-2")
-            m.disp("Charging2-3")
-            m.disp("Charging7-8")
-            m.disp("Charging8-9")
+            m.disp("Discharging40-39")
+            m.disp("Discharging39-38")
+            m.disp("Discharging38-37")
+            m.disp("Discharging37-36")
+            m.disp("Discharging36-35")
+            m.disp("Discharging35-34")
+            m.disp("Discharging34-33")
+            m.disp("Charging35-36")
+            m.disp("Charging36-37")
+            m.disp("Charging37-38")
+            m.disp("Charging38-39")
+            m.disp("Charging39-40")
 
         if False:
             print("empty %s 3.5V %s 4V %s full %s |" % (bat.fmt(bat.battery_empty), bat.fmt(bat.battery_35V), bat.fmt(bat.battery_4V), bat.fmt(bat.battery_full)), file=sys.stderr)
@@ -108,7 +117,7 @@ class Man:
         m.bat = hardware.hw.battery
         m.last_counter = None
         m.states = {}
-        m.step = 5
+        m.step = 60
         while 1:
             m.cls()
             m.one_step()
