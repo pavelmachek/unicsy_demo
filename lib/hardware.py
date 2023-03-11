@@ -168,6 +168,8 @@ class Battery(Test):
         # at 3.6V.
         if m.hw.n900:
             resistance = 0.33 # Suitable for old N900
+        elif m.hw.d4:
+            resistance = 0.16 # Suitable for old N900
         else:
             resistance = 0.08
         volt3 = volt + (current2 / 1000. * resistance)
