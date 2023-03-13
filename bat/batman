@@ -10,6 +10,25 @@ import os
 import time
 import hardware
 import watchdog
+import sys
+import select
+import termios
+import tty
+import time
+
+def get_char(t):
+    fd = sys.stdin.fileno()
+    old_settings = termios.tcgetattr(fd)
+    try:
+        tty.setraw(fd)
+        i, o, e = select.select([sys.stdin], [], [], t)
+        if i:
+            char = sys.stdin.read(1)
+        else:
+            char = None
+    finally:
+        termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+    return char
 
 class State:
     def __init__(m, bat):
@@ -92,10 +111,10 @@ class Man:
                 #old = m.states[v]
                 # Full -- 75% at 4.1V
                 #base_charge = old.charge_now
-                base_charge = -602.759
+                base_charge = 072.264
                 dc = (m.bat.charge_now - base_charge) / 1000
                 # 1000mAh 
-                p = 75 + 75 * dc
+                p = 72 - 72 * dc
                 print("%2.5f Ah %.0f %% |%s" % (dc, p, m.perc(p)))
             print()
             print("now %.2f A %f Ah" % (bat.current_avg/1000, -bat.charge_now/1000))
@@ -130,6 +149,12 @@ class Man:
 
         m.states["last"] = State(bat)
 
+    def handle_cmd(m, c):
+        if not c:
+            return
+        if ord(c) == 3:
+            exit(0)
+
     def run(m):
         m.bat = hardware.hw.battery
         m.last_counter = None
@@ -139,7 +164,8 @@ class Man:
             m.cls()
             m.one_step()
             sys.stdout.flush()
-            time.sleep(m.step)
+            c = get_char(m.step)
+            m.handle_cmd(c)
 
 m = Man()
 m.run()
