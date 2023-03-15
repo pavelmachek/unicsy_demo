@@ -36,7 +36,7 @@ class State:
         m.perc = bat.perc
         m.volt3 = bat.volt3
         m.perc3 = bat.perc3
-        m.charge_now = bat.charge_now
+        m.charge_counter = bat.charge_counter
         m.time = time.time()
         m.status = bat.status
 
@@ -51,7 +51,7 @@ class Man:
         if v in m.states:
             old = m.states[v]
             dt = time.time() - old.time
-            dc = (old.charge_now - m.bat.charge_now) / 1000
+            dc = (m.bat.charge_counter - old.charge_counter) / 1000
             print(v, "%.1f min ago" % (dt/60),
                   "%.6f Ah" % dc,
                   "%.6f A" % ((dc * 3600.)/dt) )
@@ -71,9 +71,9 @@ class Man:
             aacur = 0
         else:
             # in mAh
-            aacur = (bat.charge_now - m.last_counter) / (m.step/3600.)
+            aacur = (m.last_counter - bat.charge_counter) / (m.step/3600.)
             # WTF? Is that right?
-        m.last_counter = bat.charge_now
+        m.last_counter = bat.charge_counter
 
         if not "startup" in m.states:
             m.states["startup"] = State(bat)
@@ -97,7 +97,7 @@ class Man:
                   "batcur=%.5f" % bat.current,
                   "batacur=%.5f" % bat.current_avg,
                   "bataacur=%f" % aacur,
-                  "charge=%f" % bat.charge_now, file=bat_log)
+                  "charge=%f" % bat.charge_counter, file=bat_log)
         if True:
             m.capacity = 1785
             if bat.battery_empty and bat.battery_full:
@@ -110,14 +110,14 @@ class Man:
             if True:
                 #old = m.states[v]
                 # Full -- 75% at 4.1V
-                #base_charge = old.charge_now
-                base_charge = 072.264
-                dc = (m.bat.charge_now - base_charge) / 1000
-                # 1000mAh 
-                p = 72 - 72 * dc
+                #base_charge = old.charge_counter
+                base_charge = 496.266
+                dc = (m.bat.charge_counter - base_charge) / 1000
+                cap = 0.9 # Assuming 900mAh from 71% to zero.
+                p = 71 + 71 * (dc / cap)
                 print("%2.5f Ah %.0f %% |%s" % (dc, p, m.perc(p)))
             print()
-            print("now %.2f A %f Ah" % (bat.current_avg/1000, -bat.charge_now/1000))
+            print("now %.2f A %f Ah" % (bat.current_avg/1000, bat.charge_counter/1000))
             print()
             print("st %s b_st %s" % (bat.status, bat.b_status))
             m.disp("Full-Discharging")
