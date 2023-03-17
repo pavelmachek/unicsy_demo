@@ -106,16 +106,16 @@ class Man:
             print("bat %.2f V %.0f %% |%s" % (bat.volt, bat.perc, m.perc(bat.perc)))
             print("int %.2f V %.0f %% |%s" % (bat.volt3, bat.perc3, m.perc(bat.perc3)))
             v = "Full-Discharging"
-            #if v in m.states:
-            if True:
-                #old = m.states[v]
+            if v in m.states:
+                old = m.states[v]
                 # Full -- 75% at 4.1V
-                #base_charge = old.charge_counter
-                base_charge = 496.266 + 157.13
-                dc = (m.bat.charge_counter - base_charge) / 1000
-                cap = 1.1 # Assuming 900mAh from 71% to zero.
-                p = 71 + 71 * (dc / cap)
-                print("%2.5f Ah %.0f %% |%s" % (dc, p, m.perc(p)))
+                base_charge = old.charge_counter
+            else:
+                base_charge = 496.266 + 157.13 + 67.47
+            dc = (m.bat.charge_counter - base_charge) / 1000
+            cap = 1.1 # Assuming 900mAh from 71% to zero.
+            p = 70 + 70 * (dc / cap)
+            print("%2.5f Ah %.0f %% |%s" % (dc, p, m.perc(p)))
             print()
             print("now %.2f A %f Ah" % (bat.current_avg/1000, bat.charge_counter/1000))
             print()
