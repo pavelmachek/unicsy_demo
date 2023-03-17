@@ -111,9 +111,9 @@ class Man:
                 #old = m.states[v]
                 # Full -- 75% at 4.1V
                 #base_charge = old.charge_counter
-                base_charge = 496.266
+                base_charge = 496.266 + 157.13
                 dc = (m.bat.charge_counter - base_charge) / 1000
-                cap = 0.9 # Assuming 900mAh from 71% to zero.
+                cap = 1.1 # Assuming 900mAh from 71% to zero.
                 p = 71 + 71 * (dc / cap)
                 print("%2.5f Ah %.0f %% |%s" % (dc, p, m.perc(p)))
             print()
