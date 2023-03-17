@@ -149,11 +149,31 @@ class Man:
 
         m.states["last"] = State(bat)
 
+    def set_charge(m, amp, volt):
+        p = "/sys/class/power_supply/"
+        volt *= 1000
+        amp *= 1000
+        volt = int(volt)
+        amp = int(amp)
+        
+        os.system("echo %d | sudo tee %s/usb/constant_charge_voltage" % (volt, p))
+        os.system("echo %d | sudo tee %s/battery/constant_charge_voltage" % (volt, p))
+        os.system("echo %d | sudo tee %s/usb/constant_charge_voltage" % (volt, p))
+        os.system("echo %d | sudo tee %s/usb/input_current_limit" % (amp, p))
+        
     def handle_cmd(m, c):
         if not c:
             return
         if ord(c) == 3:
             exit(0)
+        if c == '1':
+            m.set_charge(500, 4100)
+        if c == '2':
+            m.set_charge(500, 4200)
+        if c == '3':
+            m.set_charge(1900, 4200)
+        if c == '4':
+            m.set_charge(1900, 4349)
 
     def run(m):
         m.bat = hardware.hw.battery
