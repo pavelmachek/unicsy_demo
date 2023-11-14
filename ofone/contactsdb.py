@@ -57,6 +57,9 @@ class ContactsDb:
             if re.match("^:PHONE:", l) or re.match("^:CELL:", l):
                 num = re.sub(":[A-Z]*: ", "", l)
                 m.add_contact(last_name, num)
+            ma = re.match("(.*) -- ([0-9+ ]*)", l) 
+            if ma:
+                m.add_contact(ma.group(1), ma.group(2))
 
     def from_number(m, number):
         match = None
