@@ -16,7 +16,46 @@ Actually, most of unicsy is meant for python2 -- as that one is faster.
 
 xscreensaver-demo. Powermanagement needs to be enabled. Default timeouts are 120 minutes, set it to 1 minute.
 
-On maemo leste
+* On Mobian/Phosh
+
+ssh-keygen
+.ssh/authorized_keys
+
+
+
+sudo apt-get install aptitude
+
+openssh-server foxtrotgps
+
+https://github.com/pavelmachek/unicsy_demo
+
+vpravo nahore, settings
+https://github.com/settings/keys
+
+sudo aptitude install git emacs-nox
+
+mobian@mobian:~$ sudo mkdir /my
+mobian@mobian:~$ sudo chown mobian /my
+cd /my
+git clone git@github.com:pavelmachek/unicsy_demo.git
+
+https://gitlab.com/tui/tui
+
+vpravo nahore preferences, vlevo v menu ssh keys
+
+python3-gi ?
+
+root@mobian:/my/unicsy_demo/demo# cd /usr/share/
+root@mobian:/usr/share# ln -s /my/unicsy_demo/ unicsy
+
+/my/tui/tricorder$ python3 ruler.py
+# dobry test.
+
+git clone pavel@10.0.0.9:~/v
+
+
+
+* On Maemo Leste
 
 run /etc/expandcard.sh
 
