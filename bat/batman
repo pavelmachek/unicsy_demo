@@ -4,7 +4,7 @@
 from __future__ import print_function
 
 import sys
-sys.path += [ "/usr/share/unicsy/lib" ]
+sys.path += [ "/usr/share/unicsy/lib", "../lib" ]
 
 import os
 import time
