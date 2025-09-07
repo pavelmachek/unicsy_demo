@@ -151,15 +151,15 @@ class Man:
 
     def set_charge(m, amp, volt):
         p = "/sys/class/power_supply/"
+        p_battery = m.bat.battery
+        p_charger = m.bat.charger
         volt *= 1000
         amp *= 1000
         volt = int(volt)
         amp = int(amp)
         
-        os.system("echo %d | sudo tee %s/usb/constant_charge_voltage" % (volt, p))
-        os.system("echo %d | sudo tee %s/battery/constant_charge_voltage" % (volt, p))
-        os.system("echo %d | sudo tee %s/usb/constant_charge_voltage" % (volt, p))
-        os.system("echo %d | sudo tee %s/usb/input_current_limit" % (amp, p))
+        os.system("echo %d | sudo tee %s/constant_charge_voltage" % (volt, p_charger))
+        os.system("echo %d | sudo tee %s/input_current_limit" % (amp, p_charger))
         
     def handle_cmd(m, c):
         if not c:
