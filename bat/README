@@ -12,6 +12,7 @@ Droidian on OnePlus 6 is "special":
          /sys/class/power_supply/usb/voltage_now -- input voltage on USB, but wrong by factor of 1000
 	 /sys/class/power_supply/bms/constant_charge_voltage -- seems to have no effect
 	 /sys/class/power_supply/battery/charging_enabled -- can be used to toggle charging on/off
+	 	-- but does not allow system power from USB, so not too useful
 
 Give me table between state of charge (volts) and battery longevity (years). Go down to 0%.
 
