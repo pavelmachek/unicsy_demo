@@ -150,7 +150,6 @@ class Man:
         m.states["last"] = State(bat)
 
     def set_charge(m, amp, volt):
-        p = "/sys/class/power_supply/"
         p_battery = m.bat.battery
         p_charger = m.bat.charger
         volt *= 1000
@@ -173,7 +172,10 @@ class Man:
         if c == '3':
             m.set_charge(1900, 4200)
         if c == '4':
-            m.set_charge(1900, 4349)
+            if hardware.hw.d4:
+                m.set_charge(1900, 4349)
+            else:
+                print("Boost not available outside d4")
 
     def run(m):
         m.bat = hardware.hw.battery
