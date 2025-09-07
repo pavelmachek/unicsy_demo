@@ -22,6 +22,9 @@ class Man:
         p = int(p/3)
         return '#'*p + '.'*(34-p)
 
+    def charging_enabled(m, val):
+        m.bat.write(m.bat.battery + "/charging_enabled", val)
+
     def battery_details(m):
         bat = m.bat
         # current_avg: Librem 5 displays > 0 for discharge. should be other way around iirc.
@@ -29,7 +32,7 @@ class Man:
         temp = m.bat.read_int(m.bat.battery + "/temp") / 10.
         print(" %.1f C" % temp, end='')
 
-    def one_step(m):
+    def one_step(m, first):
         now = datetime.now()
         print(now.strftime("%H:%M "), end='')
 
@@ -45,12 +48,18 @@ class Man:
 
             # Display currents, etc:
             m.battery_details()
+
+            if percent > 80 or (first and percent > 60):
+                m.charging_enabled("0")
+            if percent < 60:
+                m.charging_enabled("1")
         print()
 
     def run(m):
         m.bat = hardware.hw.battery
+        m.one_step(True)
         while 1:
-            m.one_step()
+            m.one_step(False)
             sys.stdout.flush()
             time.sleep(1)
 
