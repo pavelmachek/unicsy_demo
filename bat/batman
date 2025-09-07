@@ -103,6 +103,8 @@ class Man:
             if bat.battery_empty and bat.battery_full:
                 m.capacity = bat.battery_full-bat.battery_empty
 
+            percent = m.bat.read_int(m.bat.battery + "/capacity")
+            print("kernel     %.0f %% |%s" % (percent, m.perc(percent)))
             print("bat %.2f V %.0f %% |%s" % (bat.volt, bat.perc, m.perc(bat.perc)))
             print("int %.2f V %.0f %% |%s" % (bat.volt3, bat.perc3, m.perc(bat.perc3)))
 
@@ -121,7 +123,8 @@ class Man:
             if p > 100: p = 100
             print("%2.5f Ah %.0f %% |%s" % (dc, p, m.perc(p)))
 
-            # 
+            # Display currents, etc:
+            # current_avg: Librem 5 displays > 0 for discharge. should be other way around iirc.
             print()
             print("now %.2f A %f Ah" % (bat.current_avg/1000, bat.charge_counter/1000))
 
@@ -161,8 +164,10 @@ class Man:
         amp *= 1000
         amp = int(amp)
         # This was designed for d4:
-        #os.system("echo %d | sudo tee %s/input_current_limit" % (amp, m.bat.charger))
-        os.system("echo %d | sudo tee %s/constant_charge_current" % (amp, m.bat.charger))
+        if hardware.hw.d4:
+            os.system("echo %d | sudo tee %s/input_current_limit" % (amp, m.bat.charger))
+        else:
+            os.system("echo %d | sudo tee %s/constant_charge_current" % (amp, m.bat.charger))
 
     def set_chg_voltage(m, volt):
         volt *= 1000
