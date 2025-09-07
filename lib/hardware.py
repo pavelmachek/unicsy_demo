@@ -87,8 +87,10 @@ class Battery(Test):
             m.design_full_V = 4.35
         m.battery = m.probe_paths("/sys/class/power_supply/",
                                   [ 'bq27200-0', 'bq27521-0', 'tcpm-source-psy-0-0052', 'battery', 'axp20x-battery', 'max170xx_battery' ])
+        # bms is for Droidian on OnePlus 6.
+        # Keep it before usb, seems to be more useful
         m.charger = m.probe_paths("/sys/class/power_supply/",
-                                  [ 'bq24150a-0', 'bq24153-0', 'bq25890-charger', 'usb', 'axp20x-usb', 'bq25890-charger-0' ])
+                                  [ 'bq24150a-0', 'bq24153-0', 'bq25890-charger', 'bms', 'usb', 'axp20x-usb', 'bq25890-charger-0' ])
 
     def percent_to_42v(m, v):
         u = 0.0387-(1.4523*(3.7835-v))
@@ -152,8 +154,8 @@ class Battery(Test):
         current_avg = m.read_int(m.battery+"/current_avg") / 1000.
         charge_counter = m.read_int(m.battery+"/charge_counter") / 1000.
 
-        if m.hw.l5:
-            # Librem 5 seems to have negative values from expected
+        if not m.hw.d4:
+            # Librem 5 and OnePlus 6 seem to have negative values from expected
             current2 = -current2
             current_avg = -current_avg
             charge_counter = -charge_counter

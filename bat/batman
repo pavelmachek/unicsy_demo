@@ -230,6 +230,7 @@ class Man:
         if c == '-':
             if hardware.hw.d4:
                 m.set_chg_voltage(4349)
+                # OnePlus 6 uses 4359869
             else:
                 print("Boost not available outside d4")
         if c == 'q': sys.exit(0)
