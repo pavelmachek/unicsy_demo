@@ -105,6 +105,8 @@ class Man:
 
             print("bat %.2f V %.0f %% |%s" % (bat.volt, bat.perc, m.perc(bat.perc)))
             print("int %.2f V %.0f %% |%s" % (bat.volt3, bat.perc3, m.perc(bat.perc3)))
+
+            # This is attempt to get useful data from charge counter
             v = "Full-Discharging"
             if v in m.states:
                 old = m.states[v]
@@ -118,8 +120,12 @@ class Man:
             if p < 0: p = 0
             if p > 100: p = 100
             print("%2.5f Ah %.0f %% |%s" % (dc, p, m.perc(p)))
+
+            # 
             print()
             print("now %.2f A %f Ah" % (bat.current_avg/1000, bat.charge_counter/1000))
+
+            # These are attempts to time how long various charge thresholds are reached
             print()
             print("st %s b_st %s" % (bat.status, bat.b_status))
             m.disp("Full-Discharging")
