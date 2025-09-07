@@ -176,19 +176,25 @@ class Man:
             return
         if ord(c) == 3:
             exit(0)
-        if c == '`': m.set_charge(200, 3800)   # 0.1C charge to 50%
-        if c == '1': m.set_charge(200, 3900)   # 0.1C to 60%
-        if c == '2': m.set_charge(500, 3900)   # 0.4C to 60%
-        if c == '3': m.set_charge(500, 4000)   # 0.4C to 75%
-        if c == '4': m.set_charge(500, 4100)   # 0.4C to 85%
-        if c == '8': m.set_charge(500, 4200)   # 0.4C to full
-        if c == '9': m.set_charge(1900, 4200)  # 1C to full
+        if c == '`': m.set_chg_current(100) 
+        if c == '1': m.set_chg_current(200)
+        if c == '2': m.set_chg_current(500)
+        if c == '3': m.set_chg_current(800)
+        if c == '4': m.set_chg_current(1200) 
+        if c == '5': m.set_chg_current(1900) 
+
+        if c == '6': m.set_chg_voltage(3800)   # to 50%
+        if c == '7': m.set_chg_voltage(3870)   # to 60%
+        if c == '8': m.set_chg_voltage(3950)   # to 70%
+        if c == '9': m.set_chg_voltage(4005)   # to 80%
+        if c == '0': m.set_chg_voltage(4200)   # to 100%
         if c == '-':
             if hardware.hw.d4:
-                m.set_charge(1900, 4349)
+                m.set_chg_voltage(4349)
             else:
                 print("Boost not available outside d4")
         if c == 'q': sys.exit(0)
+        time.sleep(1)
 
     def run(m):
         m.bat = hardware.hw.battery
