@@ -15,6 +15,7 @@ import select
 import termios
 import tty
 import time
+from datetime import datetime
 
 class Man:
     def perc(m, p):
@@ -23,52 +24,31 @@ class Man:
 
     def battery_details(m):
         bat = m.bat
-        print()
-        print("Battery")
         # current_avg: Librem 5 displays > 0 for discharge. should be other way around iirc.
-        print("  current now %.3f A avg %.3f A %.3f Ah (>0: charging)" % (bat.current/1000, bat.current_avg/1000, bat.charge_counter/1000))
+        print("%.3f A" % (bat.current/1000), end='')
         temp = m.bat.read_int(m.bat.battery + "/temp") / 10.
-        voltage_ocv = m.bat.read_int(m.bat.battery + "/voltage_ocv")
-        print("  temperature %.1f C int %.2fV" % (temp, voltage_ocv / 1000000))
-
-    def charger_details(m):
-        bat = m.bat
-        print()
-        print("Charger")
-        cc_current = m.bat.read_int(m.bat.charger + "/constant_charge_current")
-        cc_voltage = m.bat.read_int(m.bat.charger + "/constant_charge_voltage")
-        limit_current = m.bat.read_int(m.bat.charger + "/input_current_limit")
-        current = m.bat.read_int(m.bat.charger + "/current_now")
-        print("  cc %.2f V %.3f A i/limit %.3f A" % (cc_voltage/1000000, cc_current/1000000, limit_current/1000000))
-
-        temp = m.bat.read_int(m.bat.charger + "/temp") / 10.
-        print("  temperature %.1f C" % (temp))
-
-        voltage = m.bat.read_int(m.bat.charger + "/voltage_now")
-        current = m.bat.read_int(m.bat.charger + "/current_now")
-        # On l5, these seem to mirror battery values, so not terribly interesting
-        print("  now %.2f V %.3f A" % (voltage/1000000, current/1000000))
+        print(" %.1f C" % temp, end='')
 
     def one_step(m):
+        now = datetime.now()
+        print(now.strftime("%H:%M "), end='')
+
         bat = m.bat
         bat.run()
         s = bat.summary()
 
         if True:
             percent = m.bat.read_int(m.bat.battery + "/capacity")
-            print("kernel     %.0f %% |%s" % (percent, m.perc(percent)))
-            print("bat %.2f V %.0f %% |%s" % (bat.volt, bat.perc, m.perc(bat.perc)))
-            print("int %.2f V %.0f %% |%s" % (bat.volt3, bat.perc3, m.perc(bat.perc3)))
+            print("%.0f%% |%s " % (percent, m.perc(percent)), end='')
+            print("%.2f " % bat.volt, end='')
+            print("i %.2f %.0f%% " % (bat.volt3, bat.perc3), end='')
 
             # Display currents, etc:
             m.battery_details()
-            m.charger_details()
+        print()
 
     def run(m):
         m.bat = hardware.hw.battery
-        m.last_counter = None
-        m.states = {}
-        m.step = 60
         while 1:
             m.one_step()
             sys.stdout.flush()
