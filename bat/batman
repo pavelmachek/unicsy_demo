@@ -65,8 +65,29 @@ class Man:
         bat = m.bat
         print()
         print("Battery")
-        print("  current %.2f A %.3f Ah (>0: charging)" % (bat.current_avg/1000, bat.charge_counter/1000))
-        
+        # current_avg: Librem 5 displays > 0 for discharge. should be other way around iirc.
+        print("  current now %.3f A avg %.3f A %.3f Ah (>0: charging)" % (bat.current/1000, bat.current_avg/1000, bat.charge_counter/1000))
+        temp = m.bat.read_int(m.bat.battery + "/temp") / 10.
+        voltage_ocv = m.bat.read_int(m.bat.battery + "/voltage_ocv")
+        print("  temperature %.1f C int %.2fV" % (temp, voltage_ocv / 1000000))
+
+    def charger_details(m):
+        bat = m.bat
+        print()
+        print("Charger")
+        cc_current = m.bat.read_int(m.bat.charger + "/constant_charge_current")
+        cc_voltage = m.bat.read_int(m.bat.charger + "/constant_charge_voltage")
+        limit_current = m.bat.read_int(m.bat.charger + "/input_current_limit")
+        current = m.bat.read_int(m.bat.charger + "/current_now")
+        print("  cc %.2f V %.3f A i/limit %.3f A" % (cc_voltage/1000000, cc_current/1000000, limit_current/1000000))
+
+        temp = m.bat.read_int(m.bat.charger + "/temp") / 10.
+        print("  temperature %.1f C" % (temp))
+
+        voltage = m.bat.read_int(m.bat.charger + "/voltage_now")
+        current = m.bat.read_int(m.bat.charger + "/current_now")
+        # On l5, these seem to mirror battery values, so not terribly interesting
+        print("  now %.2f V %.3f A" % (voltage/1000000, current/1000000))
 
     def one_step(m):
         bat = m.bat
@@ -132,9 +153,8 @@ class Man:
             print("%2.5f Ah %.0f %% |%s" % (dc, p, m.perc(p)))
 
             # Display currents, etc:
-            # current_avg: Librem 5 displays > 0 for discharge. should be other way around iirc.
             m.battery_details()
-            
+            m.charger_details()
 
             # These are attempts to time how long various charge thresholds are reached
             print()
@@ -206,7 +226,7 @@ class Man:
         if c == '7': m.set_chg_voltage(3950)   # to 70%
         if c == '8': m.set_chg_voltage(4005)   # to 80%
         if c == '9': m.set_chg_voltage(4150)   # to 90%
-        if c == '0': m.set_chg_voltage(4200)   # to 100%
+        if c == '0': m.set_chg_voltage(4210)   # to 100%
         if c == '-':
             if hardware.hw.d4:
                 m.set_chg_voltage(4349)
