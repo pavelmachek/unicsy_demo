@@ -115,6 +115,8 @@ class Man:
             dc = (m.bat.charge_counter - base_charge) / 1000
             cap = 1.1 # Assuming 900mAh from 71% to zero.
             p = 70 + 70 * (dc / cap)
+            if p < 0: p = 0
+            if p > 100: p = 100
             print("%2.5f Ah %.0f %% |%s" % (dc, p, m.perc(p)))
             print()
             print("now %.2f A %f Ah" % (bat.current_avg/1000, bat.charge_counter/1000))
@@ -165,17 +167,19 @@ class Man:
             return
         if ord(c) == 3:
             exit(0)
-        if c == '1':
-            m.set_charge(500, 4100)
-        if c == '2':
-            m.set_charge(500, 4200)
-        if c == '3':
-            m.set_charge(1900, 4200)
-        if c == '4':
+        if c == '`': m.set_charge(200, 3800)   # 0.1C charge to 50%
+        if c == '1': m.set_charge(200, 3900)   # 0.1C to 60%
+        if c == '2': m.set_charge(500, 3900)   # 0.4C to 60%
+        if c == '3': m.set_charge(500, 4000)   # 0.4C to 75%
+        if c == '4': m.set_charge(500, 4100)   # 0.4C to 85%
+        if c == '8': m.set_charge(500, 4200)   # 0.4C to full
+        if c == '9': m.set_charge(1900, 4200)  # 1C to full
+        if c == '-':
             if hardware.hw.d4:
                 m.set_charge(1900, 4349)
             else:
                 print("Boost not available outside d4")
+        if c == 'q': sys.exit(0)
 
     def run(m):
         m.bat = hardware.hw.battery
