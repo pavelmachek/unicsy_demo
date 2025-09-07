@@ -30,6 +30,7 @@ def get_char(t):
         termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
     return char
 
+# For recording past charge states
 class State:
     def __init__(m, bat):
         m.volt = bat.volt

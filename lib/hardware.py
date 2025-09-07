@@ -152,6 +152,12 @@ class Battery(Test):
         current_avg = m.read_int(m.battery+"/current_avg") / 1000.
         charge_counter = m.read_int(m.battery+"/charge_counter") / 1000.
 
+        if m.hw.l5:
+            # Librem 5 seems to have negative values from expected
+            current2 = -current2
+            current_avg = -current_avg
+            charge_counter = -charge_counter
+
         if m.battery_35V is None and volt < 3.5:
             m.battery_35V = charge_now
         if volt < 3.5 and charge_now > m.battery_35V:
@@ -835,6 +841,7 @@ class Hardware:
         m.debian = os.path.exists('/my/tui/ofone')
         m.n900 = m.code_name == "nokia-rx51"
         m.d4 = m.code_name == "motorola-xt894"
+        m.l5 = m.code_name == "librem5r4"
         #print("Have hardware: n900 d4: ", m.n900, m.d4)
             
     def startup(m):
