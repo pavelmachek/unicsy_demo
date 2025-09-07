@@ -8,8 +8,10 @@ Charge modes
 
 L5 can limit charge voltage to 3.9V and above
 D4 can limit charge voltage to 4.1V, but not 4.0V
-Droidian on OnePlus 6 does not allow charge voltage limit
-
+Droidian on OnePlus 6 is "special":
+         /sys/class/power_supply/usb/voltage_now -- input voltage on USB, but wrong by factor of 1000
+	 /sys/class/power_supply/bms/constant_charge_voltage -- seems to have no effect
+	 /sys/class/power_supply/battery/charging_enabled -- can be used to toggle charging on/off
 
 Give me table between state of charge (volts) and battery longevity (years). Go down to 0%.
 
