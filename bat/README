@@ -1,4 +1,10 @@
+-*- org -*-
 
+Charge modes
+
+| max | I payed for 100% of battery and I'm going to use it                                                             |
+| eco | Charge to 60%..80% percent. Good if you only need 40% of your battery (and can usually keep battery above 20%)  |
+| AC  | Keep charge at 50%. Good for long-term storage or running at AC power, when you don't need your battery at all. |
 
 D4 can limit charge voltage to 4.1V, but not 4.0V
 
@@ -14,24 +20,20 @@ Approximate Relationship Between State of Charge and Longevity
 
 (Assuming room temperature, moderate cycling, full charge/discharge counted as 1 cycle)
 
-State of Charge (SOC)	Cell Voltage (approx)	Typical Longevity (years, calendar life + cycle life)
-100% (4.20 V)	4.20 V	~2–3 years (fast aging, high stress)
-90%	4.15 V	~3–4 years
-80%	4.05 V	~4–5 years
-70%	3.95 V	~5–6 years
-60%	3.87 V	~6–7 years
-50%	3.80 V	~7–8 years (sweet spot, minimal stress)
-40%	3.75 V	~7–8 years
-30%	3.70 V	~6–7 years
-20%	3.60 V	~5–6 years
-10%	3.50 V	~3–4 years (deep cycling starts to hurt)
-0% (cutoff)	<3.0 V	Permanent damage risk if stored; cell may die in months
-
+| S. of Charge | Cell Voltage    | Typical Longevity (years, calendar life + cycle life)   |
+|         100% | 4.20 V          | ~2–3 years (fast aging, high stress)                    |
+|          90% | 4.15 V          | ~3–4 years                                              |
+|          80% | 4.05 V          | ~4–5 years                                              |
+|          70% | 3.95 V          | ~5–6 years                                              |
+|          60% | 3.87 V          | ~6–7 years                                              |
+|          50% | 3.80 V          | ~7–8 years (sweet spot, minimal stress)                 |
+|          40% | 3.75 V          | ~7–8 years                                              |
+|          30% | 3.70 V          | ~6–7 years                                              |
+|          20% | 3.60 V          | ~5–6 years                                              |
+|          10% | 3.50 V          | ~3–4 years (deep cycling starts to hurt)                |
+|           0% | (cutoff) <3.0 V | Permanent damage risk if stored; cell may die in months |
 
 Give me longevity vs. charge current (or maybe C) table.
-ChatGPT said:
-
-Got it 👍 You’d like a table showing how charge current (C-rate) affects Li-ion longevity.
 
 ⚠ Reality filter:
 
@@ -43,10 +45,13 @@ Numbers below are approximate for typical consumer Li-ion (NMC / LiPo) cells, ba
 
 
 ⚡ Approximate Effect of Charge Current on Longevity
-Charge Rate (C)	Example (for 2000 mAh cell)	Cycle Life (to 80% capacity)	Typical Longevity (years, daily use)	Notes
-0.2C (gentle)	400 mA	~1500–2000 cycles	6–8 years	Very safe, minimal heating, but slow
-0.5C (moderate)	1000 mA	~1000–1500 cycles	4–6 years	Common in laptops, some phones
-1C (standard fast charge)	2000 mA	~500–800 cycles	2–4 years	Typical “fast charge” baseline
-2C (aggressive fast charge)	4000 mA	~300–500 cycles	1–2 years	Higher heat, lithium plating risk
-3C+ (extreme fast charge)	≥6000 mA	<200–300 cycles	<1 year	Only tolerable with special chemistries + cooling
 
+| Charge Rate (C)             | (for 2 Ah cell) | Life (to 80% capacity) | Longevity (daily use)  | Notes                                             |
+| 0.2C (gentle)               | 400 mA          | ~1500–2000 cycles      | 6–8 years              | Very safe, minimal heating, but slow              |
+| 0.5C (moderate)             | 1000 mA         | ~1000–1500 cycles      | 4–6 years              | Common in laptops, some phones                    |
+| 1C (standard fast charge)   | 2000 mA         | ~500–800 cycles        | 2–4 years              | Typical “fast charge” baseline                    |
+| 2C (aggressive fast charge) | 4000 mA         | ~300–500 cycles        | 1–2 years              | Higher heat, lithium plating risk                 |
+| 3C+ (extreme fast charge)   | ≥6000 mA        | <200–300 cycles        | <1 year                | Only tolerable with special chemistries + cooling |
+
+0.1C / 0.05C may be slightly better than 0.2C, but advantages are
+diminishing after that.
