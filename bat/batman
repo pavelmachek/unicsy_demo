@@ -61,6 +61,13 @@ class Man:
         p = int(p/3)
         return '#'*p + '.'*(34-p)
 
+    def battery_details(m):
+        bat = m.bat
+        print()
+        print("Battery")
+        print("  current %.2f A %.3f Ah (>0: charging)" % (bat.current_avg/1000, bat.charge_counter/1000))
+        
+
     def one_step(m):
         bat = m.bat
         bat.run()
@@ -126,8 +133,8 @@ class Man:
 
             # Display currents, etc:
             # current_avg: Librem 5 displays > 0 for discharge. should be other way around iirc.
-            print()
-            print("now %.2f A %f Ah" % (bat.current_avg/1000, bat.charge_counter/1000))
+            m.battery_details()
+            
 
             # These are attempts to time how long various charge thresholds are reached
             print()

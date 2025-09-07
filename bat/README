@@ -6,8 +6,8 @@ Charge modes
 | eco | Charge to 60%..80% percent. Good if you only need 40% of your battery (and can usually keep battery above 20%)  |
 | AC  | Keep charge at 50%. Good for long-term storage or running at AC power, when you don't need your battery at all. |
 
+L5 can limit charge voltage to 3.9V and above
 D4 can limit charge voltage to 4.1V, but not 4.0V
-
 Droidian on OnePlus 6 does not allow charge voltage limit
 
 
