@@ -160,7 +160,9 @@ class Man:
     def set_chg_current(m, amp):
         amp *= 1000
         amp = int(amp)
-        os.system("echo %d | sudo tee %s/input_current_limit" % (amp, m.bat.charger))
+        # This was designed for d4:
+        #os.system("echo %d | sudo tee %s/input_current_limit" % (amp, m.bat.charger))
+        os.system("echo %d | sudo tee %s/constant_charge_current" % (amp, m.bat.charger))
 
     def set_chg_voltage(m, volt):
         volt *= 1000
@@ -176,6 +178,8 @@ class Man:
             return
         if ord(c) == 3:
             exit(0)
+
+        print()
         if c == '`': m.set_chg_current(100) 
         if c == '1': m.set_chg_current(200)
         if c == '2': m.set_chg_current(500)
@@ -183,10 +187,12 @@ class Man:
         if c == '4': m.set_chg_current(1200) 
         if c == '5': m.set_chg_current(1900) 
 
-        if c == '6': m.set_chg_voltage(3800)   # to 50%
-        if c == '7': m.set_chg_voltage(3870)   # to 60%
-        if c == '8': m.set_chg_voltage(3950)   # to 70%
-        if c == '9': m.set_chg_voltage(4005)   # to 80%
+        # Droid 4 can't do most of these.
+        # Librem 5 can't do 3800
+        if c == '6': m.set_chg_voltage(3870)   # to 60%
+        if c == '7': m.set_chg_voltage(3950)   # to 70%
+        if c == '8': m.set_chg_voltage(4005)   # to 80%
+        if c == '9': m.set_chg_voltage(4150)   # to 90%
         if c == '0': m.set_chg_voltage(4200)   # to 100%
         if c == '-':
             if hardware.hw.d4:
@@ -194,6 +200,10 @@ class Man:
             else:
                 print("Boost not available outside d4")
         if c == 'q': sys.exit(0)
+
+        print("Current limit (d4): ", m.bat.read_int(m.bat.charger + "/input_current_limit"))
+        print("Current limit (l5): ", m.bat.read_int(m.bat.charger + "/constant_charge_current"))
+        print("Voltage limit: ", m.bat.read_int(m.bat.charger + "/constant_charge_voltage"))
         time.sleep(1)
 
     def run(m):
