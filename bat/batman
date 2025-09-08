@@ -259,7 +259,15 @@ class Auto(Man):
         # current_avg: Librem 5 displays > 0 for discharge. should be other way around iirc.
         print("%.3f A" % (bat.current/1000), end='')
         temp = m.bat.read_int(m.bat.battery + "/temp") / 10.
-        print(" %.1f C" % temp, end='')
+        print(" %.1f C " % temp, end='')
+
+    def charger_details(m):
+        bat = m.bat
+        cc_current = m.bat.read_int(m.bat.charger + "/constant_charge_current")
+        cc_voltage = m.bat.read_int(m.bat.charger + "/constant_charge_voltage")
+        limit_current = m.bat.read_int(m.bat.charger + "/input_current_limit")
+        current = m.bat.read_int(m.bat.charger + "/current_now")
+        print("cc %.2f V %.3f A i/lim %.3f A" % (cc_voltage/1000000, cc_current/1000000, limit_current/1000000), end='')
 
     def one_step(m, first):
         now = datetime.now()
@@ -277,6 +285,7 @@ class Auto(Man):
 
             # Display currents, etc:
             m.battery_details()
+            m.charger_details()
 
         print()
 
