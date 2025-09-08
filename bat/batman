@@ -15,7 +15,7 @@ import select
 import termios
 import tty
 import time
-from datetime import datetime
+import datetime
 
 def get_char(t):
     fd = sys.stdin.fileno()
@@ -269,8 +269,50 @@ class Auto(Man):
         current = m.bat.read_int(m.bat.charger + "/current_now")
         print("cc %.2f V %.3f A i/lim %.3f A" % (cc_voltage/1000000, cc_current/1000000, limit_current/1000000), end='')
 
-    def one_step(m, first):
-        now = datetime.now()
+    # Give me code to estimate time neccessary "C" factor (charge
+    # current) given current percentage, target percentage, time
+    # available.
+    def required_c_rate(capacity_mAh: float, soc_now: float, soc_target: float,
+                        time_hours: float, cv_factor: float = 3.0) -> float:
+        """
+        Estimate necessary C-rate to reach soc_target from soc_now in time_hours.
+        Includes CC + CV phases.
+
+        capacity_mAh : nominal cell capacity in mAh (e.g. 3000)
+        soc_now      : current SOC (%)
+        soc_target   : target SOC (%)
+        time_hours   : time available (hours)
+        cv_factor    : slowdown multiplier for SOC above 80% (default 3.0)
+
+        Returns: required C-rate (float).
+        """
+        if soc_target <= soc_now:
+            raise ValueError("Target SOC must be higher than current SOC.")
+
+        soc_cc_start = max(soc_now, 0)
+        soc_cc_end   = min(soc_target, 80.0)
+        soc_cv_start = max(soc_now, 80.0)
+        soc_cv_end   = soc_target
+
+        # CC part (linear)
+        delta_cc = max(0.0, soc_cc_end - soc_cc_start) / 100.0
+        energy_cc = capacity_mAh * delta_cc
+
+        # CV part (slower)
+        delta_cv = max(0.0, soc_cv_end - soc_cv_start) / 100.0
+        energy_cv = capacity_mAh * delta_cv
+
+        # Effective time requirement per mAh
+        # CV is slower: multiply time per mAh by cv_factor
+        effective_mAh = energy_cc + cv_factor * energy_cv
+
+        # Required current (mA) to fit within time_hours
+        current_mA = effective_mAh / time_hours
+        c_rate = current_mA / capacity_mAh
+        return c_rate
+
+    def one_step(m):
+        now = datetime.datetime.now()
         print(now.strftime("%H:%M "), end='')
 
         bat = m.bat
@@ -291,9 +333,9 @@ class Auto(Man):
 
     def run(m):
         m.bat = hardware.hw.battery
-        m.one_step(True)
+
         while 1:
-            m.one_step(False)
+            m.one_step()
             sys.stdout.flush()
             time.sleep(1)
 
@@ -304,7 +346,7 @@ def parse_time_arg(arg: str) -> int:
     except ValueError:
         return -1
 
-    now = datetime.now()
+    now = datetime.datetime.now()
     target = now.replace(hour=hour, minute=minute, second=0, microsecond=0)
 
     # If target time already passed today, use tomorrow
