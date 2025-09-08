@@ -214,6 +214,7 @@ class Man:
             exit(0)
 
         print()
+        if c == 'o': m.set_chg_current(0) 
         if c == '`': m.set_chg_current(100) 
         if c == '1': m.set_chg_current(200)
         if c == '2': m.set_chg_current(500)
@@ -336,20 +337,30 @@ class Auto(Man):
             hours = (m.target_time - time.time()) / (60*60)
             c_rate = m.required_c_rate(5000, percent, m.target_perc, hours)
             print(" %.1fh %.2f C" % (hours, c_rate))
-            if c_rate < 0.05:
+            # We can wait to charge if it is far enough in future.
+            # But we don't want to toggle charing on/off repeatedly
+            # when we are close.
+            if c_rate < 0.05 and m.target_perc - percent > 5:
                 c_rate = 0
         if m.target_time < 0:
             c_rate = 0.1
+        if m.mode == "max":
+            c_rate = 1.0
+        # Below 50%, battery actually ages faster; so lets charge to 60%.
+        if percent < 60 and c_rate < 0.05:
+            c_rate = 0.05
 
         amp = capacity * c_rate
         print(" -> %.2f C, %.0fmA" % (c_rate, amp))
         m.set_chg_current(amp)
 
-    def run(m):
-        m.bat = hardware.hw.battery
-
+    def set_chg_voltage_perc(m, p):
         if m.target_perc < 80: m.set_chg_voltage(3870)
         if m.target_perc >= 80: m.set_chg_voltage(4005)
+
+    def run(m):
+        m.bat = hardware.hw.battery
+        m.set_chg_voltage_perc(m.target_perc)
 
         m.one_step()
         time.sleep(3)
@@ -375,7 +386,7 @@ def parse_time_arg(arg: str) -> int:
     return int(target.timestamp())
 
 def help():
-    print("Usage: script.py [-m] | [HH:MM]")
+    print("Usage: script.py [-m] | [HH:MM] | min | max | eco")
     
 def parse(arg):
     if arg == "-m":
@@ -383,11 +394,20 @@ def parse(arg):
         m = Man()
         m.run()
         return 0
+    if arg == "max":
+        print("should do max charge to 100%")
+        m = Auto()
+        m.target_time = -1
+        m.target_perc = 100
+        m.mode = "max"
+        m.run()
+        return 0
     if arg == "min":
         print("should do .1C charge to 60%")        
         m = Auto()
         m.target_time = -1
         m.target_perc = 60
+        m.mode = "min"
         m.run()
         return 0
     t = parse_time_arg(arg)
@@ -396,6 +416,7 @@ def parse(arg):
         m = Auto()
         m.target_time = t
         m.target_perc = 80
+        m.mode = "readyby"
         m.run()
         return 0
     help()
