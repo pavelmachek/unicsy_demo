@@ -331,14 +331,22 @@ class Auto(Man):
         hours = (m.target_time - time.time()) / (60*60)
         c_rate = m.required_c_rate(5000, percent, m.target_perc, hours)
         print(" %.1fh %.2f C" % (hours, c_rate))
+        amp = 5000 * c_rate
+        print(" -> %.0f mA" % amp)
+        m.set_chg_current(amp)
 
     def run(m):
         m.bat = hardware.hw.battery
 
+        if m.target_perc < 80: m.set_chg_voltage(3870)
+        if m.target_perc >= 80: m.set_chg_voltage(4005)
+
+        m.one_step()
+        time.sleep(3)
         while 1:
             m.one_step()
             sys.stdout.flush()
-            time.sleep(1)
+            time.sleep(60)
 
 def parse_time_arg(arg: str) -> int:
     """Parse HH:MM and return Unix timestamp (seconds)."""
@@ -364,6 +372,9 @@ def parse(arg):
         print("Manual mode")
         m = Man()
         m.run()
+        return 0
+    if arg == "_":
+        print("should do .1C charge to 60%")
         return 0
     t = parse_time_arg(arg)
     if t > 0:
