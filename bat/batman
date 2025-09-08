@@ -272,7 +272,7 @@ class Auto(Man):
     # Give me code to estimate time neccessary "C" factor (charge
     # current) given current percentage, target percentage, time
     # available.
-    def required_c_rate(capacity_mAh: float, soc_now: float, soc_target: float,
+    def required_c_rate(m, capacity_mAh: float, soc_now: float, soc_target: float,
                         time_hours: float, cv_factor: float = 3.0) -> float:
         """
         Estimate necessary C-rate to reach soc_target from soc_now in time_hours.
@@ -330,7 +330,7 @@ class Auto(Man):
 
         print()
         hours = (m.target_time - time.time()) / (60*60)
-        c_rate = m.required_c_rate(5000, percent, m.target_perc)
+        c_rate = m.required_c_rate(5000, percent, m.target_perc, hours)
         print("  %.1f hours, %.2f C" % (hours, c_rate))
 
     def run(m):
