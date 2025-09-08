@@ -15,6 +15,7 @@ import select
 import termios
 import tty
 import time
+from datetime import datetime
 
 def get_char(t):
     fd = sys.stdin.fileno()
@@ -252,5 +253,81 @@ class Man:
             c = get_char(m.step)
             m.handle_cmd(c)
 
-m = Man()
-m.run()
+class Auto(Man):
+    def battery_details(m):
+        bat = m.bat
+        # current_avg: Librem 5 displays > 0 for discharge. should be other way around iirc.
+        print("%.3f A" % (bat.current/1000), end='')
+        temp = m.bat.read_int(m.bat.battery + "/temp") / 10.
+        print(" %.1f C" % temp, end='')
+
+    def one_step(m, first):
+        now = datetime.now()
+        print(now.strftime("%H:%M "), end='')
+
+        bat = m.bat
+        bat.run()
+        s = bat.summary()
+
+        if True:
+            percent = m.bat.read_int(m.bat.battery + "/capacity")
+            print("%.0f%% |%s " % (percent, m.perc(percent)), end='')
+            print("%.2f " % bat.volt, end='')
+            print("i %.2f %.0f%% " % (bat.volt3, bat.perc3), end='')
+
+            # Display currents, etc:
+            m.battery_details()
+
+            if percent > 80 or (first and percent > 60):
+                m.charging_enabled("0")
+            if percent < 60:
+                m.charging_enabled("1")
+        print()
+
+    def run(m):
+        m.bat = hardware.hw.battery
+        m.one_step(True)
+        while 1:
+            m.one_step(False)
+            sys.stdout.flush()
+            time.sleep(1)
+
+def parse_time_arg(arg: str) -> int:
+    """Parse HH:MM and return Unix timestamp (seconds)."""
+    try:
+        hour, minute = map(int, arg.split(":"))
+    except ValueError:
+        return -1
+
+    now = datetime.now()
+    target = now.replace(hour=hour, minute=minute, second=0, microsecond=0)
+
+    # If target time already passed today, use tomorrow
+    if target <= now:
+        target += datetime.timedelta(days=1)
+
+    return int(target.timestamp())
+
+def help():
+    print("Usage: script.py [-m] | [HH:MM]")
+    
+def parse(arg):
+    if arg == "-m":
+        print("Manual mode")
+        m = Man()
+        m.run()
+        return 0
+    t = parse_time_arg(arg)
+    if t > 0:
+        print(f"Target Unix time: {t}")
+        return 0
+    help()
+
+def main():
+    if len(sys.argv) > 1:
+        parse(sys.argv[1])
+        return
+    help()
+    
+if __name__ == "__main__":
+    main()

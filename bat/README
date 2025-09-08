@@ -58,3 +58,14 @@ Numbers below are approximate for typical consumer Li-ion (NMC / LiPo) cells, ba
 
 0.1C / 0.05C may be slightly better than 0.2C, but advantages are
 diminishing after that.
+
+
+Model constants / multipliers (illustrative)
+Calendar base: = 1.0 × 10^-4   damage/day (baseline at 25 °C, 50% SOC).
+SOC factor: = (U-shaped):
+10% → 1.2, 25% → 1.1, 50% → 1.0 (sweet spot), 70% → 1.5, 80% → 2.0, 90% → 3.0, 100% → 4.0.
+Temperature factor: Q10 ≈ 2 (damage doubles every +10 °C; at 25 °C → 1.0).
+Cycle base: =1/7000 ≈ 1.4286×10^-4 damage per EFC (equivalent full cycle).
+Charge-rate factor: ≤0.2C → 1.0, 0.5C → 1.2, 1C → 1.6, 2C → 2.5, >2C → 3.5.
+CV multiplier (per-mAh cycle damage):  =3.0 (CV mAh ~3× worse than CC).
+

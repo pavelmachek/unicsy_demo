@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 # -*- python -*-
 
+# OnePlus 6 with Droidian is really special beast, see README.
+
 from __future__ import print_function
 
 import sys
