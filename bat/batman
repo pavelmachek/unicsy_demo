@@ -287,7 +287,7 @@ class Auto(Man):
         Returns: required C-rate (float).
         """
         if soc_target <= soc_now:
-            raise ValueError("Target SOC must be higher than current SOC.")
+            return 0
 
         soc_cc_start = max(soc_now, 0)
         soc_cc_end   = min(soc_target, 80.0)
@@ -319,17 +319,19 @@ class Auto(Man):
         bat.run()
         s = bat.summary()
 
-        if True:
-            percent = m.bat.read_int(m.bat.battery + "/capacity")
-            print("%.0f%% (" % (percent), end='')
-            print("%.2f " % bat.volt, end='')
-            print("i %.2f %.0f%%) " % (bat.volt3, bat.perc3), end='')
+        percent = m.bat.read_int(m.bat.battery + "/capacity")
+        print("%.0f%% (" % (percent), end='')
+        print("%.2f " % bat.volt, end='')
+        print("i %.2f %.0f%%) " % (bat.volt3, bat.perc3), end='')
 
-            # Display currents, etc:
-            m.battery_details()
-            m.charger_details()
+        # Display currents, etc:
+        m.battery_details()
+        m.charger_details()
 
         print()
+        hours = (m.target_time - time.time()) / (60*60)
+        c_rate = m.required_c_rate(5000, percent, m.target_perc)
+        print("  %.1f hours, %.2f C" % (hours, c_rate))
 
     def run(m):
         m.bat = hardware.hw.battery
