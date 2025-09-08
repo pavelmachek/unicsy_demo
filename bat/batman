@@ -267,7 +267,7 @@ class Auto(Man):
         cc_voltage = m.bat.read_int(m.bat.charger + "/constant_charge_voltage")
         limit_current = m.bat.read_int(m.bat.charger + "/input_current_limit")
         current = m.bat.read_int(m.bat.charger + "/current_now")
-        print("cc %.2f V %.3f A i/lim %.3f A" % (cc_voltage/1000000, cc_current/1000000, limit_current/1000000), end='')
+        print("cc%.2fV %.3fA i%.3fA" % (cc_voltage/1000000, cc_current/1000000, limit_current/1000000), end='')
 
     # Give me code to estimate time neccessary "C" factor (charge
     # current) given current percentage, target percentage, time
@@ -321,17 +321,16 @@ class Auto(Man):
 
         percent = m.bat.read_int(m.bat.battery + "/capacity")
         print("%.0f%% (" % (percent), end='')
-        print("%.2f " % bat.volt, end='')
-        print("i %.2f %.0f%%) " % (bat.volt3, bat.perc3), end='')
+        print("%.2fV " % bat.volt, end='')
+        print("i %.2fV %.0f%%) " % (bat.volt3, bat.perc3), end='')
 
         # Display currents, etc:
         m.battery_details()
         m.charger_details()
 
-        print()
         hours = (m.target_time - time.time()) / (60*60)
         c_rate = m.required_c_rate(5000, percent, m.target_perc, hours)
-        print("  %.1f hours, %.2f C" % (hours, c_rate))
+        print(" %.1fh %.2f C" % (hours, c_rate))
 
     def run(m):
         m.bat = hardware.hw.battery
