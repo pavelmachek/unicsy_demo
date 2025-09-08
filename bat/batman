@@ -271,17 +271,13 @@ class Auto(Man):
 
         if True:
             percent = m.bat.read_int(m.bat.battery + "/capacity")
-            print("%.0f%% |%s " % (percent, m.perc(percent)), end='')
+            print("%.0f%% (" % (percent), end='')
             print("%.2f " % bat.volt, end='')
-            print("i %.2f %.0f%% " % (bat.volt3, bat.perc3), end='')
+            print("i %.2f %.0f%%) " % (bat.volt3, bat.perc3), end='')
 
             # Display currents, etc:
             m.battery_details()
 
-            if percent > 80 or (first and percent > 60):
-                m.charging_enabled("0")
-            if percent < 60:
-                m.charging_enabled("1")
         print()
 
     def run(m):
@@ -320,6 +316,10 @@ def parse(arg):
     t = parse_time_arg(arg)
     if t > 0:
         print(f"Target Unix time: {t}")
+        m = Auto()
+        m.target_time = t
+        m.target_perc = 80
+        m.run()
         return 0
     help()
 
