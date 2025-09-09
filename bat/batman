@@ -417,6 +417,14 @@ def parse(arg):
         m.mode = "max"
         m.run()
         return 0
+    if arg == "norm":
+        print("should do .1C charge to 60%")        
+        m = Auto()
+        m.target_time = -1
+        m.target_perc = 80
+        m.mode = "norm"
+        m.run()
+        return 0
     if arg == "min":
         print("should do .1C charge to 60%")        
         m = Auto()

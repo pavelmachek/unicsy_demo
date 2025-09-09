@@ -1,8 +1,26 @@
 -*- org -*-
 
+Always fast charging battery to 100% capacity will reduce battery
+longevity significantly. Complicating factor is that running out of
+battery is very annoying, and battery below 10% capacity also loses
+longevity (very significantly around 0%).
+
+So... we can do better, and this is my attempt. Simple idea is to
+simply charge to 80%, use "batman norm" to do that.
+
+But we can do better. You can add time when you want phone to be
+ready, and it will try to figure optimal charging profile so that
+phone is at 80% when requested. Use "batman 15:30" if you want phone
+to be at half past three.
+
+Code is at https://github.com/pavelmachek/unicsy_demo/tree/master/bat .
+
+#librem5
+
 Charge modes
 
 | max     | I payed for 100% of battery and I'm going to use it                                                             |
+| norm    | simply always charge to 80%                                                                                     |
 | eco     | Charge to 60%..80% percent. Good if you only need 40% of your battery (and can usually keep battery above 20%)  |
 | min     | Keep charge at 50%. Good for long-term storage or running at AC power, when you don't need your battery at all. |
 | readyby | Make sure battery is 80% by specified time.                                                                     |
