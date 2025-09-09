@@ -332,32 +332,41 @@ class Auto(Man):
         # Design capacity
         capacity = 4500 # Librem 5
         c_rate = 0
+        mode = "???"
         
         if m.target_time > 0:
             hours = (m.target_time - time.time()) / (60*60)
             # If it is already past the time, do fast charge 
             if hours < 0:
                 c_rate = 1.0
+                mode = "past"
             else:
                 c_rate = m.required_c_rate(5000, percent, m.target_perc, hours) * 1.1
+                mode = "readyby"
             print(" %.1fh %.2f C" % (hours, c_rate))
             # We can wait to charge if it is far enough in future.
             # But we don't want to toggle charging on/off repeatedly
             # when we are close.
             if c_rate < 0.1 and m.target_perc - percent > 5:
+                mode = "pause"
                 c_rate = 0
         if m.target_time < 0:
+            mode = "simple"
             c_rate = 0.25
         if m.mode == "max":
+            mode = "max"
             c_rate = 1.0
         # Below 50%, battery actually ages faster; so lets charge to 60%.
         if percent < 30 and c_rate < 0.15:
+            mode = "go30"
             c_rate = 0.15
         if percent < 60 and c_rate < 0.10:
+            mode = "go60"
             c_rate = 0.10
 
         amp = capacity * c_rate
-        print(" -> %.2f C, %.0fmA" % (c_rate, amp))
+        print(" -> %.2f C, %.0fmA, %s -- uA: " % (c_rate, amp, mode), end = "")
+        sys.stdout.flush()
         m.set_chg_current(amp)
 
     def set_chg_voltage_perc(m, p):
