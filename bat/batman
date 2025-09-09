@@ -258,9 +258,9 @@ class Auto(Man):
     def battery_details(m):
         bat = m.bat
         # current_avg: Librem 5 displays > 0 for discharge. should be other way around iirc.
-        print("%.3f A" % (bat.current/1000), end='')
+        print("%.3fA" % (bat.current/1000), end='')
         temp = m.bat.read_int(m.bat.battery + "/temp") / 10.
-        print(" %.1f C " % temp, end='')
+        print(" %.1fC " % temp, end='')
 
     def charger_details(m):
         bat = m.bat
@@ -268,7 +268,7 @@ class Auto(Man):
         cc_voltage = m.bat.read_int(m.bat.charger + "/constant_charge_voltage")
         limit_current = m.bat.read_int(m.bat.charger + "/input_current_limit")
         current = m.bat.read_int(m.bat.charger + "/current_now")
-        print("cc%.2fV %.3fA i%.3fA" % (cc_voltage/1000000, cc_current/1000000, limit_current/1000000), end='')
+        print("cc%.2fV %.3fA i%.1fA" % (cc_voltage/1000000, cc_current/1000000, limit_current/1000000), end='')
 
     # Give me code to estimate time neccessary "C" factor (charge
     # current) given current percentage, target percentage, time
@@ -323,14 +323,14 @@ class Auto(Man):
         percent = m.bat.read_int(m.bat.battery + "/capacity")
         print("%.0f%% (" % (percent), end='')
         print("%.2fV " % bat.volt, end='')
-        print("i %.2fV %.0f%%) " % (bat.volt3, bat.perc3), end='')
+        print("i%.2fV %.0f%%) " % (bat.volt3, bat.perc3), end='')
 
         # Display currents, etc:
         m.battery_details()
         m.charger_details()
 
         # Design capacity
-        capacity = 5000
+        capacity = 4500 # Librem 5
         c_rate = 0
         
         if m.target_time > 0:
@@ -342,17 +342,19 @@ class Auto(Man):
                 c_rate = m.required_c_rate(5000, percent, m.target_perc, hours) * 1.1
             print(" %.1fh %.2f C" % (hours, c_rate))
             # We can wait to charge if it is far enough in future.
-            # But we don't want to toggle charing on/off repeatedly
+            # But we don't want to toggle charging on/off repeatedly
             # when we are close.
-            if c_rate < 0.05 and m.target_perc - percent > 5:
+            if c_rate < 0.1 and m.target_perc - percent > 5:
                 c_rate = 0
         if m.target_time < 0:
-            c_rate = 0.1
+            c_rate = 0.25
         if m.mode == "max":
             c_rate = 1.0
         # Below 50%, battery actually ages faster; so lets charge to 60%.
-        if percent < 60 and c_rate < 0.05:
-            c_rate = 0.05
+        if percent < 30 and c_rate < 0.15:
+            c_rate = 0.15
+        if percent < 60 and c_rate < 0.10:
+            c_rate = 0.10
 
         amp = capacity * c_rate
         print(" -> %.2f C, %.0fmA" % (c_rate, amp))
