@@ -343,7 +343,7 @@ class Auto(Man):
             else:
                 c_rate = m.required_c_rate(5000, percent, m.target_perc, hours) * 1.1
                 mode = "readyby"
-            print(" %.1fh %.2f C" % (hours, c_rate))
+            print(" %.1fh %.4f C" % (hours, c_rate))
             # We can wait to charge if it is far enough in future.
             # But we don't want to toggle charging on/off repeatedly
             # when we are close.
