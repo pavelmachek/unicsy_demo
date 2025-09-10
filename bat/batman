@@ -382,7 +382,7 @@ class Auto(Man):
         while 1:
             m.one_step()
             sys.stdout.flush()
-            time.sleep(60)
+            time.sleep(5*60)
 
 def parse_time_arg(arg: str) -> int:
     """Parse HH:MM and return Unix timestamp (seconds)."""
