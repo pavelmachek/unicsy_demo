@@ -177,9 +177,9 @@ class Battery(Test):
         if m.hw.n900:
             resistance = 0.33 # Suitable for old N900
         elif m.hw.d4:
-            resistance = 0.16 # Suitable for old N900
+            resistance = 0.16 # Suitable for Droid 4
         else:
-            resistance = 0.08
+            resistance = 0.17 # Librem 5 has >= 0.15
         volt3 = volt + (current2 / 1000. * resistance)
         perc3 = m.percent(volt3)
 

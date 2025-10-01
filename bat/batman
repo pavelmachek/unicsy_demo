@@ -353,6 +353,8 @@ class Auto(Man):
         if m.target_time < 0:
             mode = "simple"
             c_rate = 0.25
+        if m.mode == "min":
+            c_rate = 0.1
         if m.mode == "max":
             mode = "max"
             c_rate = 1.0
@@ -367,7 +369,10 @@ class Auto(Man):
         amp = capacity * c_rate
         print(" -> %.2f C, %.0fmA, %s -- uA: " % (c_rate, amp, mode), end = "")
         sys.stdout.flush()
-        m.set_chg_current(amp)
+        if m.mode != "mon":
+            m.set_chg_current(amp)
+        else:
+            print()
 
     def set_chg_voltage_perc(m, p):
         if m.target_perc < 80: m.set_chg_voltage(3870)
@@ -375,7 +380,8 @@ class Auto(Man):
 
     def run(m):
         m.bat = hardware.hw.battery
-        m.set_chg_voltage_perc(m.target_perc)
+        if m.mode != "mon":
+            m.set_chg_voltage_perc(m.target_perc)
 
         m.one_step()
         time.sleep(3)
@@ -401,10 +407,10 @@ def parse_time_arg(arg: str) -> int:
     return int(target.timestamp())
 
 def help():
-    print("Usage: script.py [-m] | [HH:MM] | min | max | eco")
+    print("Usage: script.py [-m] | [HH:MM] | min | max | eco | mon | man ")
     
 def parse(arg):
-    if arg == "-m":
+    if arg == "-m" or arg == "man":
         print("Manual mode")
         m = Man()
         m.run()
@@ -431,6 +437,14 @@ def parse(arg):
         m.target_time = -1
         m.target_perc = 60
         m.mode = "min"
+        m.run()
+        return 0
+    if arg == "mon":
+        print("monitor only, should not change marameters%")        
+        m = Auto()
+        m.target_time = -1
+        m.target_perc = 80
+        m.mode = "mon"
         m.run()
         return 0
     t = parse_time_arg(arg)
